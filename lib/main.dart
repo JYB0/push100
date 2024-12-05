@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:push100/screens/home_screen.dart';
+import 'package:push100/screens/initial_test_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue, // 전체 앱의 색상 테마 설정
       ),
-      home: const HomeScreen(), // 첫 화면으로 HomeScreen 설정
+      home: const InitialTestScreen(), // 첫 화면으로 HomeScreen 설정
     );
   }
 }
