@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               // 헤더
               const Text(
-                "6주 안에 푸시업 100개!",
+                "Push 100",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),

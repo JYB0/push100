@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:push100/screens/home_screen.dart';
 
 class InitialTestScreen extends StatefulWidget {
   const InitialTestScreen({super.key});
@@ -78,12 +78,7 @@ class _InitialTestScreenState extends State<InitialTestScreen> {
                       isEditing
                           ? TextField(
                               controller: _controller,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      signed: true),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
+                              keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
                               // textInputAction: TextInputAction.done, // 확인 버튼 설정
                               style: textStyle,
@@ -126,39 +121,16 @@ class _InitialTestScreenState extends State<InitialTestScreen> {
                 ElevatedButton(
                   onPressed: () {
                     _dismissKeyboard(); // 버튼 클릭 시 키보드 닫기
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            NextScreen(pushupCount: pushupCount),
-                      ),
-                    );
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HomeScreen()));
                   },
                   child: const Text("테스트 완료 및 시작"),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// 다음 화면 예제
-class NextScreen extends StatelessWidget {
-  final int pushupCount; // 이전 화면에서 받은 푸시업 개수
-
-  const NextScreen({super.key, required this.pushupCount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Next Screen")),
-      body: Center(
-        child: Text(
-          "당신은 $pushupCount개의 푸시업을 설정했습니다!",
-          style: const TextStyle(fontSize: 24),
         ),
       ),
     );
