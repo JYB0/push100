@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final int pushupCount;
+  final String ageRange;
+
+  const HomeScreen({
+    super.key,
+    required this.pushupCount,
+    required this.ageRange,
+  });
 
   @override
   Widget build(BuildContext context) {
