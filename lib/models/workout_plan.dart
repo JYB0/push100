@@ -50,7 +50,7 @@ final List<WorkoutPlan> workoutPlans = [
 
   // Week 2 - 중급
   WorkoutPlan(
-      week: 2, day: 1, level: "중급", sets: [9, 11, 8, 8, 10], restTime: 60),
+      week: 2, day: 1, level: "중급", sets: [9, 11, 8, 8, 11], restTime: 60),
   WorkoutPlan(
       week: 2, day: 2, level: "중급", sets: [10, 12, 9, 9, 13], restTime: 90),
   WorkoutPlan(
@@ -151,7 +151,7 @@ final List<WorkoutPlan> workoutPlans = [
       week: 5,
       day: 2,
       level: "고급",
-      sets: [19, 19, 22, 22, 22, 18, 18, 22, 45],
+      sets: [19, 19, 22, 22, 18, 18, 22, 45],
       restTime: 45),
   WorkoutPlan(
       week: 5,
