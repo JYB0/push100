@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:push100/screens/age_selection_screen.dart';
+import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/screens/home_screen.dart';
 
 class InitialTestScreen extends StatefulWidget {
   const InitialTestScreen({super.key});
@@ -98,11 +99,18 @@ class _InitialTestScreenState extends State<InitialTestScreen> {
                 ElevatedButton(
                   onPressed: () {
                     _dismissKeyboard();
+                    final initialPlan = determineInitialPlan(pushupCount);
+                    final int week = initialPlan['week'];
+                    final String level = initialPlan['level'];
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            AgeSelectionScreen(pushupCount: pushupCount),
+                        builder: (context) => HomeScreen(
+                          pushupCount: pushupCount,
+                          week: week,
+                          level: level,
+                        ),
                       ),
                     );
                   },
