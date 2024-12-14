@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/screens/home_screen.dart';
 
@@ -7,10 +8,10 @@ class InitialTestScreen extends StatefulWidget {
   const InitialTestScreen({super.key});
 
   @override
-  _InitialTestScreenState createState() => _InitialTestScreenState();
+  InitialTestScreenState createState() => InitialTestScreenState();
 }
 
-class _InitialTestScreenState extends State<InitialTestScreen> {
+class InitialTestScreenState extends State<InitialTestScreen> {
   final TextEditingController _controller = TextEditingController();
   bool isEditing = false;
   int pushupCount = 0;
@@ -25,12 +26,16 @@ class _InitialTestScreenState extends State<InitialTestScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  double _calculateTextWidth(String text, TextStyle style) {
+  double calculateTextWidth(String text, TextStyle style) {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
     )..layout();
     return textPainter.width;
+  }
+
+  void _saveInitialTest(int pushupCount) async {
+    await SharedPreferencesHelper.saveInitialTest(pushupCount);
   }
 
   @override
@@ -97,11 +102,12 @@ class _InitialTestScreenState extends State<InitialTestScreen> {
                 ),
                 const SizedBox(height: 40),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     _dismissKeyboard();
                     final initialPlan = determineInitialPlan(pushupCount);
                     final int week = initialPlan['week'];
                     final String level = initialPlan['level'];
+                    _saveInitialTest(pushupCount);
 
                     Navigator.push(
                       context,

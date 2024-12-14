@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/screens/workout_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final int pushupCount;
   final int week;
   final String level;
@@ -14,15 +16,41 @@ class HomeScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // 현재 주차와 날짜를 계산 (예: Week 1, Day 1로 시작)
-    const int week = 1;
-    const int day = 1;
-    final String level =
-        pushupCount < 10 ? "초급" : (pushupCount < 20 ? "중급" : "고급");
+  HomeScreenState createState() => HomeScreenState();
+}
 
+class HomeScreenState extends State<HomeScreen> {
+  int currentDay = 1;
+  int currentWeek = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgressFromPreferences();
+  }
+
+  Future<void> _loadProgressFromPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentDay = prefs.getInt('currentDay') ?? 1;
+      currentWeek = prefs.getInt('currentWeek') ?? 1;
+    });
+  }
+
+  Future<void> _saveProgressToPreferences(int day) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentDay', currentDay);
+    await prefs.setInt('currentWeek', currentWeek);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // 오늘의 운동 플랜 가져오기
-    final todayPlan = getPlanByLevelWeekAndDay(level, week, day);
+    final todayPlan =
+        getPlanByLevelWeekAndDay(widget.level, widget.week, currentDay);
+
+    // 진행률 계산 (6주 기준)
+    final double progress = widget.week / 6;
 
     return Scaffold(
       body: SafeArea(
@@ -40,20 +68,19 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 진행 상황 요약
-              const Card(
+              Card(
                 elevation: 4,
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
                       Text(
-                        "Week $week, Day $day",
-                        style: TextStyle(fontSize: 18),
+                        "Week ${widget.week}, Day $currentDay (${widget.level})",
+                        style: const TextStyle(fontSize: 18),
                       ),
-                      SizedBox(height: 10),
-                      LinearProgressIndicator(value: 0.2), // 진행률 (임시 값)
-                      SizedBox(height: 10),
-                      Text("총 150개의 푸시업 완료!"),
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(value: progress),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -80,9 +107,18 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
-                                // 훈련 화면으로 이동
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WorkoutScreen(
+                                      level: widget.level,
+                                      week: widget.week,
+                                      day: currentDay, // 현재 날짜 전달
+                                    ),
+                                  ),
+                                );
                               },
-                              child: const Text("훈련 시작"),
+                              child: const Text("운동 시작"),
                             ),
                           ],
                         )
