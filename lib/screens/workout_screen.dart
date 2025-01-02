@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
 
 class WorkoutScreen extends StatefulWidget {
@@ -23,7 +25,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   int currentSet = 0;
   int restTime = 0;
   Timer? timer;
-  int remainingTime = 0;
+  int elapsedSeconds = 0;
+  bool isResting = false;
 
   @override
   void initState() {
@@ -41,39 +44,60 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       sets = [];
       restTime = 60; // 기본값
     }
+    setState(() {}); // 화면 갱신
   }
 
   void _startRestTimer() {
+    if (timer != null) {
+      timer!.cancel();
+    }
+
     setState(() {
-      remainingTime = restTime;
+      elapsedSeconds = 0;
+      isResting = true;
     });
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        remainingTime -= 1;
+        elapsedSeconds += 1;
       });
 
-      if (remainingTime <= 0) {
+      if (elapsedSeconds >= restTime) {
         timer.cancel();
-        _showRestCompleteDialog();
+        _showRestCompleteNotification();
+        setState(() {
+          isResting = false;
+        });
       }
     });
   }
 
-  void _showRestCompleteDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("휴식 완료"),
-        content: const Text("다음 세트를 진행하세요!"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("확인"),
-          ),
-        ],
-      ),
+  void _showRestCompleteNotification() async {
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'rest_complete_channel',
+      'Rest Complete',
+      channelDescription: 'Notification for rest completion',
+      importance: Importance.high,
+      priority: Priority.high,
     );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '휴식 완료',
+      '다음 세트를 진행하세요!',
+      platformChannelSpecifics,
+    );
+
+    if (await Vibration.hasVibrator() ?? false) {
+      Vibration.vibrate(duration: 500);
+    }
   }
 
   void _completeSet() {
@@ -83,27 +107,36 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       });
       _startRestTimer();
     } else {
-      _showWorkoutCompleteDialog();
+      _showWorkoutCompleteNotification();
     }
   }
 
-  void _showWorkoutCompleteDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("운동 완료"),
-        content: const Text("오늘의 훈련을 완료했습니다!"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context); // 홈 화면으로 이동
-            },
-            child: const Text("확인"),
-          ),
-        ],
-      ),
+  void _showWorkoutCompleteNotification() async {
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'workout_complete_channel',
+      'Workout Complete',
+      channelDescription: 'Notification for workout completion',
+      importance: Importance.high,
+      priority: Priority.high,
     );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      1,
+      '운동 완료',
+      '오늘의 훈련을 완료했습니다!',
+      platformChannelSpecifics,
+    );
+
+    if (await Vibration.hasVibrator() ?? false) {
+      Vibration.vibrate(duration: 1000);
+    }
   }
 
   @override
@@ -128,11 +161,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              "현재 세트 푸시업: ${sets[currentSet]}개",
+              "현재 세트 푸시업: ${sets.isNotEmpty ? sets[currentSet] : 0}개",
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 40),
-            if (remainingTime > 0)
+            if (isResting)
               Column(
                 children: [
                   const Text(
@@ -140,7 +173,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                     style: TextStyle(fontSize: 18),
                   ),
                   Text(
-                    "$remainingTime초 남음",
+                    "$elapsedSeconds초 경과 / $restTime초",
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),

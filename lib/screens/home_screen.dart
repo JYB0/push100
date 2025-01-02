@@ -37,11 +37,11 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _saveProgressToPreferences(int day) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('currentDay', currentDay);
-    await prefs.setInt('currentWeek', currentWeek);
-  }
+  // Future<void> _saveProgressToPreferences(int day) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt('currentDay', currentDay);
+  //   await prefs.setInt('currentWeek', currentWeek);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -130,11 +130,45 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                 ),
               ),
-              const Spacer(),
+              // const Spacer(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 3 - currentDay, // 현재 날 이후의 날짜만 표시
+                  itemBuilder: (context, index) {
+                    final nextDay = currentDay + index + 1;
+                    final nextPlan = getPlanByLevelWeekAndDay(
+                        widget.level, widget.week, nextDay);
+
+                    return nextPlan != null
+                        ? Card(
+                            elevation: 4,
+                            child: ListTile(
+                              title: Text("Day $nextDay 목표"),
+                              subtitle: Text(
+                                "${nextPlan.sets.join("개 x ")}개",
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WorkoutScreen(
+                                      level: widget.level,
+                                      week: widget.week,
+                                      day: nextDay, // 다음 날짜 전달
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        : const SizedBox();
+                  },
+                ),
+              ),
 
               // 하단 동기 부여 문구
               const Text(
-                "매일의 도전이 당신을 더 강하게 만듭니다!",
+                "꾸준한 도전이 당신을 더 강하게 만듭니다!",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
               ),
