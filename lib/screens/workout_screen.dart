@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
@@ -205,10 +206,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                               children: [
                                 Text(
                                   "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
-                                  style: const TextStyle(
+                                  style: GoogleFonts.firaCode(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  textAlign: TextAlign.right,
                                 ),
                                 const SizedBox(width: 10),
                                 const Text(
