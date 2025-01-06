@@ -24,9 +24,7 @@ void main() async {
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) async {
-      print("알림 선택됨: ${response.payload}");
-    },
+    onDidReceiveNotificationResponse: (NotificationResponse response) async {},
   );
 
   // 2. 초기 설정 확인

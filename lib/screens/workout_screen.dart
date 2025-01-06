@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/screens/home_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   final String level;
@@ -97,6 +99,68 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     }
   }
 
+  Future<void> _completeWorkout() async {
+    print(
+        "Before week = ${widget.week}, day = ${widget.day}, level = ${widget.level}");
+
+    final nextDay = widget.day + 1;
+    final isTestWeek =
+        (widget.week == 2 || widget.week == 4 || widget.week == 5);
+
+    if (nextDay > 3 && isTestWeek) {
+      // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
+      await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            pushupCount: 0,
+            week: widget.week,
+            level: widget.level,
+            isTestMode: true, // 테스트 모드 활성화
+          ),
+        ),
+      );
+    } else if (nextDay > 3) {
+      // 일반 주차의 마지막 날인 경우 다음 주차로 이동
+      final nextWeek = widget.week + 1;
+
+      await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            pushupCount: 0,
+            week: nextWeek,
+            level: widget.level,
+            isTestMode: false, // 테스트 모드 비활성화
+          ),
+        ),
+      );
+    } else {
+      // 같은 주차의 다음 날로 이동
+      await SharedPreferencesHelper.saveProgress(
+          widget.week, nextDay, widget.level);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            pushupCount: 0,
+            week: widget.week,
+            level: widget.level,
+            isTestMode: false, // 테스트 모드 아님
+          ),
+        ),
+      );
+    }
+
+    print(
+        "After week = ${widget.week}, day = $nextDay, level = ${widget.level}");
+  }
+
   void _completeSet() {
     if (currentSet < sets.length - 1) {
       setState(() {
@@ -105,6 +169,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       _startRestTimer();
     } else {
       _showWorkoutCompleteNotification();
+      _completeWorkout();
     }
   }
 
@@ -181,7 +246,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -201,7 +266,6 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // 스탑워치와 휴식 중 텍스트
                             Row(
                               children: [
                                 Text(
@@ -210,7 +274,6 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  textAlign: TextAlign.right,
                                 ),
                                 const SizedBox(width: 10),
                                 const Text(
@@ -223,12 +286,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                                 ),
                               ],
                             ),
-                            // 'X' 버튼
                             IconButton(
                               icon: const Icon(Icons.close),
                               onPressed: () {
                                 setState(() {
-                                  isResting = false; // 창이 안 보이도록 설정
+                                  isResting = false;
                                 });
                               },
                             ),

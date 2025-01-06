@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/screens/workout_screen.dart';
+import 'package:push100/screens/test_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   final int pushupCount;
   final int week;
   final String level;
+  final bool isTestMode;
 
   const HomeScreen({
     super.key,
     required this.pushupCount,
     required this.week,
     required this.level,
+    this.isTestMode = false, // 기본값 설정
   });
 
   @override
@@ -37,12 +40,6 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Future<void> _saveProgressToPreferences(int day) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setInt('currentDay', currentDay);
-  //   await prefs.setInt('currentWeek', currentWeek);
-  // }
-
   @override
   Widget build(BuildContext context) {
     // 오늘의 운동 플랜 가져오기
@@ -51,6 +48,9 @@ class HomeScreenState extends State<HomeScreen> {
 
     // 진행률 계산 (6주 기준)
     final double progress = widget.week / 6;
+
+    // 테스트 조건 확인
+    final isTestDay = widget.isTestMode;
 
     return Scaffold(
       body: SafeArea(
@@ -87,7 +87,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 오늘의 훈련 목표
+              // 오늘의 훈련 목표 또는 테스트 시작
               Card(
                 elevation: 4,
                 child: Padding(
@@ -101,24 +101,38 @@ class HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              "${todayPlan.sets.join("개 x ")}개",
+                              isTestDay
+                                  ? "테스트를 시작하세요!"
+                                  : "${todayPlan.sets.join("개 x ")}개",
                               style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => WorkoutScreen(
-                                      level: widget.level,
-                                      week: widget.week,
-                                      day: currentDay, // 현재 날짜 전달
+                                if (isTestDay) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TestScreen(
+                                        week: widget.week,
+                                        currentLevel: widget.level,
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WorkoutScreen(
+                                        level: widget.level,
+                                        week: widget.week,
+                                        day: currentDay, // 현재 날짜 전달
+                                      ),
+                                    ),
+                                  );
+                                }
                               },
-                              child: const Text("운동 시작"),
+                              child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
                             ),
                           ],
                         )
@@ -130,11 +144,41 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                 ),
               ),
-              // const Spacer(),
               Expanded(
                 child: ListView.builder(
-                  itemCount: 3 - currentDay, // 현재 날 이후의 날짜만 표시
+                  itemCount: (3 - currentDay) + 1, // 3일차 이후 테스트 카드를 포함한 총 항목 수
                   itemBuilder: (context, index) {
+                    // 테스트 카드가 맨 마지막에 위치하도록 설정
+                    if (index == (3 - currentDay)) {
+                      // 테스트 조건 설정
+                      final isTestWeek = (widget.week == 2 ||
+                          widget.week == 4 ||
+                          widget.week == 5);
+                      if (isTestWeek && !isTestDay) {
+                        return Card(
+                          elevation: 4,
+                          child: ListTile(
+                            title: Text("${widget.week}주차 테스트"),
+                            subtitle: Text("${widget.week}주차 테스트를 시작하세요!"),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TestScreen(
+                                    week: widget.week,
+                                    currentLevel: widget.level,
+                                  ), // 테스트 화면으로 이동
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      } else {
+                        return const SizedBox(); // 테스트 주차가 아닌 경우 아무것도 표시하지 않음
+                      }
+                    }
+
+                    // 운동 목표 카드
                     final nextDay = currentDay + index + 1;
                     final nextPlan = getPlanByLevelWeekAndDay(
                         widget.level, widget.week, nextDay);
@@ -144,9 +188,7 @@ class HomeScreenState extends State<HomeScreen> {
                             elevation: 4,
                             child: ListTile(
                               title: Text("Day $nextDay 목표"),
-                              subtitle: Text(
-                                "${nextPlan.sets.join("개 x ")}개",
-                              ),
+                              subtitle: Text("${nextPlan.sets.join("개 x ")}개"),
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -154,7 +196,7 @@ class HomeScreenState extends State<HomeScreen> {
                                     builder: (context) => WorkoutScreen(
                                       level: widget.level,
                                       week: widget.week,
-                                      day: nextDay, // 다음 날짜 전달
+                                      day: nextDay,
                                     ),
                                   ),
                                 );
