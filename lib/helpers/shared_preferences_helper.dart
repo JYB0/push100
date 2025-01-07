@@ -65,4 +65,31 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
+
+  // Get all workout records
+  static Future<List<Map<String, dynamic>>> getWorkoutRecords() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> records = prefs.getStringList('workoutRecords') ?? [];
+
+    return records.map((record) {
+      final parts = record.split(':');
+      return {
+        'date': parts[0], // 날짜
+        'plannedReps': parts[1].split(',').map(int.parse).toList(), // 주어진 세트
+        'userReps': parts[2].split(',').map(int.parse).toList(), // 사용자가 수행한 세트
+      };
+    }).toList();
+  }
+
+// Save workout record (date, completed sets, reps, user reps)
+  static Future<void> saveWorkoutRecord(
+      String date, List<int> plannedReps, List<int> userReps) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> records = prefs.getStringList('workoutRecords') ?? [];
+
+    // Save as a single string (e.g., "2024-12-27:3,5,3,5,5:3,5,3,5,1")
+    final record = '$date:${plannedReps.join(",")}:${userReps.join(",")}';
+    records.add(record);
+    await prefs.setStringList('workoutRecords', records);
+  }
 }

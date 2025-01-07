@@ -100,9 +100,6 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   Future<void> _completeWorkout() async {
-    print(
-        "Before week = ${widget.week}, day = ${widget.day}, level = ${widget.level}");
-
     final nextDay = widget.day + 1;
     final isTestWeek =
         (widget.week == 2 || widget.week == 4 || widget.week == 5);
@@ -111,7 +108,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
@@ -121,6 +118,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             isTestMode: true, // 테스트 모드 활성화
           ),
         ),
+        (route) => false,
       );
     } else if (nextDay > 3) {
       // 일반 주차의 마지막 날인 경우 다음 주차로 이동
@@ -128,7 +126,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
       await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
@@ -138,13 +136,14 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             isTestMode: false, // 테스트 모드 비활성화
           ),
         ),
+        (route) => false,
       );
     } else {
       // 같은 주차의 다음 날로 이동
       await SharedPreferencesHelper.saveProgress(
           widget.week, nextDay, widget.level);
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
@@ -154,11 +153,9 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             isTestMode: false, // 테스트 모드 아님
           ),
         ),
+        (route) => false,
       );
     }
-
-    print(
-        "After week = ${widget.week}, day = $nextDay, level = ${widget.level}");
   }
 
   void _completeSet() {
