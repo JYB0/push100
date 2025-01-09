@@ -269,6 +269,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   @override
   void dispose() {
     timer?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
