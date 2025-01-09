@@ -30,10 +30,12 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   Timer? timer;
   int elapsedSeconds = 0;
   bool isResting = false;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _loadWorkoutPlan();
   }
 
@@ -71,6 +73,24 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  void _scrollToCurrentSet() {
+    const double circleSize = 50;
+    const double spacing = 16;
+    const double itemWidth = circleSize + spacing;
+
+    if (_scrollController.hasClients) {
+      final position = currentSet * itemWidth - (itemWidth * 2); // 중앙 근처에 표시
+      _scrollController.animateTo(
+        position.clamp(
+          _scrollController.position.minScrollExtent,
+          _scrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _showRestCompleteNotification() async {
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
@@ -97,6 +117,53 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     if (await Vibration.hasVibrator() ?? false) {
       Vibration.vibrate(duration: 500);
     }
+  }
+
+  Widget _buildSetCircles() {
+    const double spacing = 16; // 간격
+    const double circleSize = 50; // 원 크기
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal, // 가로 스크롤 활성화
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: spacing / 2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: List.generate(
+            sets.length,
+            (index) {
+              bool isCurrentSet = index == currentSet;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: spacing / 2),
+                child: Container(
+                  width: circleSize,
+                  height: circleSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(
+                      color: isCurrentSet ? Colors.blue : Colors.grey,
+                      width: isCurrentSet ? 3 : 1,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    "${sets[index]}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isCurrentSet ? Colors.blue : Colors.grey,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _completeWorkout() async {
@@ -163,6 +230,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       setState(() {
         currentSet += 1;
       });
+      _scrollToCurrentSet();
       _startRestTimer();
     } else {
       _showWorkoutCompleteNotification();
@@ -218,15 +286,36 @@ class WorkoutScreenState extends State<WorkoutScreen> {
               child: Center(
                 child: Column(
                   children: [
-                    Text(
-                      "세트 ${currentSet + 1} / ${sets.length}",
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                    _buildSetCircles(),
+                    const SizedBox(height: 30),
+                    const Text(
+                      "현재 목표 푸시업",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      "현재 세트 푸시업: ${sets.isNotEmpty ? sets[currentSet] : 0}개",
-                      style: const TextStyle(fontSize: 18),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.blue[50],
+                        border: Border.all(
+                          color: Colors.blue,
+                          width: 3,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "${sets[currentSet]}",
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 40),
                     ElevatedButton(
