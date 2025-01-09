@@ -45,7 +45,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             return const Center(child: Text("저장된 운동 기록이 없습니다."));
           }
 
-          final records = snapshot.data!;
+          final records = snapshot.data!.reversed.toList();
           return ListView.builder(
             itemCount: records.length,
             itemBuilder: (context, index) {
@@ -53,6 +53,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               final date = record['date'];
               final plannedReps = record['plannedReps'] as List<int>;
               final userReps = record['userReps'] as List<int>;
+              final week = record['week']; // 추가된 데이터
+              final day = record['day']; // 추가된 데이터
+              final level = record['level']; // 추가된 데이터
 
               return Card(
                 elevation: 4,
@@ -66,10 +69,18 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "날짜: $date",
+                            "$date",
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Week $week, Day $day, $level",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
                             ),
                           ),
                           IconButton(
@@ -91,34 +102,31 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           final percent = user / planned;
 
                           return Container(
+                            width: 60, // 원 크기 증가
+                            height: 60,
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: percent >= 1.0
-                                    ? Colors.green
-                                    : Colors.red, // 성공 여부에 따라 색상
+                                color:
+                                    percent >= 1.0 ? Colors.green : Colors.red,
                                 width: 3,
                               ),
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "$user",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: percent >= 1.0
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
+                            alignment: Alignment.center, // 텍스트 중앙 정렬
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                "$user/$planned",
+                                textAlign: TextAlign.center, // 텍스트 가운데 정렬
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: percent >= 1.0
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
-                                Text(
-                                  "/$planned",
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
+                              ),
                             ),
                           );
                         }),

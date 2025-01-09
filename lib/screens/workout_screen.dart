@@ -47,7 +47,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
   void _increaseReps() {
     setState(() {
-      if (currentTargetReps < sets[currentSet]) {
+      if (currentSet == sets.length - 1) {
+        // 마지막 세트는 제한 없이 증가 가능
+        currentTargetReps++;
+      } else if (currentTargetReps < sets[currentSet]) {
+        // 다른 세트는 sets[currentSet] 이하로 제한
         currentTargetReps++;
       }
     });
@@ -160,6 +164,28 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             sets.length,
             (index) {
               bool isCurrentSet = index == currentSet;
+              bool isFutureSet = index > currentSet;
+
+              Color borderColor;
+              double textWidth;
+              if (isCurrentSet) {
+                borderColor = Colors.blue; // 현재 세트는 파란색
+                textWidth = 3;
+              } else if (isFutureSet) {
+                borderColor = Colors.grey; // 미래의 세트는 회색
+                textWidth = 1;
+              } else if (userReps[index] >= sets[index]) {
+                borderColor = Colors.green; // 목표 이상 수행한 경우 초록색
+                textWidth = 3;
+              } else {
+                borderColor = Colors.red; // 목표보다 적게 수행한 경우 빨간색
+                textWidth = 3;
+              }
+
+              // 현재 세트인 경우 강조
+              if (isCurrentSet) {
+                borderColor = Colors.blue; // 현재 세트인 경우 파란색
+              }
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: spacing / 2),
@@ -170,17 +196,17 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                     shape: BoxShape.circle,
                     color: Colors.white,
                     border: Border.all(
-                      color: isCurrentSet ? Colors.blue : Colors.grey,
-                      width: isCurrentSet ? 3 : 1,
+                      color: borderColor,
+                      width: textWidth,
                     ),
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    "${sets[index]}",
+                    "${userReps[index]}",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isCurrentSet ? Colors.blue : Colors.grey,
+                      color: borderColor,
                     ),
                   ),
                 ),
@@ -310,6 +336,9 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       date,
       sets, // 계획된 세트 목표
       userReps, // 사용자가 수행한 세트
+      widget.week,
+      widget.day,
+      widget.level,
     );
 
     // 저장 후 홈 화면으로 이동
