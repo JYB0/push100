@@ -25,18 +25,40 @@ class WorkoutScreen extends StatefulWidget {
 
 class WorkoutScreenState extends State<WorkoutScreen> {
   late List<int> sets;
+  late ScrollController _scrollController;
+
   int currentSet = 0;
   int restTime = 0;
-  Timer? timer;
   int elapsedSeconds = 0;
+  int currentTargetReps = 0;
+
+  Timer? timer;
   bool isResting = false;
-  late ScrollController _scrollController;
+  List<int> userReps = [];
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    sets = [];
+    userReps = [];
     _loadWorkoutPlan();
+  }
+
+  void _increaseReps() {
+    setState(() {
+      if (currentTargetReps < sets[currentSet]) {
+        currentTargetReps++;
+      }
+    });
+  }
+
+  void _decreaseReps() {
+    setState(() {
+      if (currentTargetReps > 0) {
+        currentTargetReps--;
+      }
+    });
   }
 
   void _loadWorkoutPlan() {
@@ -45,9 +67,13 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     if (plan != null) {
       sets = plan.sets;
       restTime = plan.restTime;
+      userReps = List<int>.from(sets);
+      currentTargetReps = sets.isNotEmpty ? sets[0] : 0;
     } else {
       sets = [];
       restTime = 60; // 기본값
+      userReps = [];
+      currentTargetReps = 0;
     }
     setState(() {});
   }
@@ -228,11 +254,21 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   void _completeSet() {
     if (currentSet < sets.length - 1) {
       setState(() {
+        userReps[currentSet] = currentTargetReps;
         currentSet += 1;
+
+        if (currentSet < sets.length) {
+          currentTargetReps = userReps[currentSet]; // 다음 세트 목표 로드
+        }
       });
+      if (currentSet == sets.length) {
+        _saveWorkoutRecord(); // 운동 기록 저장
+      }
       _scrollToCurrentSet();
       _startRestTimer();
     } else {
+      userReps[currentSet] = currentTargetReps;
+      _saveWorkoutRecord();
       _showWorkoutCompleteNotification();
       _completeWorkout();
     }
@@ -266,6 +302,31 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     }
   }
 
+  Future<void> _saveWorkoutRecord() async {
+    final now = DateTime.now();
+    final date = "${now.year}-${now.month}-${now.day}";
+
+    await SharedPreferencesHelper.saveWorkoutRecord(
+      date,
+      sets, // 계획된 세트 목표
+      userReps, // 사용자가 수행한 세트
+    );
+
+    // 저장 후 홈 화면으로 이동
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeScreen(
+          pushupCount: userReps.reduce((a, b) => a + b), // 총 수행 푸시업
+          week: widget.week,
+          level: widget.level,
+          isTestMode: false,
+        ),
+      ),
+      (route) => false,
+    );
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -297,26 +358,45 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.blue[50],
-                        border: Border.all(
-                          color: Colors.blue,
-                          width: 3,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: _decreaseReps,
+                          icon: const Icon(
+                            Icons.remove_circle_outline,
+                            size: 40,
+                          ),
                         ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "${sets[currentSet]}",
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blue[50],
+                            border: Border.all(
+                              color: Colors.blue,
+                              width: 3,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            "$currentTargetReps",
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: _increaseReps,
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            size: 40,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 40),
                     ElevatedButton(

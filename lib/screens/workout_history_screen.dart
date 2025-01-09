@@ -1,8 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 
-class WorkoutHistoryScreen extends StatelessWidget {
+class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
+
+  @override
+  State<WorkoutHistoryScreen> createState() => _WorkoutHistoryScreenState();
+}
+
+class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
+  Future<List<Map<String, dynamic>>> _recordsFuture =
+      SharedPreferencesHelper.getWorkoutRecords();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecords();
+  }
+
+  void _loadRecords() {
+    _recordsFuture = SharedPreferencesHelper.getWorkoutRecords();
+    setState(() {});
+  }
+
+  Future<void> _deleteRecord(int index, BuildContext context) async {
+    await SharedPreferencesHelper.deleteWorkoutRecord(index);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("기록이 삭제되었습니다.")),
+    );
+    _loadRecords();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +62,24 @@ class WorkoutHistoryScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "날짜: $date",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "날짜: $date",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              await _deleteRecord(index, context);
+                              _loadRecords();
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       Wrap(

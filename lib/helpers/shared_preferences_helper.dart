@@ -92,4 +92,15 @@ class SharedPreferencesHelper {
     records.add(record);
     await prefs.setStringList('workoutRecords', records);
   }
+
+  // Delete a workout record by index
+  static Future<void> deleteWorkoutRecord(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> records = prefs.getStringList('workoutRecords') ?? [];
+
+    if (index >= 0 && index < records.length) {
+      records.removeAt(index); // 해당 인덱스 기록 삭제
+      await prefs.setStringList('workoutRecords', records);
+    }
+  }
 }
