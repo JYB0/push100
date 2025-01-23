@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:push100/main.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
@@ -167,24 +168,25 @@ class WorkoutScreenState extends State<WorkoutScreen> {
               bool isFutureSet = index > currentSet;
 
               Color borderColor;
+              Color textColor;
               double textWidth;
+
               if (isCurrentSet) {
-                borderColor = Colors.blue; // 현재 세트는 파란색
+                borderColor = AppColors.greyPrimary;
+                textColor = Colors.grey;
                 textWidth = 3;
               } else if (isFutureSet) {
-                borderColor = Colors.grey; // 미래의 세트는 회색
+                borderColor = AppColors.greyPrimary; // 미래의 세트는 회색
+                textColor = Colors.grey;
                 textWidth = 1;
               } else if (userReps[index] >= sets[index]) {
-                borderColor = Colors.green; // 목표 이상 수행한 경우 초록색
+                borderColor = AppColors.greenPrimary; // 목표 이상 수행한 경우 초록색
+                textColor = Colors.white;
                 textWidth = 3;
               } else {
-                borderColor = Colors.red; // 목표보다 적게 수행한 경우 빨간색
+                borderColor = AppColors.redPrimary; // 목표보다 적게 수행한 경우 빨간색
+                textColor = Colors.white;
                 textWidth = 3;
-              }
-
-              // 현재 세트인 경우 강조
-              if (isCurrentSet) {
-                borderColor = Colors.blue; // 현재 세트인 경우 파란색
               }
 
               return Padding(
@@ -194,7 +196,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                   height: circleSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: borderColor,
                     border: Border.all(
                       color: borderColor,
                       width: textWidth,
@@ -206,7 +208,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: borderColor,
+                      color: textColor,
                     ),
                   ),
                 ),
@@ -366,8 +368,10 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text("Week ${widget.week}, Day ${widget.day}"),
+        backgroundColor: Colors.white,
       ),
       body: SafeArea(
         child: Stack(
@@ -402,9 +406,9 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.blue[50],
+                            // color: AppColors.yellowPrimary,
                             border: Border.all(
-                              color: Colors.blue,
+                              color: AppColors.yellowPrimary,
                               width: 3,
                             ),
                           ),
@@ -414,7 +418,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -494,11 +498,12 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                         ),
                         const SizedBox(height: 20),
                         LinearProgressIndicator(
+                          borderRadius: BorderRadius.circular(3),
                           value: elapsedSeconds / restTime,
                           backgroundColor: Colors.grey[300],
                           color: elapsedSeconds <= restTime
-                              ? Colors.red
-                              : Colors.green,
+                              ? AppColors.redPrimary
+                              : AppColors.greenPrimary,
                           minHeight: 10,
                         ),
                         const SizedBox(height: 10),

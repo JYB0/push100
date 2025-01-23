@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/workout_history_screen.dart';
 import 'package:push100/screens/workout_screen.dart';
 import 'package:push100/screens/test_screen.dart';
@@ -43,18 +44,17 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 오늘의 운동 플랜 가져오기
     final todayPlan =
         getPlanByLevelWeekAndDay(widget.level, widget.week, currentDay);
 
-    const int totalDays = 6 * 3; // 18일
+    const int totalDays = 6 * 3;
 
-    // 진행 상황 계산 (날짜 기준)
-    final int completedDays =
-        ((widget.week - 1) * 3) + (currentDay - 1); // 완료한 일수
+    final int completedDays = ((widget.week - 1) * 3) + (currentDay - 1);
     final double progress = completedDays / totalDays;
 
-    // 테스트 조건 확인
+    final progressColor =
+        Color.lerp(AppColors.redPrimary, AppColors.greenPrimary, progress);
+
     final isTestDay = widget.isTestMode;
 
     return Scaffold(
@@ -74,7 +74,6 @@ class HomeScreenState extends State<HomeScreen> {
 
               // 진행 상황 요약
               Card(
-                elevation: 4,
                 child: InkWell(
                   onTap: () {
                     Navigator.push(
@@ -95,7 +94,10 @@ class HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(fontSize: 18),
                         ),
                         const SizedBox(height: 10),
-                        LinearProgressIndicator(value: progress),
+                        LinearProgressIndicator(
+                          value: progress,
+                          color: progressColor,
+                        ),
                         const SizedBox(height: 10),
                         Text(
                           "${(progress * 100).toStringAsFixed(0)}% 완료",
@@ -111,7 +113,6 @@ class HomeScreenState extends State<HomeScreen> {
 
               // 오늘의 훈련 목표 또는 테스트 시작
               Card(
-                elevation: 4,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: todayPlan != null
@@ -178,7 +179,6 @@ class HomeScreenState extends State<HomeScreen> {
                           widget.week == 5);
                       if (isTestWeek && !isTestDay) {
                         return Card(
-                          elevation: 4,
                           child: ListTile(
                             title: Text("${widget.week}주차 테스트"),
                             subtitle: Text("${widget.week}주차 테스트를 시작하세요!"),
@@ -207,7 +207,6 @@ class HomeScreenState extends State<HomeScreen> {
 
                     return nextPlan != null
                         ? Card(
-                            elevation: 4,
                             child: ListTile(
                               title: Text("Day $nextDay 목표"),
                               subtitle: Text("${nextPlan.sets.join("개 x ")}개"),

@@ -1,5 +1,7 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/main.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
@@ -9,8 +11,10 @@ class WorkoutHistoryScreen extends StatefulWidget {
 }
 
 class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
-  Future<List<Map<String, dynamic>>> _recordsFuture =
-      SharedPreferencesHelper.getWorkoutRecords();
+  // Future<List<Map<String, dynamic>>> _recordsFuture =
+  //     SharedPreferencesHelper.getWorkoutRecords();
+
+  late Future<List<Map<String, dynamic>>> _recordsFuture;
 
   @override
   void initState() {
@@ -19,16 +23,43 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   }
 
   void _loadRecords() {
-    _recordsFuture = SharedPreferencesHelper.getWorkoutRecords();
-    setState(() {});
+    setState(() {
+      _recordsFuture = SharedPreferencesHelper.getWorkoutRecords();
+    });
   }
 
-  Future<void> _deleteRecord(int index, BuildContext context) async {
+  Future<void> _deleteRecord(int index) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     await SharedPreferencesHelper.deleteWorkoutRecord(index);
-    ScaffoldMessenger.of(context).showSnackBar(
+    scaffoldMessenger.showSnackBar(
       const SnackBar(content: Text("기록이 삭제되었습니다.")),
     );
-    _loadRecords();
+    // _loadRecords();
+    setState(() {
+      _loadRecords();
+    });
+  }
+
+  Future<void> _confirmDeleteRecord(BuildContext context, int index) async {
+    final result = await showModalActionSheet<bool>(
+      context: context,
+      title: '기록 삭제',
+      message: '이 운동 기록을 삭제하시겠습니까?',
+      cancelLabel: '취소',
+      actions: [
+        const SheetAction(
+          label: '삭제',
+          key: true, // 삭제를 나타냄
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    // 사용자가 "삭제"를 선택한 경우에만 삭제 진행
+    if (result == true) {
+      // 삭제 작업 수행
+      await _deleteRecord(index);
+    }
   }
 
   @override
@@ -36,7 +67,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("운동 기록")),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: SharedPreferencesHelper.getWorkoutRecords(),
+        future: _recordsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -45,20 +76,20 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             return const Center(child: Text("저장된 운동 기록이 없습니다."));
           }
 
-          final records = snapshot.data!.reversed.toList();
+          final records = snapshot.data!;
           return ListView.builder(
             itemCount: records.length,
             itemBuilder: (context, index) {
-              final record = records[index];
+              final originalIndex = records.length - 1 - index;
+              final record = records.reversed.toList()[index];
               final date = record['date'];
               final plannedReps = record['plannedReps'] as List<int>;
               final userReps = record['userReps'] as List<int>;
-              final week = record['week']; // 추가된 데이터
-              final day = record['day']; // 추가된 데이터
-              final level = record['level']; // 추가된 데이터
+              final week = record['week'];
+              final day = record['day'];
+              final level = record['level'];
 
               return Card(
-                elevation: 4,
                 margin: const EdgeInsets.all(8.0),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -84,10 +115,11 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete,
+                                color: AppColors.redPrimary),
                             onPressed: () async {
-                              await _deleteRecord(index, context);
-                              _loadRecords();
+                              await _confirmDeleteRecord(
+                                  context, originalIndex);
                             },
                           ),
                         ],
@@ -102,29 +134,30 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           final percent = user / planned;
 
                           return Container(
-                            width: 60, // 원 크기 증가
+                            width: 60,
                             height: 60,
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color:
-                                    percent >= 1.0 ? Colors.green : Colors.red,
+                                color: percent >= 1.0
+                                    ? AppColors.greenPrimary
+                                    : AppColors.redPrimary,
                                 width: 3,
                               ),
                             ),
-                            alignment: Alignment.center, // 텍스트 중앙 정렬
+                            alignment: Alignment.center,
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
                                 "$user/$planned",
-                                textAlign: TextAlign.center, // 텍스트 가운데 정렬
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: percent >= 1.0
-                                      ? Colors.green
-                                      : Colors.red,
+                                      ? AppColors.greenPrimary
+                                      : AppColors.redPrimary,
                                 ),
                               ),
                             ),

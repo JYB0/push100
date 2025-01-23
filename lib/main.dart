@@ -3,7 +3,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/home_screen.dart';
 import 'package:push100/screens/initial_test_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -11,7 +10,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. 알림 초기화
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -28,7 +26,6 @@ void main() async {
     onDidReceiveNotificationResponse: (NotificationResponse response) async {},
   );
 
-  // 2. 초기 설정 확인
   final bool isInitialTestSet = await checkInitialTest();
 
   runApp(MyApp(isInitialTestSet: isInitialTestSet));
@@ -44,7 +41,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: AppColors.greyPrimary,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.greyPrimary,
+        ),
+        cardTheme: const CardTheme(
+          color: Colors.white,
+          elevation: 1,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.redPrimary,
+            foregroundColor: Colors.white,
+          ),
+        ),
       ),
       home: isInitialTestSet
           ? const HomeScreen(
@@ -60,4 +70,19 @@ class MyApp extends StatelessWidget {
 Future<bool> checkInitialTest() async {
   final pushupCount = await SharedPreferencesHelper.getInitialPushupCount();
   return pushupCount > 0;
+}
+
+class AppColors {
+  static const Color redPrimary = Color(0xFFD81F26);
+  static const Color greenPrimary = Color(0xFF006241);
+  static const Color yellowPrimary = Color(0xFFFFC107);
+  static const Color bluePrimary = Color(0xFF0165E1);
+  static const Color greyPrimary = Color(0xFFF4F4F4);
+  static const Color darkGreyPrimary = Color(0xFF212121);
+
+  static const Color redLight = Color(0x80D81F26);
+  static const Color greenLight = Color(0x80006241);
+  static const Color blueLight = Color(0x800165E1);
+  static const Color greyLight = Color(0x80F4F4F4);
+  static const Color yellowLight = Color(0x80FFC107);
 }

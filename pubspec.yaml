@@ -39,6 +39,7 @@ dependencies:
   vibration: ^2.0.1
   permission_handler: ^11.3.1
   google_fonts: ^6.2.1
+  adaptive_dialog: ^2.4.0
 
 dev_dependencies:
   flutter_test:
