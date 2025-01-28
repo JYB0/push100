@@ -55,7 +55,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
                   "푸시업 초기 테스트",
