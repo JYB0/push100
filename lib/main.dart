@@ -27,14 +27,32 @@ void main() async {
   );
 
   final bool isInitialTestSet = await checkInitialTest();
+  final Map<String, dynamic> progress =
+      await SharedPreferencesHelper.getProgress();
 
-  runApp(MyApp(isInitialTestSet: isInitialTestSet));
+  runApp(
+    MyApp(
+      isInitialTestSet: isInitialTestSet,
+      initialWeek: progress['currentWeek'],
+      initialDay: progress['currentDay'],
+      initialLevel: progress['level'],
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final bool isInitialTestSet;
+  final int initialWeek;
+  final int initialDay;
+  final String initialLevel;
 
-  const MyApp({super.key, required this.isInitialTestSet});
+  const MyApp({
+    super.key,
+    required this.isInitialTestSet,
+    required this.initialWeek,
+    required this.initialDay,
+    required this.initialLevel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +71,22 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.redPrimary,
             foregroundColor: Colors.white,
+            textStyle: const TextStyle(
+              inherit: true,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+            elevation: 0,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           ),
         ),
       ),
       home: isInitialTestSet
-          ? const HomeScreen(
+          ? HomeScreen(
               pushupCount: 0,
-              week: 1,
-              level: "초급",
+              week: initialWeek,
+              level: initialLevel,
             )
           : const InitialTestScreen(),
     );

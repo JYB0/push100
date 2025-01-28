@@ -367,6 +367,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final double circleSize =
+        (screenWidth < screenHeight ? screenWidth : screenHeight) * 0.45;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -383,135 +388,145 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                   children: [
                     _buildSetCircles(),
                     const SizedBox(height: 30),
-                    const Text(
-                      "현재 목표 푸시업",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: _decreaseReps,
-                          icon: const Icon(
-                            Icons.remove_circle_outline,
-                            size: 40,
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // const Text(
+                          //   "현재 목표 푸시업",
+                          //   style: TextStyle(
+                          //       fontSize: 18, fontWeight: FontWeight.bold),
+                          // ),
+                          SizedBox(
+                            height: screenHeight * 0.1,
                           ),
-                        ),
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            // color: AppColors.yellowPrimary,
-                            border: Border.all(
-                              color: AppColors.yellowPrimary,
-                              width: 3,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: _decreaseReps,
+                                icon: Icon(
+                                  Icons.remove,
+                                  size: circleSize * 0.25,
+                                ),
+                              ),
+                              Container(
+                                width: circleSize,
+                                height: circleSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  // color: AppColors.yellowPrimary,
+                                  border: Border.all(
+                                    color: AppColors.yellowPrimary,
+                                    width: 5,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "$currentTargetReps",
+                                  style: TextStyle(
+                                    fontSize: circleSize * 0.35,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _increaseReps,
+                                icon: Icon(
+                                  Icons.add,
+                                  size: circleSize * 0.25,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: screenHeight * 0.1),
+                          ElevatedButton(
+                            onPressed: _completeSet,
+                            child: Text(
+                              currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
                             ),
                           ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "$currentTargetReps",
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Opacity(
+                        opacity: isResting ? 1.0 : 0.0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.0),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color.fromARGB(25, 0, 0, 0),
+                                  blurRadius: 10.0,
+                                  offset: Offset(0, -2),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
+                                          style: GoogleFonts.firaCode(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        const Text(
+                                          "휴식 중...",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () {
+                                        setState(() {
+                                          isResting = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                LinearProgressIndicator(
+                                  borderRadius: BorderRadius.circular(3),
+                                  value: elapsedSeconds / restTime,
+                                  backgroundColor: Colors.grey[300],
+                                  color: elapsedSeconds <= restTime
+                                      ? AppColors.redPrimary
+                                      : AppColors.greenPrimary,
+                                  minHeight: 10,
+                                ),
+                                const SizedBox(height: 10),
+                              ],
                             ),
                           ),
                         ),
-                        IconButton(
-                          onPressed: _increaseReps,
-                          icon: const Icon(
-                            Icons.add_circle_outline,
-                            size: 40,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _completeSet,
-                      child: Text(
-                        currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (isResting)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromARGB(25, 0, 0, 0),
-                          blurRadius: 10.0,
-                          offset: Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
-                                  style: GoogleFonts.firaCode(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Text(
-                                  "휴식 중...",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                setState(() {
-                                  isResting = false;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        LinearProgressIndicator(
-                          borderRadius: BorderRadius.circular(3),
-                          value: elapsedSeconds / restTime,
-                          backgroundColor: Colors.grey[300],
-                          color: elapsedSeconds <= restTime
-                              ? AppColors.redPrimary
-                              : AppColors.greenPrimary,
-                          minHeight: 10,
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

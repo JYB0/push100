@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/home_screen.dart';
 
 class TestScreen extends StatefulWidget {
@@ -42,12 +43,13 @@ class TestScreenState extends State<TestScreen> {
     const textStyle = TextStyle(
       fontSize: 48,
       fontWeight: FontWeight.bold,
-      color: Colors.blue,
+      color: AppColors.redPrimary,
     );
 
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text("Week ${widget.week} 테스트"),
         ),
@@ -55,7 +57,7 @@ class TestScreenState extends State<TestScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   "${widget.week}주차 테스트",
@@ -75,7 +77,16 @@ class TestScreenState extends State<TestScreen> {
                     controller: _controller,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    showCursor: false,
                     style: textStyle,
+                    decoration: const InputDecoration(
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                      ),
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
                       FilteringTextInputFormatter.allow(

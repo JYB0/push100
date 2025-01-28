@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
@@ -40,6 +41,61 @@ class HomeScreenState extends State<HomeScreen> {
       currentDay = prefs.getInt('currentDay') ?? 1;
       currentWeek = prefs.getInt('currentWeek') ?? 1;
     });
+  }
+
+  Future<void> _confirmWorkout(BuildContext context, int nextDay) async {
+    final result = await showModalActionSheet<bool>(
+      context: context,
+      title: '운동 시작',
+      message: 'Day $nextDay 운동을 진행하시겠습니까?',
+      cancelLabel: '취소',
+      actions: [
+        const SheetAction(
+          label: '운동 시작',
+          key: true,
+        ),
+      ],
+    );
+
+    if (result == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WorkoutScreen(
+            level: widget.level,
+            week: widget.week,
+            day: nextDay,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmTest(BuildContext context) async {
+    final result = await showModalActionSheet<bool>(
+      context: context,
+      title: '테스트 시작',
+      message: '${widget.week}주차 테스트를 진행하시겠습니까?',
+      cancelLabel: '취소',
+      actions: [
+        const SheetAction(
+          label: '테스트 시작',
+          key: true, // "테스트 시작"을 선택하면 true 반환
+        ),
+      ],
+    );
+
+    if (result == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TestScreen(
+            week: widget.week,
+            currentLevel: widget.level,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -120,7 +176,10 @@ class HomeScreenState extends State<HomeScreen> {
                           children: [
                             const Text(
                               "오늘의 목표",
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 10),
                             Text(
@@ -183,15 +242,7 @@ class HomeScreenState extends State<HomeScreen> {
                             title: Text("${widget.week}주차 테스트"),
                             subtitle: Text("${widget.week}주차 테스트를 시작하세요!"),
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TestScreen(
-                                    week: widget.week,
-                                    currentLevel: widget.level,
-                                  ), // 테스트 화면으로 이동
-                                ),
-                              );
+                              _confirmTest(context);
                             },
                           ),
                         );
@@ -211,16 +262,7 @@ class HomeScreenState extends State<HomeScreen> {
                               title: Text("Day $nextDay 목표"),
                               subtitle: Text("${nextPlan.sets.join("개 x ")}개"),
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => WorkoutScreen(
-                                      level: widget.level,
-                                      week: widget.week,
-                                      day: nextDay,
-                                    ),
-                                  ),
-                                );
+                                _confirmWorkout(context, nextDay);
                               },
                             ),
                           )

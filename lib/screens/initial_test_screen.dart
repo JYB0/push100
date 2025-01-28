@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/home_screen.dart';
 
 class InitialTestScreen extends StatefulWidget {
@@ -43,12 +44,13 @@ class InitialTestScreenState extends State<InitialTestScreen> {
     const textStyle = TextStyle(
       fontSize: 48,
       fontWeight: FontWeight.bold,
-      color: Colors.blue,
+      color: AppColors.redPrimary,
     );
 
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -72,6 +74,15 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                     controller: _controller,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    showCursor: false,
+                    decoration: const InputDecoration(
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                      ),
+                    ),
                     style: textStyle,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
