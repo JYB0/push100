@@ -65,7 +65,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    // final screenHeight = MediaQuery.of(context).size.height;
+    final itemSize = (screenWidth - (12 * 4) - 32) / 5;
 
     return Scaffold(
       appBar: AppBar(title: const Text("운동 기록")),
@@ -137,8 +138,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           final percent = user / planned;
 
                           return Container(
-                            width: screenWidth * 0.15,
-                            height: screenWidth * 0.15,
+                            width: itemSize,
+                            height: itemSize,
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
@@ -146,7 +147,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                                 color: percent >= 1.0
                                     ? AppColors.greenPrimary
                                     : AppColors.redPrimary,
-                                width: 3,
+                                width: itemSize * 0.05,
                               ),
                             ),
                             alignment: Alignment.center,
@@ -156,7 +157,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                                 "$user/$planned",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: itemSize * 0.3,
                                   fontWeight: FontWeight.bold,
                                   color: percent >= 1.0
                                       ? AppColors.greenPrimary

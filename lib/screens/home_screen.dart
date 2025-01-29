@@ -127,7 +127,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final isTestDay = widget.isTestMode;
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
