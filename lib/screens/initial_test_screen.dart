@@ -47,6 +47,9 @@ class InitialTestScreenState extends State<InitialTestScreen> {
       color: AppColors.redPrimary,
     );
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
@@ -61,15 +64,15 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                   "푸시업 초기 테스트",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.05),
                 const Text(
                   "정자세로 푸시업을 한 뒤 푸시업 개수를 설정하세요.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: screenHeight * 0.1),
                 SizedBox(
-                  width: 200,
+                  width: screenWidth * 0.5,
                   child: TextField(
                     controller: _controller,
                     keyboardType: TextInputType.number,
@@ -111,7 +114,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: screenHeight * 0.05),
                 ElevatedButton(
                   onPressed: () async {
                     _dismissKeyboard();

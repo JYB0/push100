@@ -127,6 +127,9 @@ class HomeScreenState extends State<HomeScreen> {
 
     final isTestDay = widget.isTestMode;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -140,7 +143,7 @@ class HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.025),
 
               // 진행 상황 요약
               Card(
@@ -163,12 +166,12 @@ class HomeScreenState extends State<HomeScreen> {
                               : "Week ${widget.week}, Day $currentDay (${widget.level})",
                           style: const TextStyle(fontSize: 18),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.02),
                         LinearProgressIndicator(
                           value: progress,
                           color: progressColor,
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.02),
                         Text(
                           "${(progress * 100).toStringAsFixed(0)}% 완료",
                           style: const TextStyle(
@@ -179,7 +182,7 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.02),
 
               // 오늘의 훈련 목표 또는 테스트 시작
               Card(
@@ -195,7 +198,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: screenHeight * 0.02),
                             Text(
                               isTestDay
                                   ? "테스트를 시작하세요!"
@@ -203,7 +206,7 @@ class HomeScreenState extends State<HomeScreen> {
                               style: const TextStyle(fontSize: 16),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: screenHeight * 0.02),
                             ElevatedButton(
                               onPressed: () {
                                 if (isTestDay) {

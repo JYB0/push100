@@ -64,6 +64,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(title: const Text("운동 기록")),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -92,7 +95,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               return Card(
                 margin: const EdgeInsets.all(8.0),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.only(
+                      bottom: 16.0, left: 16, right: 16, top: 4),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -106,7 +110,6 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
                           Text(
                             "Week $week, Day $day, $level",
                             style: const TextStyle(
@@ -124,7 +127,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 4),
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,
@@ -134,8 +137,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           final percent = user / planned;
 
                           return Container(
-                            width: 60,
-                            height: 60,
+                            width: screenWidth * 0.15,
+                            height: screenWidth * 0.15,
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,

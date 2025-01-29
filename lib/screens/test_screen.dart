@@ -46,6 +46,9 @@ class TestScreenState extends State<TestScreen> {
       color: AppColors.redPrimary,
     );
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
@@ -64,15 +67,15 @@ class TestScreenState extends State<TestScreen> {
                 //   style: const TextStyle(
                 //       fontSize: 24, fontWeight: FontWeight.bold),
                 // ),
-                // const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.05),
                 const Text(
                   "정자세로 푸시업을 한 뒤 개수를 설정하세요.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: screenHeight * 0.1),
                 SizedBox(
-                  width: 200,
+                  width: screenWidth * 0.5,
                   child: TextField(
                     controller: _controller,
                     keyboardType: TextInputType.number,
@@ -114,7 +117,7 @@ class TestScreenState extends State<TestScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: screenHeight * 0.05),
                 ElevatedButton(
                   onPressed: () async {
                     _dismissKeyboard();
