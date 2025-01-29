@@ -122,13 +122,16 @@ class HomeScreenState extends State<HomeScreen> {
     final int completedDays = ((widget.week - 1) * 3) + (currentDay - 1);
     final double progress = completedDays / totalDays;
 
-    final progressColor =
-        Color.lerp(AppColors.redPrimary, AppColors.greenPrimary, progress);
+    // final progressColor =
+    //     Color.lerp(AppColors.redPrimary, AppColors.greenPrimary, progress);
 
     final isTestDay = widget.isTestMode;
 
-    // final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
       body: SafeArea(
@@ -138,10 +141,12 @@ class HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 헤더
-              const Text(
+              Text(
                 "Push 100",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: dynamicFontSize * 1.5,
+                    fontWeight: FontWeight.bold),
               ),
               SizedBox(height: screenHeight * 0.025),
 
@@ -164,18 +169,21 @@ class HomeScreenState extends State<HomeScreen> {
                           widget.isTestMode
                               ? "Week ${widget.week} Test Day"
                               : "Week ${widget.week}, Day $currentDay (${widget.level})",
-                          style: const TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: dynamicFontSize),
                         ),
                         SizedBox(height: screenHeight * 0.02),
                         LinearProgressIndicator(
                           value: progress,
-                          color: progressColor,
+                          color: progress != 1.0
+                              ? AppColors.redPrimary
+                              : AppColors.greenPrimary,
                         ),
                         SizedBox(height: screenHeight * 0.02),
                         Text(
                           "${(progress * 100).toStringAsFixed(0)}% 완료",
-                          style: const TextStyle(
-                              fontSize: 14, fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                              fontSize: dynamicFontSize * 0.8,
+                              fontStyle: FontStyle.italic),
                         ),
                       ],
                     ),
@@ -186,62 +194,80 @@ class HomeScreenState extends State<HomeScreen> {
 
               // 오늘의 훈련 목표 또는 테스트 시작
               Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: todayPlan != null
-                      ? Column(
-                          children: [
-                            const Text(
-                              "오늘의 목표",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: const Border(
+                      left: BorderSide(
+                        color: AppColors.yellowPrimary,
+                        width: 1,
+                      ),
+                      right: BorderSide(
+                        color: AppColors.yellowPrimary,
+                        width: 1,
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: todayPlan != null
+                        ? Column(
+                            children: [
+                              Text(
+                                "오늘의 목표",
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize * 1.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            Text(
-                              isTestDay
-                                  ? "테스트를 시작하세요!"
-                                  : _formatPushupText(todayPlan.sets),
-                              style: const TextStyle(fontSize: 16),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (isTestDay) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TestScreen(
-                                        week: widget.week,
-                                        currentLevel: widget.level,
+                              SizedBox(height: screenHeight * 0.02),
+                              Text(
+                                isTestDay
+                                    ? "테스트를 시작하세요!"
+                                    : _formatPushupText(todayPlan.sets),
+                                style: TextStyle(fontSize: dynamicFontSize),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: screenHeight * 0.02),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (isTestDay) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TestScreen(
+                                          week: widget.week,
+                                          currentLevel: widget.level,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                } else {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WorkoutScreen(
-                                        level: widget.level,
-                                        week: widget.week,
-                                        day: currentDay, // 현재 날짜 전달
+                                    );
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WorkoutScreen(
+                                          level: widget.level,
+                                          week: widget.week,
+                                          day: currentDay, // 현재 날짜 전달
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
+                                    );
+                                  }
+                                },
+                                child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
+                              ),
+                            ],
+                          )
+                        : Center(
+                            child: Text(
+                              "오늘의 플랜을 찾을 수 없습니다.",
+                              style: TextStyle(fontSize: dynamicFontSize),
                             ),
-                          ],
-                        )
-                      : const Center(
-                          child: Text(
-                            "오늘의 플랜을 찾을 수 없습니다.",
-                            style: TextStyle(fontSize: 16),
                           ),
-                        ),
+                  ),
                 ),
               ),
               Expanded(
@@ -257,8 +283,19 @@ class HomeScreenState extends State<HomeScreen> {
                       if (isTestWeek && !isTestDay) {
                         return Card(
                           child: ListTile(
-                            title: Text("${widget.week}주차 테스트"),
-                            subtitle: Text("${widget.week}주차 테스트를 시작하세요!"),
+                            title: Text(
+                              "${widget.week}주차 테스트",
+                              style: TextStyle(
+                                fontSize: dynamicFontSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "${widget.week}주차 테스트를 시작하세요!",
+                              style: TextStyle(
+                                fontSize: dynamicFontSize,
+                              ),
+                            ),
                             onTap: () {
                               _confirmTest(context);
                             },
@@ -277,8 +314,19 @@ class HomeScreenState extends State<HomeScreen> {
                     return nextPlan != null
                         ? Card(
                             child: ListTile(
-                              title: Text("Day $nextDay 목표"),
-                              subtitle: Text(_formatPushupText(nextPlan.sets)),
+                              title: Text(
+                                "Day $nextDay 목표",
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                _formatPushupText(nextPlan.sets),
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize * 0.9,
+                                ),
+                              ),
                               onTap: () {
                                 _confirmWorkout(context, nextDay);
                               },
@@ -290,10 +338,11 @@ class HomeScreenState extends State<HomeScreen> {
               ),
 
               // 하단 동기 부여 문구
-              const Text(
+              Text(
                 "꾸준한 도전이 당신을 더 강하게 만듭니다!",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                    fontSize: dynamicFontSize, fontStyle: FontStyle.italic),
               ),
             ],
           ),
