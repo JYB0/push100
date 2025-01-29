@@ -98,6 +98,20 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _formatPushupText(List<int> sets) {
+    if (sets.length <= 5) {
+      // 세트 개수가 5개 이하이면 그냥 한 줄
+      return sets.map((e) => "$e개").join(" x ");
+    } else {
+      int midIndex = (sets.length / 2).ceil(); // 전체 개수를 2로 나누고 올림 처리 (홀수 고려)
+
+      final firstLine = sets.sublist(0, midIndex).map((e) => "$e개").join(" x ");
+      final secondLine = sets.sublist(midIndex).map((e) => "$e개").join(" x ");
+
+      return "$firstLine\n$secondLine"; // 줄바꿈 적용
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final todayPlan =
@@ -185,8 +199,9 @@ class HomeScreenState extends State<HomeScreen> {
                             Text(
                               isTestDay
                                   ? "테스트를 시작하세요!"
-                                  : "${todayPlan.sets.join("개 x ")}개",
+                                  : _formatPushupText(todayPlan.sets),
                               style: const TextStyle(fontSize: 16),
+                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 10),
                             ElevatedButton(
@@ -260,7 +275,7 @@ class HomeScreenState extends State<HomeScreen> {
                         ? Card(
                             child: ListTile(
                               title: Text("Day $nextDay 목표"),
-                              subtitle: Text("${nextPlan.sets.join("개 x ")}개"),
+                              subtitle: Text(_formatPushupText(nextPlan.sets)),
                               onTap: () {
                                 _confirmWorkout(context, nextDay);
                               },

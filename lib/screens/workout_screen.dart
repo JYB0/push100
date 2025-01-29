@@ -387,7 +387,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                 child: Column(
                   children: [
                     _buildSetCircles(),
-                    const SizedBox(height: 30),
+                    // const SizedBox(height: 30),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

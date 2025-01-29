@@ -51,7 +51,7 @@ class TestScreenState extends State<TestScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text("Week ${widget.week} 테스트"),
+          title: Text("Week ${widget.week} Test"),
         ),
         body: Center(
           child: Padding(
@@ -59,12 +59,12 @@ class TestScreenState extends State<TestScreen> {
             child: Column(
               // mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "${widget.week}주차 테스트",
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
+                // Text(
+                //   "${widget.week}주차 테스트",
+                //   style: const TextStyle(
+                //       fontSize: 24, fontWeight: FontWeight.bold),
+                // ),
+                // const SizedBox(height: 20),
                 const Text(
                   "정자세로 푸시업을 한 뒤 개수를 설정하세요.",
                   textAlign: TextAlign.center,
