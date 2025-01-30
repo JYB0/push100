@@ -53,11 +53,13 @@ class HomeScreenState extends State<HomeScreen> {
         const SheetAction(
           label: '운동 시작',
           key: true,
+          isDestructiveAction: true,
         ),
       ],
     );
 
     if (result == true) {
+      if (!context.mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -81,11 +83,13 @@ class HomeScreenState extends State<HomeScreen> {
         const SheetAction(
           label: '테스트 시작',
           key: true, // "테스트 시작"을 선택하면 true 반환
+          isDestructiveAction: true,
         ),
       ],
     );
 
     if (result == true) {
+      if (!context.mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(

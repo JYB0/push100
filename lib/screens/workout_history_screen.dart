@@ -65,8 +65,11 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    // final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
     final itemSize = (screenWidth - (12 * 4) - 32) / 5;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
       appBar: AppBar(title: const Text("운동 기록")),
@@ -77,7 +80,12 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("저장된 운동 기록이 없습니다."));
+            return Center(
+              child: Text(
+                "저장된 운동 기록이 없습니다.",
+                style: TextStyle(fontSize: dynamicFontSize),
+              ),
+            );
           }
 
           final records = snapshot.data!;
@@ -104,23 +112,31 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "$date",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            "Week $week, Day $day, $level",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                "$date",
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: dynamicFontSize),
+                              Text(
+                                "Week $week, Day $day, $level",
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize * 0.8,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete,
-                                color: AppColors.redPrimary),
+                            icon: Icon(
+                              Icons.delete,
+                              color: AppColors.redPrimary,
+                              size: dynamicFontSize * 1.5,
+                            ),
                             onPressed: () async {
                               await _confirmDeleteRecord(
                                   context, originalIndex);
@@ -128,7 +144,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: screenHeight * 0.01),
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,

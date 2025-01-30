@@ -41,34 +41,40 @@ class InitialTestScreenState extends State<InitialTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TextStyle(
-      fontSize: 48,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
+
+    final textStyle = TextStyle(
+      fontSize: dynamicFontSize,
       fontWeight: FontWeight.bold,
       color: AppColors.redPrimary,
     );
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text("Initial Test"),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               // mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "푸시업 초기 테스트",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+                // const Text(
+                //   "푸시업 초기 테스트",
+                //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                // ),
                 SizedBox(height: screenHeight * 0.05),
-                const Text(
+                Text(
                   "정자세로 푸시업을 한 뒤 푸시업 개수를 설정하세요.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: dynamicFontSize),
                 ),
                 SizedBox(height: screenHeight * 0.1),
                 SizedBox(

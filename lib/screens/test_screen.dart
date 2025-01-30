@@ -40,14 +40,17 @@ class TestScreenState extends State<TestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TextStyle(
-      fontSize: 48,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
+
+    final textStyle = TextStyle(
+      fontSize: dynamicFontSize,
       fontWeight: FontWeight.bold,
       color: AppColors.redPrimary,
     );
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return GestureDetector(
       onTap: _dismissKeyboard,
@@ -68,10 +71,10 @@ class TestScreenState extends State<TestScreen> {
                 //       fontSize: 24, fontWeight: FontWeight.bold),
                 // ),
                 SizedBox(height: screenHeight * 0.05),
-                const Text(
+                Text(
                   "정자세로 푸시업을 한 뒤 개수를 설정하세요.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: dynamicFontSize),
                 ),
                 SizedBox(height: screenHeight * 0.1),
                 SizedBox(
@@ -132,6 +135,7 @@ class TestScreenState extends State<TestScreen> {
                     await SharedPreferencesHelper.saveProgress(
                         nextWeek, 1, level);
 
+                    if (!context.mounted) return;
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(

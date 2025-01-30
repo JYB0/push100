@@ -56,6 +56,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenHeight = MediaQuery.of(context).size.height;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -71,14 +77,16 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.redPrimary,
             foregroundColor: Colors.white,
-            textStyle: const TextStyle(
+            padding: EdgeInsets.symmetric(
+                vertical: dynamicFontSize * 0.5, horizontal: dynamicFontSize),
+            textStyle: TextStyle(
               inherit: true,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: dynamicFontSize,
             ),
             elevation: 0,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           ),
         ),
       ),

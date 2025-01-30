@@ -229,6 +229,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
 
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -247,6 +249,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
       await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
 
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -264,6 +268,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       await SharedPreferencesHelper.saveProgress(
           widget.week, nextDay, widget.level);
 
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -344,6 +350,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     );
 
     // 저장 후 홈 화면으로 이동
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -371,6 +379,9 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final double circleSize =
         (screenWidth < screenHeight ? screenWidth : screenHeight) * 0.45;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -481,15 +492,15 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                                         Text(
                                           "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
                                           style: GoogleFonts.firaCode(
-                                            fontSize: 32,
+                                            fontSize: dynamicFontSize * 2,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        const SizedBox(width: 10),
-                                        const Text(
+                                        SizedBox(width: screenWidth * 0.03),
+                                        Text(
                                           "휴식 중...",
                                           style: TextStyle(
-                                            fontSize: 18,
+                                            fontSize: dynamicFontSize * 1.1,
                                             fontWeight: FontWeight.w400,
                                             color: Colors.grey,
                                           ),
