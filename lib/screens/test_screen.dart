@@ -89,11 +89,13 @@ class TestScreenState extends State<TestScreen> {
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
                           color: AppColors.yellowPrimary,
+                          width: 2.5,
                         ),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
                           color: AppColors.yellowPrimary,
+                          width: 3,
                         ),
                       ),
                     ),
