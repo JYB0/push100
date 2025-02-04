@@ -47,7 +47,7 @@ class TestScreenState extends State<TestScreen> {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     final textStyle = TextStyle(
-      fontSize: dynamicFontSize,
+      fontSize: dynamicFontSize * 4,
       fontWeight: FontWeight.bold,
       color: AppColors.redPrimary,
     );
@@ -78,7 +78,7 @@ class TestScreenState extends State<TestScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.1),
                 SizedBox(
-                  width: screenWidth * 0.5,
+                  width: screenWidth * 0.7,
                   child: TextField(
                     controller: _controller,
                     keyboardType: TextInputType.number,
@@ -87,10 +87,14 @@ class TestScreenState extends State<TestScreen> {
                     style: textStyle,
                     decoration: const InputDecoration(
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                        borderSide: BorderSide(
+                          color: AppColors.yellowPrimary,
+                        ),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                        borderSide: BorderSide(
+                          color: AppColors.yellowPrimary,
+                        ),
                       ),
                     ),
                     inputFormatters: [
@@ -120,7 +124,7 @@ class TestScreenState extends State<TestScreen> {
                     },
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.05),
+                SizedBox(height: screenHeight * 0.1),
                 ElevatedButton(
                   onPressed: () async {
                     _dismissKeyboard();

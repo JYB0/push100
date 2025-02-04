@@ -108,14 +108,14 @@ Future<bool> checkInitialTest() async {
 
 class AppColors {
   static const Color redPrimary = Color(0xFFD81F26);
-  static const Color greenPrimary = Color(0xFF006241);
+  static const Color greenPrimary = Color(0xFF007B55);
   static const Color yellowPrimary = Color(0xFFFFC107);
   static const Color bluePrimary = Color(0xFF0165E1);
   static const Color greyPrimary = Color(0xFFF4F4F4);
   static const Color darkGreyPrimary = Color(0xFF212121);
 
   static const Color redLight = Color(0x80D81F26);
-  static const Color greenLight = Color(0x80006241);
+  static const Color greenLight = Color(0x80007B55);
   static const Color blueLight = Color(0x800165E1);
   static const Color greyLight = Color(0x80F4F4F4);
   static const Color yellowLight = Color(0x80FFC107);

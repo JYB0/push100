@@ -48,7 +48,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     final textStyle = TextStyle(
-      fontSize: dynamicFontSize,
+      fontSize: dynamicFontSize * 4,
       fontWeight: FontWeight.bold,
       color: AppColors.redPrimary,
     );
@@ -78,7 +78,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.1),
                 SizedBox(
-                  width: screenWidth * 0.5,
+                  width: screenWidth * 0.7,
                   child: TextField(
                     controller: _controller,
                     keyboardType: TextInputType.number,
@@ -86,10 +86,16 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                     showCursor: false,
                     decoration: const InputDecoration(
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                        borderSide: BorderSide(
+                          color: AppColors.yellowPrimary,
+                          width: 2.5,
+                        ),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.yellowPrimary),
+                        borderSide: BorderSide(
+                          color: AppColors.yellowPrimary,
+                          width: 3,
+                        ),
                       ),
                     ),
                     style: textStyle,
