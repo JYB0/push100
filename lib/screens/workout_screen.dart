@@ -300,12 +300,15 @@ class WorkoutScreenState extends State<WorkoutScreen> {
         userReps[currentSet] = currentTargetReps;
         currentSet += 1;
 
-        if (currentSet < sets.length - 1) {
+        if (currentSet < sets.length) {
           currentTargetReps = userReps[currentSet]; // 다음 세트 목표 로드
-          _startRestTimer();
-          _scrollToCurrentSet();
         }
       });
+      if (currentSet == sets.length) {
+        _saveWorkoutRecord(); // 운동 기록 저장
+      }
+      _startRestTimer();
+      _scrollToCurrentSet();
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
