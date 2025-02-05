@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:push100/main.dart';
 import 'package:vibration/vibration.dart';
@@ -105,9 +106,13 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   void _scrollToCurrentSet() {
-    const double circleSize = 50;
-    const double spacing = 16;
-    const double itemWidth = circleSize + spacing;
+    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenHeight = MediaQuery.of(context).size.height;
+
+    final double spacing = screenWidth * 0.04; // 간격
+    final double circleSize = screenWidth * 0.15; // 원 크기
+    // final double fontSize = circleSize * 0.35; // 글자 크기도 비례 설정
+    final double itemWidth = circleSize + spacing;
 
     if (_scrollController.hasClients) {
       final position = currentSet * itemWidth - (itemWidth * 2); // 중앙 근처에 표시
@@ -151,14 +156,18 @@ class WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   Widget _buildSetCircles() {
-    const double spacing = 16; // 간격
-    const double circleSize = 50; // 원 크기
+    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenHeight = MediaQuery.of(context).size.height;
+
+    final double spacing = screenWidth * 0.04; // 간격
+    final double circleSize = screenWidth * 0.15; // 원 크기
+    final double fontSize = circleSize * 0.35; // 글자 크기도 비례 설정
 
     return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.horizontal, // 가로 스크롤 활성화
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: spacing / 2),
+        padding: EdgeInsets.symmetric(vertical: spacing / 2),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: List.generate(
@@ -190,7 +199,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
               }
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: spacing / 2),
+                padding: EdgeInsets.symmetric(horizontal: spacing / 2),
                 child: Container(
                   width: circleSize,
                   height: circleSize,
@@ -206,7 +215,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                   child: Text(
                     "${userReps[index]}",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: fontSize,
                       fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
@@ -385,159 +394,173 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("Week ${widget.week}, Day ${widget.day}"),
-        backgroundColor: Colors.white,
-      ),
+      // appBar: AppBar(
+      //   title: Text("Week ${widget.week}, Day ${widget.day}"),
+      //   backgroundColor: Colors.white,
+      // ),
       body: SafeArea(
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Column(
-                  children: [
-                    _buildSetCircles(),
-                    // const SizedBox(height: 30),
-                    Expanded(
-                      child: Column(
+            /// ✅ 메인 UI
+            Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: screenHeight * 0.02,
+                    horizontal: screenWidth * 0.02,
+                  ),
+                  child: _buildSetCircles(),
+                ),
+
+                /// 🔹 **목표 푸시업 UI**
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // const Text(
-                          //   "현재 목표 푸시업",
-                          //   style: TextStyle(
-                          //       fontSize: 18, fontWeight: FontWeight.bold),
-                          // ),
-                          SizedBox(
-                            height: screenHeight * 0.1,
+                          IconButton(
+                            onPressed: _decreaseReps,
+                            icon: Icon(Icons.remove, size: circleSize * 0.25),
                           ),
+                          SizedBox(width: circleSize * 0.05),
+                          GestureDetector(
+                            onTap: _completeSet,
+                            child: Container(
+                              width: circleSize,
+                              height: circleSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.yellowPrimary,
+                                  width: circleSize * 0.03,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                "$currentTargetReps",
+                                style: TextStyle(
+                                  fontSize: circleSize * 0.35,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: circleSize * 0.05),
+                          IconButton(
+                            onPressed: _increaseReps,
+                            icon: Icon(Icons.add, size: circleSize * 0.25),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                /// 🔹 **버튼 (항상 화면 안에 보이도록 설정)**
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                    onPressed: _completeSet,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.3,
+                          vertical: screenWidth * 0.04),
+                    ),
+                    child: Text(
+                      currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
+                      style: TextStyle(
+                          fontSize: dynamicFontSize * 1.2,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+
+                /// 🔹 버튼과 하단 공간 추가
+                SizedBox(height: screenHeight * 0.02),
+              ],
+            ),
+
+            /// 🔥 **휴식 중 팝업 (버튼 위에 겹치지 않도록 Positioned 사용)**
+            if (isResting)
+              Positioned(
+                bottom: 20, // **버튼과 겹치지 않도록 설정**
+                left: 0,
+                right: 0,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.all(dynamicFontSize),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.1),
+                        blurRadius: 10.0,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      /// ✅ 휴식 타이머
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              IconButton(
-                                onPressed: _decreaseReps,
-                                icon: Icon(
-                                  Icons.remove,
-                                  size: circleSize * 0.25,
+                              Text(
+                                "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
+                                style: GoogleFonts.firaCode(
+                                  fontSize: dynamicFontSize * 2,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Container(
-                                width: circleSize,
-                                height: circleSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  // color: AppColors.yellowPrimary,
-                                  border: Border.all(
-                                    color: AppColors.yellowPrimary,
-                                    width: 5,
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  "$currentTargetReps",
-                                  style: TextStyle(
-                                    fontSize: circleSize * 0.35,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: _increaseReps,
-                                icon: Icon(
-                                  Icons.add,
-                                  size: circleSize * 0.25,
+                              SizedBox(width: screenWidth * 0.03),
+                              Text(
+                                "휴식 중...",
+                                style: TextStyle(
+                                  fontSize: dynamicFontSize * 1.1,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.grey,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: screenHeight * 0.1),
-                          ElevatedButton(
-                            onPressed: _completeSet,
-                            child: Text(
-                              currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
+
+                          /// ✅ 닫기 버튼
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: dynamicFontSize * 1.5,
                             ),
-                          ),
+                            onPressed: () {
+                              setState(() {
+                                isResting = false;
+                              });
+                            },
+                          )
                         ],
                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Opacity(
-                        opacity: isResting ? 1.0 : 0.0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16.0),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color.fromARGB(25, 0, 0, 0),
-                                  blurRadius: 10.0,
-                                  offset: Offset(0, -2),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
-                                          style: GoogleFonts.firaCode(
-                                            fontSize: dynamicFontSize * 2,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        SizedBox(width: screenWidth * 0.03),
-                                        Text(
-                                          "휴식 중...",
-                                          style: TextStyle(
-                                            fontSize: dynamicFontSize * 1.1,
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close),
-                                      onPressed: () {
-                                        setState(() {
-                                          isResting = false;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(3),
-                                  value: elapsedSeconds / restTime,
-                                  backgroundColor: Colors.grey[300],
-                                  color: elapsedSeconds <= restTime
-                                      ? AppColors.redPrimary
-                                      : AppColors.greenPrimary,
-                                  minHeight: 10,
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 10),
+
+                      /// ✅ 프로그레스 바
+                      LinearProgressIndicator(
+                        borderRadius: BorderRadius.circular(3),
+                        value: elapsedSeconds / restTime,
+                        backgroundColor: Colors.grey[300],
+                        color: elapsedSeconds <= restTime
+                            ? AppColors.redPrimary
+                            : AppColors.greenPrimary,
+                        minHeight: 10,
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 300.ms),
               ),
-            ),
           ],
         ),
       ),

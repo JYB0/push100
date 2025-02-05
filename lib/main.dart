@@ -85,8 +85,8 @@ class MyApp extends StatelessWidget {
               fontSize: dynamicFontSize,
             ),
             elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(dynamicFontSize * 1.5)),
           ),
         ),
       ),
