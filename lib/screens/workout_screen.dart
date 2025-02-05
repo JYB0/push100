@@ -300,15 +300,12 @@ class WorkoutScreenState extends State<WorkoutScreen> {
         userReps[currentSet] = currentTargetReps;
         currentSet += 1;
 
-        if (currentSet < sets.length) {
+        if (currentSet < sets.length - 1) {
           currentTargetReps = userReps[currentSet]; // 다음 세트 목표 로드
+          _startRestTimer();
+          _scrollToCurrentSet();
         }
       });
-      if (currentSet == sets.length) {
-        _saveWorkoutRecord(); // 운동 기록 저장
-      }
-      _scrollToCurrentSet();
-      _startRestTimer();
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
@@ -484,83 +481,98 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             ),
 
             /// 🔥 **휴식 중 팝업 (버튼 위에 겹치지 않도록 Positioned 사용)**
-            if (isResting)
-              Positioned(
-                bottom: 20, // **버튼과 겹치지 않도록 설정**
-                left: 0,
-                right: 0,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: EdgeInsets.all(dynamicFontSize),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.1),
-                        blurRadius: 10.0,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      /// ✅ 휴식 타이머
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
-                                style: GoogleFonts.firaCode(
-                                  fontSize: dynamicFontSize * 2,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: screenWidth * 0.03),
-                              Text(
-                                "휴식 중...",
-                                style: TextStyle(
-                                  fontSize: dynamicFontSize * 1.1,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          /// ✅ 닫기 버튼
-                          IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              size: dynamicFontSize * 1.5,
+            Positioned(
+              bottom: 20, // 버튼과 겹치지 않도록 설정
+              left: 0,
+              right: 0,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300), // ✅ 등장 & 사라짐 속도
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.3), // 아래에서 위로 올라옴
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: isResting
+                    ? Container(
+                        key:
+                            const ValueKey("restingPopup"), // 애니메이션 동작을 위한 키 설정
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.all(dynamicFontSize),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color.fromRGBO(0, 0, 0, 0.1),
+                              blurRadius: 10.0,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isResting = false;
-                              });
-                            },
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 10),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            /// ✅ 휴식 타이머
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      "${elapsedSeconds ~/ 60}:${(elapsedSeconds % 60).toString().padLeft(2, '0')}",
+                                      style: GoogleFonts.firaCode(
+                                        fontSize: dynamicFontSize * 2,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(width: screenWidth * 0.03),
+                                    Text(
+                                      "휴식 중...",
+                                      style: TextStyle(
+                                        fontSize: dynamicFontSize * 1.1,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
 
-                      /// ✅ 프로그레스 바
-                      LinearProgressIndicator(
-                        borderRadius: BorderRadius.circular(3),
-                        value: elapsedSeconds / restTime,
-                        backgroundColor: Colors.grey[300],
-                        color: elapsedSeconds <= restTime
-                            ? AppColors.redPrimary
-                            : AppColors.greenPrimary,
-                        minHeight: 10,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 300.ms),
+                                /// ✅ 닫기 버튼 (클릭 시 애니메이션 적용)
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: dynamicFontSize * 1.5,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      isResting = false; // ✅ 애니메이션 트리거
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            /// ✅ 프로그레스 바
+                            LinearProgressIndicator(
+                              borderRadius: BorderRadius.circular(3),
+                              value: elapsedSeconds / restTime,
+                              backgroundColor: Colors.grey[300],
+                              color: elapsedSeconds <= restTime
+                                  ? AppColors.redPrimary
+                                  : AppColors.greenPrimary,
+                              minHeight: 10,
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      )
+                    : null, // ✅ isResting == false일 때 자연스럽게 사라짐
               ),
+            ),
           ],
         ),
       ),
