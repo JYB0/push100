@@ -55,6 +55,7 @@ class TestScreenState extends State<TestScreen> {
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
+        backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
@@ -65,6 +66,7 @@ class TestScreenState extends State<TestScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          backgroundColor: Colors.white,
         ),
         body: Center(
           child: Padding(

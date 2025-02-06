@@ -56,6 +56,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
     return GestureDetector(
       onTap: _dismissKeyboard,
       child: Scaffold(
+        backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: const Text(
