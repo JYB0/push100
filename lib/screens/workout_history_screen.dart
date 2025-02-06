@@ -72,7 +72,10 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("운동 기록")),
+      appBar: AppBar(
+          title: const Text(
+        "운동 기록",
+      )),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _recordsFuture,
         builder: (context, snapshot) {

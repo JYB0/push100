@@ -58,7 +58,10 @@ class InitialTestScreenState extends State<InitialTestScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text("Initial Test"),
+          title: const Text(
+            "Initial Test",
+          ),
+          backgroundColor: Colors.white,
         ),
         body: Center(
           child: Padding(
@@ -135,7 +138,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                     final String level = initialPlan['level'];
                     _saveInitialTest(pushupCount);
 
-                    Navigator.push(
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                         builder: (context) => HomeScreen(
@@ -144,6 +147,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                           level: level,
                         ),
                       ),
+                      (route) => false,
                     );
                   },
                   child: const Text("테스트 완료"),

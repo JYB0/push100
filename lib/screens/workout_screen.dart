@@ -159,7 +159,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     // final screenHeight = MediaQuery.of(context).size.height;
 
-    final double spacing = screenWidth * 0.04; // 간격
+    final double spacing = screenWidth * 0.03; // 간격
     final double circleSize = screenWidth * 0.15; // 원 크기
     final double fontSize = circleSize * 0.35; // 글자 크기도 비례 설정
 
@@ -394,10 +394,12 @@ class WorkoutScreenState extends State<WorkoutScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   title: Text("Week ${widget.week}, Day ${widget.day}"),
-      //   backgroundColor: Colors.white,
-      // ),
+      appBar: AppBar(
+        title: Text(
+          "Week ${widget.week}, Day ${widget.day}",
+        ),
+        backgroundColor: Colors.white,
+      ),
       body: SafeArea(
         child: Stack(
           children: [
@@ -405,10 +407,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.02,
-                    horizontal: screenWidth * 0.02,
-                  ),
+                  padding: EdgeInsets.all(screenHeight * 0.02),
                   child: _buildSetCircles(),
                 ),
 

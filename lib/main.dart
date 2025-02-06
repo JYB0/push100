@@ -66,8 +66,22 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.greyPrimary,
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
+          toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
           backgroundColor: AppColors.greyPrimary,
+          titleTextStyle: TextStyle(
+            fontSize: screenWidth > 600
+                ? dynamicFontSize * 1.2
+                : dynamicFontSize * 1.5,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          iconTheme: IconThemeData(
+            size: screenWidth > 600
+                ? dynamicFontSize * 1.2
+                : dynamicFontSize * 1.5,
+            color: Colors.black,
+          ),
         ),
         cardTheme: const CardTheme(
           color: Colors.white,

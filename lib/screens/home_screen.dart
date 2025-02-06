@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/workout_history_screen.dart';
@@ -41,6 +42,22 @@ class HomeScreenState extends State<HomeScreen> {
       currentDay = prefs.getInt('currentDay') ?? 1;
       currentWeek = prefs.getInt('currentWeek') ?? 1;
     });
+  }
+
+  Future<void> _resetData() async {
+    await SharedPreferencesHelper.clearAllData();
+    await _loadProgressFromPreferences();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("저장된 모든 데이터가 초기화되었습니다."),
+          duration: Duration(
+            seconds: 2,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _confirmWorkout(BuildContext context, int nextDay) async {
@@ -138,21 +155,38 @@ class HomeScreenState extends State<HomeScreen> {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Push 100",
+        ),
+        actions: [
+          IconButton(
+            onPressed: _resetData,
+            icon: const Icon(
+              Icons.refresh,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.only(
+            bottom: dynamicFontSize,
+            left: dynamicFontSize,
+            right: dynamicFontSize,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 헤더
-              Text(
-                "Push 100",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: dynamicFontSize * 1.5,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: screenHeight * 0.025),
+              // Text(
+              //   "Push 100",
+              //   textAlign: TextAlign.center,
+              //   style: TextStyle(
+              //       fontSize: dynamicFontSize * 1.5,
+              //       fontWeight: FontWeight.bold),
+              // ),
+              // SizedBox(height: screenHeight * 0.025),
 
               // 진행 상황 요약
               Card(
@@ -166,7 +200,7 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(dynamicFontSize),
                     child: Column(
                       children: [
                         Text(
@@ -181,6 +215,7 @@ class HomeScreenState extends State<HomeScreen> {
                           color: progress != 1.0
                               ? AppColors.redPrimary
                               : AppColors.greenPrimary,
+                          backgroundColor: Colors.grey[300],
                         ),
                         SizedBox(height: screenHeight * 0.02),
                         Text(
@@ -194,7 +229,7 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: screenHeight * 0.01),
 
               // 오늘의 훈련 목표 또는 테스트 시작
               Card(
@@ -216,7 +251,7 @@ class HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(dynamicFontSize),
                     child: todayPlan != null
                         ? Column(
                             children: [
@@ -227,7 +262,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: screenHeight * 0.02),
+                              SizedBox(height: screenHeight * 0.01),
                               Text(
                                 isTestDay
                                     ? "테스트를 시작하세요!"

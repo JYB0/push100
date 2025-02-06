@@ -57,7 +57,14 @@ class TestScreenState extends State<TestScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text("Week ${widget.week} Test"),
+          toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
+          title: Text(
+            "Week ${widget.week} Test",
+            style: TextStyle(
+              fontSize: dynamicFontSize * 1.2,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         body: Center(
           child: Padding(
@@ -142,7 +149,7 @@ class TestScreenState extends State<TestScreen> {
                         nextWeek, 1, level);
 
                     if (!context.mounted) return;
-                    Navigator.pushReplacement(
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                         builder: (context) => HomeScreen(
@@ -151,6 +158,7 @@ class TestScreenState extends State<TestScreen> {
                           level: level,
                         ),
                       ),
+                      (route) => false,
                     );
                   },
                   child: const Text("테스트 완료"),
