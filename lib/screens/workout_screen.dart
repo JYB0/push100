@@ -407,7 +407,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
             Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(screenHeight * 0.02),
+                  padding: EdgeInsets.all(screenHeight * 0.01),
                   child: _buildSetCircles(),
                 ),
 
@@ -502,7 +502,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                     ? Container(
                         key:
                             const ValueKey("restingPopup"), // 애니메이션 동작을 위한 키 설정
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: dynamicFontSize),
                         padding: EdgeInsets.all(dynamicFontSize),
                         decoration: BoxDecoration(
                           color: Colors.white,

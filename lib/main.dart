@@ -67,7 +67,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.greyPrimary,
         appBarTheme: AppBarTheme(
-          toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
+          toolbarHeight:
+              screenWidth > 600 ? dynamicFontSize * 2.5 : dynamicFontSize * 3.5,
           backgroundColor: AppColors.greyPrimary,
           titleTextStyle: TextStyle(
             fontSize: screenWidth > 600
@@ -100,7 +101,9 @@ class MyApp extends StatelessWidget {
             ),
             elevation: 0,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(dynamicFontSize * 1.5)),
+                borderRadius: BorderRadius.circular(
+              dynamicFontSize * 1.5,
+            )),
           ),
         ),
       ),
