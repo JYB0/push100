@@ -76,6 +76,13 @@ Map<String, dynamic> determineUpdatedPlan(
   }
 }
 
+/// 각 주차별 최소 통과 기준 (테스트를 통과하기 위한 최소 푸시업 개수)
+final Map<int, int> testPassingCriteria = {
+  2: 16, // 2주차 테스트 최소 통과 개수
+  4: 31, // 4주차 테스트 최소 통과 개수
+  5: 46, // 5주차 테스트 최소 통과 개수
+};
+
 // 특정 단계와 주차의 총 푸시업 개수 계산
 int calculateTotalPushupsForLevelAndWeek(String level, int week) {
   final weekPlans = getPlansByLevelAndWeek(level, week);

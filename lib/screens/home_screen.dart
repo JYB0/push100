@@ -274,7 +274,7 @@ class HomeScreenState extends State<HomeScreen> {
                         ? Column(
                             children: [
                               Text(
-                                "오늘의 목표",
+                                isTestDay ? "${widget.week}주차 테스트" : "오늘의 목표",
                                 style: TextStyle(
                                   fontSize: dynamicFontSize * 1.5,
                                   fontWeight: FontWeight.bold,
@@ -283,7 +283,10 @@ class HomeScreenState extends State<HomeScreen> {
                               SizedBox(height: screenHeight * 0.01),
                               Text(
                                 isTestDay
-                                    ? "테스트를 시작하세요!"
+                                    ? (testPassingCriteria
+                                            .containsKey(widget.week)
+                                        ? "테스트 최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                        : "테스트를 시작하세요!")
                                     : _formatPushupText(todayPlan.sets),
                                 style: TextStyle(fontSize: dynamicFontSize),
                                 textAlign: TextAlign.center,
@@ -358,7 +361,9 @@ class HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              "${widget.week}주차 테스트를 시작하세요!",
+                              testPassingCriteria.containsKey(widget.week)
+                                  ? "테스트 최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                  : "${widget.week}주차 테스트를 시작하세요!",
                               style: TextStyle(
                                 fontSize: dynamicFontSize,
                               ),
