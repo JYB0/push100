@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
@@ -77,14 +78,23 @@ class HomeScreenState extends State<HomeScreen> {
 
     if (result == true) {
       if (!context.mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => WorkoutScreen(
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500), // 애니메이션 지속 시간
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              WorkoutScreen(
             level: widget.level,
             week: widget.week,
             day: nextDay,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+              child: child,
+            );
+          },
         ),
       );
     }
@@ -107,13 +117,21 @@ class HomeScreenState extends State<HomeScreen> {
 
     if (result == true) {
       if (!context.mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TestScreen(
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 600), // 애니메이션 지속 시간
+          pageBuilder: (context, animation, secondaryAnimation) => TestScreen(
             week: widget.week,
             currentLevel: widget.level,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+              child: child,
+            );
+          },
         ),
       );
     }
@@ -273,28 +291,38 @@ class HomeScreenState extends State<HomeScreen> {
                               SizedBox(height: screenHeight * 0.02),
                               ElevatedButton(
                                 onPressed: () {
-                                  if (isTestDay) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TestScreen(
+                                  final targetScreen = isTestDay
+                                      ? TestScreen(
                                           week: widget.week,
                                           currentLevel: widget.level,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => WorkoutScreen(
+                                        )
+                                      : WorkoutScreen(
                                           level: widget.level,
                                           week: widget.week,
                                           day: currentDay, // 현재 날짜 전달
-                                        ),
-                                      ),
-                                    );
-                                  }
+                                        );
+
+                                  Navigator.of(context).push(
+                                    PageRouteBuilder(
+                                      transitionDuration: const Duration(
+                                          milliseconds: 500), // 애니메이션 지속 시간
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          targetScreen,
+                                      transitionsBuilder: (context, animation,
+                                          secondaryAnimation, child) {
+                                        return SharedAxisTransition(
+                                          animation: animation,
+                                          secondaryAnimation:
+                                              secondaryAnimation,
+                                          transitionType:
+                                              SharedAxisTransitionType
+                                                  .horizontal,
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
                                 },
                                 child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
                               ),
@@ -377,11 +405,16 @@ class HomeScreenState extends State<HomeScreen> {
               ),
 
               // 하단 동기 부여 문구
-              Text(
-                "꾸준한 도전이 당신을 더 강하게 만듭니다!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: dynamicFontSize, fontStyle: FontStyle.italic),
+              Padding(
+                padding: EdgeInsets.only(
+                  top: dynamicFontSize,
+                ),
+                child: Text(
+                  "꾸준한 도전이 당신을 더 강하게 만듭니다!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: dynamicFontSize, fontStyle: FontStyle.italic),
+                ),
               ),
             ],
           ),
