@@ -25,7 +25,11 @@ class WorkoutScreen extends StatefulWidget {
   WorkoutScreenState createState() => WorkoutScreenState();
 }
 
-class WorkoutScreenState extends State<WorkoutScreen> {
+class WorkoutScreenState extends State<WorkoutScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation;
+
   late List<int> sets;
   late ScrollController _scrollController;
 
@@ -45,6 +49,17 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     sets = [];
     userReps = [];
     _loadWorkoutPlan();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true); // 🔥 무한 반복 (깜박깜박)
+
+    // ✅ 배경색 변경 애니메이션 (밝아졌다가 어두워짐)
+    _colorAnimation = ColorTween(
+      begin: Colors.white, // 밝은 색
+      end: const Color.fromARGB(128, 246, 211, 105), // 어두운 색 (강조 효과)
+    ).animate(_animationController);
   }
 
   void _increaseReps() {
@@ -309,6 +324,8 @@ class WorkoutScreenState extends State<WorkoutScreen> {
       }
       _startRestTimer();
       _scrollToCurrentSet();
+      _animationController.reset();
+      _animationController.repeat(reverse: true);
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
@@ -380,6 +397,7 @@ class WorkoutScreenState extends State<WorkoutScreen> {
     timer?.cancel();
     _scrollController.dispose();
     super.dispose();
+    _animationController.dispose();
   }
 
   @override
@@ -414,8 +432,11 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                 /// 🔹 **목표 푸시업 UI**
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      SizedBox(
+                        height: screenHeight * 0.1,
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -426,25 +447,31 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                           SizedBox(width: circleSize * 0.05),
                           GestureDetector(
                             onTap: _completeSet,
-                            child: Container(
-                              width: circleSize,
-                              height: circleSize,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.yellowPrimary,
-                                  width: circleSize * 0.03,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "$currentTargetReps",
-                                style: TextStyle(
-                                  fontSize: circleSize * 0.35,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
+                            child: AnimatedBuilder(
+                              animation: _animationController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: circleSize,
+                                  height: circleSize,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _colorAnimation.value,
+                                    border: Border.all(
+                                      color: AppColors.yellowPrimary,
+                                      width: circleSize * 0.03,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "$currentTargetReps",
+                                    style: TextStyle(
+                                      fontSize: circleSize * 0.35,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           SizedBox(width: circleSize * 0.05),
@@ -459,26 +486,26 @@ class WorkoutScreenState extends State<WorkoutScreen> {
                 ),
 
                 /// 🔹 **버튼 (항상 화면 안에 보이도록 설정)**
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: ElevatedButton(
-                    onPressed: _completeSet,
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.3,
-                          vertical: screenWidth * 0.04),
-                    ),
-                    child: Text(
-                      currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
-                      style: TextStyle(
-                          fontSize: dynamicFontSize * 1.2,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(vertical: 16.0),
+                //   child: ElevatedButton(
+                //     onPressed: _completeSet,
+                //     style: ElevatedButton.styleFrom(
+                //       padding: EdgeInsets.symmetric(
+                //           horizontal: screenWidth * 0.3,
+                //           vertical: screenWidth * 0.04),
+                //     ),
+                //     child: Text(
+                //       currentSet < sets.length - 1 ? "세트 완료" : "운동 완료",
+                //       style: TextStyle(
+                //           fontSize: dynamicFontSize * 1.2,
+                //           fontWeight: FontWeight.bold),
+                //     ),
+                //   ),
+                // ),
 
                 /// 🔹 버튼과 하단 공간 추가
-                SizedBox(height: screenHeight * 0.02),
+                // SizedBox(height: screenHeight * 0.1),
               ],
             ),
 
