@@ -1,13 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
-import 'package:flutter/material.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:push100/screens/workout_history_screen.dart';
 import 'package:push100/screens/workout_screen.dart';
 import 'package:push100/screens/test_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   final int pushupCount;

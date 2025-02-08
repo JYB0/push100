@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
-import 'package:push100/screens/home_screen.dart';
+import 'package:push100/screens/bottom_navigation.dart';
+// import 'package:push100/screens/home_screen.dart';
 import 'package:push100/screens/initial_test_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -108,10 +109,9 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: isInitialTestSet
-          ? HomeScreen(
-              pushupCount: 0,
-              week: initialWeek,
-              level: initialLevel,
+          ? BottomNavigation(
+              initialWeek: initialWeek,
+              initialLevel: initialLevel,
             )
           : const InitialTestScreen(),
     );
