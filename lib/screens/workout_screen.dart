@@ -259,7 +259,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
-            pushupCount: 0,
             week: widget.week,
             level: widget.level,
             isTestMode: true, // 테스트 모드 활성화
@@ -279,7 +278,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
-            pushupCount: 0,
             week: nextWeek,
             level: widget.level,
             isTestMode: false, // 테스트 모드 비활성화
@@ -298,7 +296,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
-            pushupCount: 0,
             week: widget.week,
             level: widget.level,
             isTestMode: false, // 테스트 모드 아님
@@ -382,7 +379,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
       context,
       MaterialPageRoute(
         builder: (context) => HomeScreen(
-          pushupCount: userReps.reduce((a, b) => a + b), // 총 수행 푸시업
           week: widget.week,
           level: widget.level,
           isTestMode: false,

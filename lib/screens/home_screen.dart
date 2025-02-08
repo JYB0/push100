@@ -11,14 +11,12 @@ import 'package:push100/screens/workout_screen.dart';
 import 'package:push100/screens/test_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final int pushupCount;
   final int week;
   final String level;
   final bool isTestMode;
 
   const HomeScreen({
     super.key,
-    required this.pushupCount,
     required this.week,
     required this.level,
     this.isTestMode = false, // 기본값 설정

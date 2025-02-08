@@ -156,7 +156,6 @@ class TestScreenState extends State<TestScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HomeScreen(
-                            pushupCount: pushupCount,
                             week: nextWeek,
                             level: level,
                           ),

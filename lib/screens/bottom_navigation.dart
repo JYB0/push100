@@ -28,8 +28,7 @@ class BottomNavigationState extends State<BottomNavigation> {
   void initState() {
     super.initState();
     _screens.addAll([
-      HomeScreen(
-          pushupCount: 0, week: widget.initialWeek, level: widget.initialLevel),
+      HomeScreen(week: widget.initialWeek, level: widget.initialLevel),
       const WorkoutHistoryScreen(),
       const SettingScreen(),
     ]);
