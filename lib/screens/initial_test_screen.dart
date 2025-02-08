@@ -57,103 +57,105 @@ class InitialTestScreenState extends State<InitialTestScreen> {
       onTap: _dismissKeyboard,
       child: Scaffold(
         backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: const Text(
             "Initial Test",
           ),
           backgroundColor: Colors.white,
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // const Text(
-                //   "푸시업 초기 테스트",
-                //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                // ),
-                SizedBox(height: screenHeight * 0.05),
-                Text(
-                  "정자세로 푸시업을 한 뒤 푸시업 개수를 설정하세요.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: dynamicFontSize),
-                ),
-                SizedBox(height: screenHeight * 0.1),
-                SizedBox(
-                  width: screenWidth * 0.7,
-                  child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
+        body: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // const Text(
+                  //   "푸시업 초기 테스트",
+                  //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  // ),
+                  SizedBox(height: screenHeight * 0.05),
+                  Text(
+                    "정자세로 푸시업을 한 뒤 푸시업 개수를 설정하세요.",
                     textAlign: TextAlign.center,
-                    showCursor: false,
-                    decoration: const InputDecoration(
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.yellowPrimary,
-                          width: 2.5,
-                        ),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.yellowPrimary,
-                          width: 3,
-                        ),
-                      ),
-                    ),
-                    style: textStyle,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^[0-9]{0,2}$')),
-                      TextInputFormatter.withFunction(
-                        (oldValue, newValue) {
-                          // 99 이상의 값을 제한
-                          if (int.tryParse(newValue.text) != null &&
-                              int.parse(newValue.text) > 99) {
-                            return oldValue;
-                          }
-                          return newValue;
-                        },
-                      ),
-                    ],
-                    onTap: () {
-                      if (_controller.text == "0") {
-                        _controller.clear();
-                      }
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        pushupCount = int.tryParse(value) ?? 0;
-                      });
-                    },
+                    style: TextStyle(fontSize: dynamicFontSize),
                   ),
-                ),
-                SizedBox(height: screenHeight * 0.05),
-                ElevatedButton(
-                  onPressed: () async {
-                    _dismissKeyboard();
-                    final initialPlan = determineInitialPlan(pushupCount);
-                    final int week = initialPlan['week'];
-                    final String level = initialPlan['level'];
-                    _saveInitialTest(pushupCount);
-
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(
-                          pushupCount: pushupCount,
-                          week: week,
-                          level: level,
+                  SizedBox(height: screenHeight * 0.1),
+                  SizedBox(
+                    width: screenWidth * 0.7,
+                    child: TextField(
+                      controller: _controller,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      showCursor: false,
+                      decoration: const InputDecoration(
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.yellowPrimary,
+                            width: 2.5,
+                          ),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.yellowPrimary,
+                            width: 3,
+                          ),
                         ),
                       ),
-                      (route) => false,
-                    );
-                  },
-                  child: const Text("테스트 완료"),
-                ),
-              ],
+                      style: textStyle,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^[0-9]{0,2}$')),
+                        TextInputFormatter.withFunction(
+                          (oldValue, newValue) {
+                            // 99 이상의 값을 제한
+                            if (int.tryParse(newValue.text) != null &&
+                                int.parse(newValue.text) > 99) {
+                              return oldValue;
+                            }
+                            return newValue;
+                          },
+                        ),
+                      ],
+                      onTap: () {
+                        if (_controller.text == "0") {
+                          _controller.clear();
+                        }
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          pushupCount = int.tryParse(value) ?? 0;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.05),
+                  ElevatedButton(
+                    onPressed: () async {
+                      _dismissKeyboard();
+                      final initialPlan = determineInitialPlan(pushupCount);
+                      final int week = initialPlan['week'];
+                      final String level = initialPlan['level'];
+                      _saveInitialTest(pushupCount);
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(
+                            pushupCount: pushupCount,
+                            week: week,
+                            level: level,
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text("테스트 완료"),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -64,8 +64,8 @@ class HomeScreenState extends State<HomeScreen> {
   Future<void> _confirmWorkout(BuildContext context, int nextDay) async {
     final result = await showModalActionSheet<bool>(
       context: context,
-      title: '운동 시작',
-      message: 'Day $nextDay 운동을 진행하시겠습니까?',
+      title: '완료하지 않은 운동이 있습니다!',
+      message: '그래도 Day $nextDay 운동을 시작하시겠습니까?',
       cancelLabel: '취소',
       actions: [
         const SheetAction(
@@ -103,8 +103,8 @@ class HomeScreenState extends State<HomeScreen> {
   Future<void> _confirmTest(BuildContext context) async {
     final result = await showModalActionSheet<bool>(
       context: context,
-      title: '테스트 시작',
-      message: '${widget.week}주차 테스트를 진행하시겠습니까?',
+      title: '완료하지 않은 운동이 있습니다!',
+      message: '그래도 ${widget.week}주차 테스트를 진행하시겠습니까?',
       cancelLabel: '취소',
       actions: [
         const SheetAction(
@@ -285,7 +285,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 isTestDay
                                     ? (testPassingCriteria
                                             .containsKey(widget.week)
-                                        ? "테스트 최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                        ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
                                         : "테스트를 시작하세요!")
                                     : _formatPushupText(todayPlan.sets),
                                 style: TextStyle(fontSize: dynamicFontSize),
@@ -362,7 +362,7 @@ class HomeScreenState extends State<HomeScreen> {
                             ),
                             subtitle: Text(
                               testPassingCriteria.containsKey(widget.week)
-                                  ? "테스트 최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                  ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
                                   : "${widget.week}주차 테스트를 시작하세요!",
                               style: TextStyle(
                                 fontSize: dynamicFontSize,

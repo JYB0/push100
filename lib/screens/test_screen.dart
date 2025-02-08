@@ -56,7 +56,7 @@ class TestScreenState extends State<TestScreen> {
       onTap: _dismissKeyboard,
       child: Scaffold(
         backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
           title: Text(
@@ -68,104 +68,106 @@ class TestScreenState extends State<TestScreen> {
           ),
           backgroundColor: Colors.white,
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Text(
-                //   "${widget.week}주차 테스트",
-                //   style: const TextStyle(
-                //       fontSize: 24, fontWeight: FontWeight.bold),
-                // ),
-                SizedBox(height: screenHeight * 0.05),
-                Text(
-                  "정자세로 푸시업을 한 뒤 개수를 설정하세요.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: dynamicFontSize),
-                ),
-                SizedBox(height: screenHeight * 0.1),
-                SizedBox(
-                  width: screenWidth * 0.7,
-                  child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
+        body: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Text(
+                  //   "${widget.week}주차 테스트",
+                  //   style: const TextStyle(
+                  //       fontSize: 24, fontWeight: FontWeight.bold),
+                  // ),
+                  SizedBox(height: screenHeight * 0.05),
+                  Text(
+                    "정자세로 푸시업을 한 뒤 개수를 설정하세요.",
                     textAlign: TextAlign.center,
-                    showCursor: false,
-                    style: textStyle,
-                    decoration: const InputDecoration(
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.yellowPrimary,
-                          width: 2.5,
-                        ),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.yellowPrimary,
-                          width: 3,
-                        ),
-                      ),
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^[0-9]{0,3}$')), // 최대 3자리 허용
-                      TextInputFormatter.withFunction(
-                        (oldValue, newValue) {
-                          // 999 이상의 값을 제한
-                          if (int.tryParse(newValue.text) != null &&
-                              int.parse(newValue.text) > 999) {
-                            return oldValue;
-                          }
-                          return newValue;
-                        },
-                      ),
-                    ],
-                    onTap: () {
-                      if (_controller.text == "0") {
-                        _controller.clear();
-                      }
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        pushupCount = int.tryParse(value) ?? 0;
-                      });
-                    },
+                    style: TextStyle(fontSize: dynamicFontSize),
                   ),
-                ),
-                SizedBox(height: screenHeight * 0.1),
-                ElevatedButton(
-                  onPressed: () async {
-                    _dismissKeyboard();
-                    _saveTestResult(pushupCount);
-
-                    // 테스트 결과에 따라 플랜 업데이트
-                    final updatedPlan = determineUpdatedPlan(
-                        widget.week, pushupCount, widget.currentLevel);
-                    final int nextWeek = updatedPlan['week'];
-                    final String level = updatedPlan['level'];
-
-                    await SharedPreferencesHelper.saveProgress(
-                        nextWeek, 1, level);
-
-                    if (!context.mounted) return;
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(
-                          pushupCount: pushupCount,
-                          week: nextWeek,
-                          level: level,
+                  SizedBox(height: screenHeight * 0.1),
+                  SizedBox(
+                    width: screenWidth * 0.7,
+                    child: TextField(
+                      controller: _controller,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      showCursor: false,
+                      style: textStyle,
+                      decoration: const InputDecoration(
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.yellowPrimary,
+                            width: 2.5,
+                          ),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.yellowPrimary,
+                            width: 3,
+                          ),
                         ),
                       ),
-                      (route) => false,
-                    );
-                  },
-                  child: const Text("테스트 완료"),
-                ),
-              ],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly, // 숫자만 허용
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^[0-9]{0,3}$')), // 최대 3자리 허용
+                        TextInputFormatter.withFunction(
+                          (oldValue, newValue) {
+                            // 999 이상의 값을 제한
+                            if (int.tryParse(newValue.text) != null &&
+                                int.parse(newValue.text) > 999) {
+                              return oldValue;
+                            }
+                            return newValue;
+                          },
+                        ),
+                      ],
+                      onTap: () {
+                        if (_controller.text == "0") {
+                          _controller.clear();
+                        }
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          pushupCount = int.tryParse(value) ?? 0;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.1),
+                  ElevatedButton(
+                    onPressed: () async {
+                      _dismissKeyboard();
+                      _saveTestResult(pushupCount);
+
+                      // 테스트 결과에 따라 플랜 업데이트
+                      final updatedPlan = determineUpdatedPlan(
+                          widget.week, pushupCount, widget.currentLevel);
+                      final int nextWeek = updatedPlan['week'];
+                      final String level = updatedPlan['level'];
+
+                      await SharedPreferencesHelper.saveProgress(
+                          nextWeek, 1, level);
+
+                      if (!context.mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(
+                            pushupCount: pushupCount,
+                            week: nextWeek,
+                            level: level,
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text("테스트 완료"),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
