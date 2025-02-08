@@ -1,5 +1,6 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/home_screen.dart';
 import 'package:push100/screens/workout_history_screen.dart';
 import 'package:push100/screens/setting_screen.dart';
@@ -41,12 +42,12 @@ class BottomNavigationState extends State<BottomNavigation> {
 
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 300),
         transitionBuilder: (child, animation) {
           return SharedAxisTransition(
             animation: animation,
             secondaryAnimation: const AlwaysStoppedAnimation(0),
-            transitionType: SharedAxisTransitionType.horizontal,
+            transitionType: SharedAxisTransitionType.scaled,
             child: child,
           );
         },
@@ -55,9 +56,11 @@ class BottomNavigationState extends State<BottomNavigation> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(
+            () {
+              _currentIndex = index;
+            },
+          );
         },
         items: [
           BottomNavigationBarItem(
@@ -73,12 +76,12 @@ class BottomNavigationState extends State<BottomNavigation> {
             label: "설정",
           ),
         ],
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: AppColors.redPrimary,
         unselectedItemColor: Colors.grey,
         selectedFontSize: isTablet ? 14 : 12,
         unselectedFontSize: isTablet ? 12 : 10,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.greyPrimary,
       ),
     );
   }
