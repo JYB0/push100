@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:push100/main.dart';
+import 'package:push100/screens/bottom_navigation.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
-import 'package:push100/screens/home_screen.dart';
+// import 'package:push100/screens/home_screen.dart';
 
 class WorkoutScreen extends StatefulWidget {
   final String level;
@@ -258,9 +259,9 @@ class WorkoutScreenState extends State<WorkoutScreen>
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            week: widget.week,
-            level: widget.level,
+          builder: (context) => BottomNavigation(
+            initialWeek: widget.week,
+            initialLevel: widget.level,
             isTestMode: true, // 테스트 모드 활성화
           ),
         ),
@@ -277,9 +278,9 @@ class WorkoutScreenState extends State<WorkoutScreen>
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            week: nextWeek,
-            level: widget.level,
+          builder: (context) => BottomNavigation(
+            initialWeek: nextWeek,
+            initialLevel: widget.level,
             isTestMode: false, // 테스트 모드 비활성화
           ),
         ),
@@ -295,9 +296,9 @@ class WorkoutScreenState extends State<WorkoutScreen>
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            week: widget.week,
-            level: widget.level,
+          builder: (context) => BottomNavigation(
+            initialWeek: widget.week,
+            initialLevel: widget.level,
             isTestMode: false, // 테스트 모드 아님
           ),
         ),
@@ -378,9 +379,9 @@ class WorkoutScreenState extends State<WorkoutScreen>
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(
-          week: widget.week,
-          level: widget.level,
+        builder: (context) => BottomNavigation(
+          initialWeek: widget.week,
+          initialLevel: widget.level,
           isTestMode: false,
         ),
       ),

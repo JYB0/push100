@@ -8,11 +8,13 @@ import 'package:push100/screens/setting_screen.dart';
 class BottomNavigation extends StatefulWidget {
   final int initialWeek;
   final String initialLevel;
+  final bool isTestMode;
 
   const BottomNavigation({
     super.key,
     required this.initialWeek,
     required this.initialLevel,
+    this.isTestMode = false,
   });
 
   @override
@@ -28,7 +30,11 @@ class BottomNavigationState extends State<BottomNavigation> {
   void initState() {
     super.initState();
     _screens.addAll([
-      HomeScreen(week: widget.initialWeek, level: widget.initialLevel),
+      HomeScreen(
+        week: widget.initialWeek,
+        level: widget.initialLevel,
+        isTestMode: widget.isTestMode,
+      ),
       const WorkoutHistoryScreen(),
       const SettingScreen(),
     ]);

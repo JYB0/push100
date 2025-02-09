@@ -160,9 +160,6 @@ class HomeScreenState extends State<HomeScreen> {
     final int completedDays = ((widget.week - 1) * 3) + (currentDay - 1);
     final double progress = completedDays / totalDays;
 
-    // final progressColor =
-    //     Color.lerp(AppColors.redPrimary, AppColors.greenPrimary, progress);
-
     final isTestDay = widget.isTestMode;
 
     final screenWidth = MediaQuery.of(context).size.width;
