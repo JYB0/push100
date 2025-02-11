@@ -251,6 +251,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
     final isTestWeek =
         (widget.week == 2 || widget.week == 4 || widget.week == 5);
 
+    _animationController.stop();
+
     if (nextDay > 3 && isTestWeek) {
       // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
@@ -278,6 +280,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -297,6 +300,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -397,8 +401,12 @@ class WorkoutScreenState extends State<WorkoutScreen>
   void dispose() {
     timer?.cancel();
     _scrollController.dispose();
-    super.dispose();
+
+    if (_animationController.isAnimating) {
+      _animationController.stop();
+    }
     _animationController.dispose();
+    super.dispose();
   }
 
   @override
