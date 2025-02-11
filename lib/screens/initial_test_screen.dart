@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
-import 'package:push100/screens/home_screen.dart';
+import 'package:push100/screens/bottom_navigation.dart';
 
 class InitialTestScreen extends StatefulWidget {
   const InitialTestScreen({super.key});
@@ -143,9 +143,10 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomeScreen(
-                            week: week,
-                            level: level,
+                          builder: (context) => BottomNavigation(
+                            initialWeek: week,
+                            initialLevel: level,
+                            isTestMode: false,
                           ),
                         ),
                         (route) => false,
