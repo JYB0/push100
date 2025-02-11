@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:vibration/vibration.dart';
+
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
-import 'package:vibration/vibration.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 // import 'package:push100/screens/home_screen.dart';
@@ -59,7 +60,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     // ✅ 배경색 변경 애니메이션 (밝아졌다가 어두워짐)
     _colorAnimation = ColorTween(
       begin: Colors.white, // 밝은 색
-      end: const Color.fromARGB(128, 246, 211, 105), // 어두운 색 (강조 효과)
+      end: const Color.fromARGB(67, 246, 211, 105), // 어두운 색 (강조 효과)
     ).animate(_animationController);
   }
 
@@ -253,6 +254,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     if (nextDay > 3 && isTestWeek) {
       // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(true);
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
@@ -272,6 +274,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       final nextWeek = widget.week + 1;
 
       await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
@@ -290,6 +293,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       // 같은 주차의 다음 날로 이동
       await SharedPreferencesHelper.saveProgress(
           widget.week, nextDay, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;

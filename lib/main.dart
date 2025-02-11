@@ -29,6 +29,7 @@ void main() async {
   final bool isInitialTestSet = await checkInitialTest();
   final Map<String, dynamic> progress =
       await SharedPreferencesHelper.getProgress();
+  final bool isTestMode = await SharedPreferencesHelper.getIsTestMode();
 
   runApp(
     MyApp(
@@ -36,6 +37,7 @@ void main() async {
       initialWeek: progress['currentWeek'],
       initialDay: progress['currentDay'],
       initialLevel: progress['level'],
+      isTestMode: isTestMode,
     ),
   );
 }
@@ -45,6 +47,7 @@ class MyApp extends StatelessWidget {
   final int initialWeek;
   final int initialDay;
   final String initialLevel;
+  final bool isTestMode;
 
   const MyApp({
     super.key,
@@ -52,6 +55,7 @@ class MyApp extends StatelessWidget {
     required this.initialWeek,
     required this.initialDay,
     required this.initialLevel,
+    required this.isTestMode,
   });
 
   @override
@@ -111,6 +115,7 @@ class MyApp extends StatelessWidget {
           ? BottomNavigation(
               initialWeek: initialWeek,
               initialLevel: initialLevel,
+              isTestMode: isTestMode,
             )
           : const InitialTestScreen(),
     );

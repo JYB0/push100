@@ -31,6 +31,16 @@ class SharedPreferencesHelper {
     return prefs.getInt('initialPushupCount') ?? 0;
   }
 
+  static Future<void> saveIsTestMode(bool isTestMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isTestMode', isTestMode);
+  }
+
+  static Future<bool> getIsTestMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isTestMode') ?? false; // 기본값 false
+  }
+
   // Save the last test result
   static Future<void> saveTestResult(int week, int result) async {
     final prefs = await SharedPreferences.getInstance();
