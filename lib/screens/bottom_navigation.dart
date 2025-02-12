@@ -47,12 +47,12 @@ class BottomNavigationState extends State<BottomNavigation> {
 
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 500),
         transitionBuilder: (child, animation) {
           return SharedAxisTransition(
             animation: animation,
             secondaryAnimation: const AlwaysStoppedAnimation(0),
-            transitionType: SharedAxisTransitionType.scaled,
+            transitionType: SharedAxisTransitionType.horizontal,
             child: child,
           );
         },

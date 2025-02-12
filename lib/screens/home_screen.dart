@@ -206,10 +206,22 @@ class HomeScreenState extends State<HomeScreen> {
               Card(
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WorkoutHistoryScreen(),
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        transitionDuration:
+                            const Duration(milliseconds: 500), // 애니메이션 지속 시간
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const WorkoutHistoryScreen(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SharedAxisTransition(
+                            animation: animation,
+                            secondaryAnimation: secondaryAnimation,
+                            transitionType:
+                                SharedAxisTransitionType.horizontal, // 가로 이동
+                            child: child,
+                          );
+                        },
                       ),
                     );
                   },
@@ -218,7 +230,7 @@ class HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Text(
-                          widget.isTestMode
+                          isTestDay
                               ? "Week ${widget.week} Test Day"
                               : "Week ${widget.week}, Day $currentDay (${widget.level})",
                           style: TextStyle(fontSize: dynamicFontSize),
@@ -270,7 +282,9 @@ class HomeScreenState extends State<HomeScreen> {
                         ? Column(
                             children: [
                               Text(
-                                isTestDay ? "${widget.week}주차 테스트" : "오늘의 목표",
+                                isTestDay
+                                    ? "Week ${widget.week} 테스트"
+                                    : "오늘의 목표",
                                 style: TextStyle(
                                   fontSize: dynamicFontSize * 1.5,
                                   fontWeight: FontWeight.bold,
@@ -350,7 +364,7 @@ class HomeScreenState extends State<HomeScreen> {
                         return Card(
                           child: ListTile(
                             title: Text(
-                              "${widget.week}주차 테스트",
+                              "Week ${widget.week} 테스트",
                               style: TextStyle(
                                 fontSize: dynamicFontSize,
                                 fontWeight: FontWeight.bold,
