@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -260,14 +261,24 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BottomNavigation(
+
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              BottomNavigation(
             initialWeek: widget.week,
             initialLevel: widget.level,
             isTestMode: true, // 테스트 모드 활성화
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal,
+              child: child,
+            );
+          },
         ),
         (route) => false,
       );
@@ -281,14 +292,23 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BottomNavigation(
-            initialWeek: nextWeek,
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              BottomNavigation(
+            initialWeek: widget.week,
             initialLevel: widget.level,
-            isTestMode: false, // 테스트 모드 비활성화
+            isTestMode: false,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal,
+              child: child,
+            );
+          },
         ),
         (route) => false,
       );
@@ -301,14 +321,23 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BottomNavigation(
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              BottomNavigation(
             initialWeek: widget.week,
             initialLevel: widget.level,
-            isTestMode: false, // 테스트 모드 아님
+            isTestMode: false,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal,
+              child: child,
+            );
+          },
         ),
         (route) => false,
       );
@@ -384,14 +413,23 @@ class WorkoutScreenState extends State<WorkoutScreen>
     // 저장 후 홈 화면으로 이동
     await Future.delayed(const Duration(milliseconds: 100));
     if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BottomNavigation(
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            BottomNavigation(
           initialWeek: widget.week,
           initialLevel: widget.level,
-          isTestMode: false,
+          isTestMode: false, // 테스트 모드 활성화
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
       ),
       (route) => false,
     );

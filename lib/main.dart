@@ -70,6 +70,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.greyPrimary,
+        canvasColor: AppColors.greyPrimary,
         appBarTheme: AppBarTheme(
           toolbarHeight:
               screenWidth > 600 ? dynamicFontSize * 2.5 : dynamicFontSize * 3.5,
