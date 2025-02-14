@@ -158,7 +158,7 @@ class HomeScreenState extends State<HomeScreen> {
     const int totalDays = 6 * 3;
 
     final int completedDays = ((widget.week - 1) * 3) + (currentDay - 1);
-    final double progress = completedDays / totalDays;
+    final double progress = (completedDays / totalDays).clamp(0.0, 1.0);
 
     final isTestDay = widget.isTestMode;
 
@@ -230,15 +230,17 @@ class HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Text(
-                          isTestDay
-                              ? "Week ${widget.week} Test Day"
-                              : "Week ${widget.week}, Day $currentDay (${widget.level})",
+                          widget.week >= 7
+                              ? "🎉 챌린지를 성공하셨습니다!"
+                              : isTestDay
+                                  ? "Week ${widget.week} Test Day"
+                                  : "Week ${widget.week}, Day $currentDay (${widget.level})",
                           style: TextStyle(fontSize: dynamicFontSize),
                         ),
                         SizedBox(height: screenHeight * 0.02),
                         LinearProgressIndicator(
                           value: progress,
-                          color: progress != 1.0
+                          color: progress < 1.0
                               ? AppColors.redPrimary
                               : AppColors.greenPrimary,
                           backgroundColor: Colors.grey[300],
@@ -257,185 +259,188 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(height: screenHeight * 0.01),
 
-              // 오늘의 훈련 목표 또는 테스트 시작
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: const Border(
-                      left: BorderSide(
-                        color: AppColors.yellowPrimary,
-                        width: 1,
-                      ),
-                      right: BorderSide(
-                        color: AppColors.yellowPrimary,
-                        width: 1,
-                      ),
-                    ),
+              if (widget.week < 7) // 오늘의 훈련 목표 또는 테스트 시작
+                Card(
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(dynamicFontSize),
-                    child: todayPlan != null
-                        ? Column(
-                            children: [
-                              Text(
-                                isTestDay
-                                    ? widget.week == 6
-                                        ? "Final 테스트"
-                                        : "Week ${widget.week} 테스트"
-                                    : "오늘의 목표",
-                                style: TextStyle(
-                                  fontSize: dynamicFontSize * 1.5,
-                                  fontWeight: FontWeight.bold,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: const Border(
+                        left: BorderSide(
+                          color: AppColors.yellowPrimary,
+                          width: 1,
+                        ),
+                        right: BorderSide(
+                          color: AppColors.yellowPrimary,
+                          width: 1,
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(dynamicFontSize),
+                      child: todayPlan != null
+                          ? Column(
+                              children: [
+                                Text(
+                                  isTestDay
+                                      ? widget.week == 6
+                                          ? "Final 테스트"
+                                          : "Week ${widget.week} 테스트"
+                                      : "오늘의 목표",
+                                  style: TextStyle(
+                                    fontSize: dynamicFontSize * 1.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: screenHeight * 0.01),
-                              Text(
-                                isTestDay
-                                    ? (testPassingCriteria
-                                            .containsKey(widget.week)
-                                        ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
-                                        : "테스트를 시작하세요!")
-                                    : _formatPushupText(todayPlan.sets),
-                                style: TextStyle(fontSize: dynamicFontSize),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: screenHeight * 0.02),
-                              ElevatedButton(
-                                onPressed: () {
-                                  final targetScreen = isTestDay
-                                      ? TestScreen(
-                                          week: widget.week,
-                                          currentLevel: widget.level,
-                                        )
-                                      : WorkoutScreen(
-                                          level: widget.level,
-                                          week: widget.week,
-                                          day: currentDay, // 현재 날짜 전달
-                                        );
+                                SizedBox(height: screenHeight * 0.01),
+                                Text(
+                                  isTestDay
+                                      ? (testPassingCriteria
+                                              .containsKey(widget.week)
+                                          ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                          : "테스트를 시작하세요!")
+                                      : _formatPushupText(todayPlan.sets),
+                                  style: TextStyle(fontSize: dynamicFontSize),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: screenHeight * 0.02),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final targetScreen = isTestDay
+                                        ? TestScreen(
+                                            week: widget.week,
+                                            currentLevel: widget.level,
+                                          )
+                                        : WorkoutScreen(
+                                            level: widget.level,
+                                            week: widget.week,
+                                            day: currentDay, // 현재 날짜 전달
+                                          );
 
-                                  Navigator.of(context).push(
-                                    PageRouteBuilder(
-                                      transitionDuration: const Duration(
-                                          milliseconds: 500), // 애니메이션 지속 시간
-                                      pageBuilder: (context, animation,
-                                              secondaryAnimation) =>
-                                          targetScreen,
-                                      transitionsBuilder: (context, animation,
-                                          secondaryAnimation, child) {
-                                        return SharedAxisTransition(
-                                          animation: animation,
-                                          secondaryAnimation:
-                                              secondaryAnimation,
-                                          transitionType:
-                                              SharedAxisTransitionType
-                                                  .horizontal,
-                                          child: child,
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
-                                child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
+                                    Navigator.of(context).push(
+                                      PageRouteBuilder(
+                                        transitionDuration: const Duration(
+                                            milliseconds: 500), // 애니메이션 지속 시간
+                                        pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
+                                            targetScreen,
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
+                                          return SharedAxisTransition(
+                                            animation: animation,
+                                            secondaryAnimation:
+                                                secondaryAnimation,
+                                            transitionType:
+                                                SharedAxisTransitionType
+                                                    .horizontal,
+                                            child: child,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  child: Text(isTestDay ? "테스트 시작" : "운동 시작"),
+                                ),
+                              ],
+                            )
+                          : Center(
+                              child: Text(
+                                "오늘의 플랜을 찾을 수 없습니다.",
+                                style: TextStyle(fontSize: dynamicFontSize),
                               ),
-                            ],
-                          )
-                        : Center(
-                            child: Text(
-                              "오늘의 플랜을 찾을 수 없습니다.",
-                              style: TextStyle(fontSize: dynamicFontSize),
                             ),
-                          ),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: (3 - currentDay) + 1, // 3일차 이후 테스트 카드를 포함한 총 항목 수
-                  itemBuilder: (context, index) {
-                    // 테스트 카드가 맨 마지막에 위치하도록 설정
-                    if (index == (3 - currentDay)) {
-                      // 테스트 조건 설정
-                      final isTestWeek = (widget.week == 2 ||
-                          widget.week == 4 ||
-                          widget.week == 5 ||
-                          widget.week == 6);
-                      if (isTestWeek && !isTestDay) {
-                        return Card(
-                          child: ListTile(
-                            title: Text(
-                              widget.week == 6
-                                  ? "Final 테스트"
-                                  : "Week ${widget.week} 테스트",
-                              style: TextStyle(
-                                fontSize: dynamicFontSize,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              testPassingCriteria.containsKey(widget.week)
-                                  ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
-                                  : "${widget.week}주차 테스트를 시작하세요!",
-                              style: TextStyle(
-                                fontSize: dynamicFontSize,
-                              ),
-                            ),
-                            onTap: () {
-                              _confirmTest(context);
-                            },
-                          ),
-                        );
-                      } else {
-                        return const SizedBox(); // 테스트 주차가 아닌 경우 아무것도 표시하지 않음
-                      }
-                    }
-
-                    // 운동 목표 카드
-                    final nextDay = currentDay + index + 1;
-                    final nextPlan = getPlanByLevelWeekAndDay(
-                        widget.level, widget.week, nextDay);
-
-                    return nextPlan != null
-                        ? Card(
+              if (widget.week < 7)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount:
+                        (3 - currentDay) + 1, // 3일차 이후 테스트 카드를 포함한 총 항목 수
+                    itemBuilder: (context, index) {
+                      // 테스트 카드가 맨 마지막에 위치하도록 설정
+                      if (index == (3 - currentDay)) {
+                        // 테스트 조건 설정
+                        final isTestWeek = (widget.week == 2 ||
+                            widget.week == 4 ||
+                            widget.week == 5 ||
+                            widget.week == 6);
+                        if (isTestWeek && !isTestDay) {
+                          return Card(
                             child: ListTile(
                               title: Text(
-                                "Day $nextDay 목표",
+                                widget.week == 6
+                                    ? "Final 테스트"
+                                    : "Week ${widget.week} 테스트",
                                 style: TextStyle(
                                   fontSize: dynamicFontSize,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               subtitle: Text(
-                                _formatPushupText(nextPlan.sets),
+                                testPassingCriteria.containsKey(widget.week)
+                                    ? "최소 통과 기준: ${testPassingCriteria[widget.week]}개"
+                                    : "${widget.week}주차 테스트를 시작하세요!",
                                 style: TextStyle(
-                                  fontSize: dynamicFontSize * 0.9,
+                                  fontSize: dynamicFontSize,
                                 ),
                               ),
                               onTap: () {
-                                _confirmWorkout(context, nextDay);
+                                _confirmTest(context);
                               },
                             ),
-                          )
-                        : const SizedBox();
-                  },
+                          );
+                        } else {
+                          return const SizedBox(); // 테스트 주차가 아닌 경우 아무것도 표시하지 않음
+                        }
+                      }
+
+                      // 운동 목표 카드
+                      final nextDay = currentDay + index + 1;
+                      final nextPlan = getPlanByLevelWeekAndDay(
+                          widget.level, widget.week, nextDay);
+
+                      return nextPlan != null
+                          ? Card(
+                              child: ListTile(
+                                title: Text(
+                                  "Day $nextDay 목표",
+                                  style: TextStyle(
+                                    fontSize: dynamicFontSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  _formatPushupText(nextPlan.sets),
+                                  style: TextStyle(
+                                    fontSize: dynamicFontSize * 0.9,
+                                  ),
+                                ),
+                                onTap: () {
+                                  _confirmWorkout(context, nextDay);
+                                },
+                              ),
+                            )
+                          : const SizedBox();
+                    },
+                  ),
                 ),
-              ),
 
               // 하단 동기 부여 문구
-              Padding(
-                padding: EdgeInsets.only(
-                  top: dynamicFontSize,
+              if (widget.week < 7)
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: dynamicFontSize,
+                  ),
+                  child: Text(
+                    "꾸준한 도전이 당신을 더 강하게 만듭니다!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: dynamicFontSize, fontStyle: FontStyle.italic),
+                  ),
                 ),
-                child: Text(
-                  "꾸준한 도전이 당신을 더 강하게 만듭니다!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: dynamicFontSize, fontStyle: FontStyle.italic),
-                ),
-              ),
             ],
           ),
         ),

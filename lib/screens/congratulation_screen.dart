@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:push100/screens/bottom_navigation.dart';
 
 class CongratulationsScreen extends StatelessWidget {
   const CongratulationsScreen({super.key});
@@ -25,7 +26,16 @@ class CongratulationsScreen extends StatelessWidget {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const BottomNavigation(
+                        initialWeek: 7, // ✅ 7주차로 설정하여 홈 화면에서 nextPlan 안 보이게
+                        initialLevel: "초보", // ✅ 기존 레벨 유지
+                        isTestMode: false, // ✅ 테스트 모드 해제
+                      ),
+                    ),
+                    (route) => false, // ✅ 기존 모든 화면 제거하고 `BottomNavigation`만 남김
+                  );
                 },
                 child: const Text("홈으로 가기"),
               ),
