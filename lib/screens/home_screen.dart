@@ -283,7 +283,9 @@ class HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(
                                 isTestDay
-                                    ? "Week ${widget.week} 테스트"
+                                    ? widget.week == 6
+                                        ? "Final 테스트"
+                                        : "Week ${widget.week} 테스트"
                                     : "오늘의 목표",
                                 style: TextStyle(
                                   fontSize: dynamicFontSize * 1.5,
@@ -359,12 +361,15 @@ class HomeScreenState extends State<HomeScreen> {
                       // 테스트 조건 설정
                       final isTestWeek = (widget.week == 2 ||
                           widget.week == 4 ||
-                          widget.week == 5);
+                          widget.week == 5 ||
+                          widget.week == 6);
                       if (isTestWeek && !isTestDay) {
                         return Card(
                           child: ListTile(
                             title: Text(
-                              "Week ${widget.week} 테스트",
+                              widget.week == 6
+                                  ? "Final 테스트"
+                                  : "Week ${widget.week} 테스트",
                               style: TextStyle(
                                 fontSize: dynamicFontSize,
                                 fontWeight: FontWeight.bold,

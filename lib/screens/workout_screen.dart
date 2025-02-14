@@ -249,8 +249,10 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
   Future<void> _completeWorkout() async {
     final nextDay = widget.day + 1;
-    final isTestWeek =
-        (widget.week == 2 || widget.week == 4 || widget.week == 5);
+    final isTestWeek = (widget.week == 2 ||
+        widget.week == 4 ||
+        widget.week == 5 ||
+        widget.week == 6);
 
     _animationController.stop();
 
@@ -297,7 +299,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation, secondaryAnimation) =>
               BottomNavigation(
-            initialWeek: widget.week,
+            initialWeek: nextWeek,
             initialLevel: widget.level,
             isTestMode: false,
           ),

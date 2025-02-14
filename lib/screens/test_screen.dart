@@ -4,6 +4,7 @@ import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
+import 'package:push100/screens/congratulation_screen.dart';
 
 class TestScreen extends StatefulWidget {
   final int week;
@@ -58,9 +59,8 @@ class TestScreenState extends State<TestScreen> {
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          toolbarHeight: screenWidth > 600 ? 72.0 : 56.0,
           title: Text(
-            "Week ${widget.week} Test",
+            widget.week == 6 ? "파이널 테스트" : "Week ${widget.week} Test",
             style: TextStyle(
               fontSize: dynamicFontSize * 1.2,
               fontWeight: FontWeight.bold,
@@ -141,6 +141,41 @@ class TestScreenState extends State<TestScreen> {
                     onPressed: () async {
                       _dismissKeyboard();
                       _saveTestResult(pushupCount);
+
+                      final bool isFinalTest = (widget.week == 6);
+
+                      if (isFinalTest) {
+                        if (pushupCount >= 100) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CongratulationsScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        } else {
+                          await SharedPreferencesHelper.saveProgress(
+                            6,
+                            1,
+                            widget.currentLevel,
+                          );
+
+                          if (!context.mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BottomNavigation(
+                                initialWeek: 6,
+                                initialLevel: widget.currentLevel,
+                                isTestMode: false,
+                              ),
+                            ),
+                            (route) => false,
+                          );
+                        }
+                        return;
+                      }
 
                       // 테스트 결과에 따라 플랜 업데이트
                       final updatedPlan = determineUpdatedPlan(
