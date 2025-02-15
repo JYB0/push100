@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
@@ -37,6 +38,24 @@ class TestScreenState extends State<TestScreen> {
 
   void _saveTestResult(int pushupCount) async {
     await SharedPreferencesHelper.saveTestResult(widget.week, pushupCount);
+  }
+
+  void _navigateWithAnimation(BuildContext context, Widget targetScreen) {
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -146,13 +165,9 @@ class TestScreenState extends State<TestScreen> {
 
                       if (isFinalTest) {
                         if (pushupCount >= 100) {
-                          Navigator.pushAndRemoveUntil(
+                          _navigateWithAnimation(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const CongratulationsScreen(),
-                            ),
-                            (route) => false,
+                            const CongratulationsScreen(),
                           );
                         } else {
                           await SharedPreferencesHelper.saveProgress(
@@ -162,16 +177,13 @@ class TestScreenState extends State<TestScreen> {
                           );
 
                           if (!context.mounted) return;
-                          Navigator.pushAndRemoveUntil(
+                          _navigateWithAnimation(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => BottomNavigation(
-                                initialWeek: 6,
-                                initialLevel: widget.currentLevel,
-                                isTestMode: false,
-                              ),
+                            BottomNavigation(
+                              initialWeek: 6,
+                              initialLevel: widget.currentLevel,
+                              isTestMode: false,
                             ),
-                            (route) => false,
                           );
                         }
                         return;
@@ -187,16 +199,13 @@ class TestScreenState extends State<TestScreen> {
                           nextWeek, 1, level);
 
                       if (!context.mounted) return;
-                      Navigator.pushAndRemoveUntil(
+                      _navigateWithAnimation(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => BottomNavigation(
-                            initialWeek: nextWeek,
-                            initialLevel: level,
-                            isTestMode: false,
-                          ),
+                        BottomNavigation(
+                          initialWeek: nextWeek,
+                          initialLevel: level,
+                          isTestMode: false,
                         ),
-                        (route) => false,
                       );
                     },
                     child: const Text("테스트 완료"),

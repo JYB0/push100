@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
@@ -37,6 +38,24 @@ class InitialTestScreenState extends State<InitialTestScreen> {
 
   void _saveInitialTest(int pushupCount) async {
     await SharedPreferencesHelper.saveInitialTest(pushupCount);
+  }
+
+  void _navigateWithAnimation(BuildContext context, Widget targetScreen) {
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -140,16 +159,13 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                       final String level = initialPlan['level'];
                       _saveInitialTest(pushupCount);
 
-                      Navigator.pushAndRemoveUntil(
+                      _navigateWithAnimation(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => BottomNavigation(
-                            initialWeek: week,
-                            initialLevel: level,
-                            isTestMode: false,
-                          ),
+                        BottomNavigation(
+                          initialWeek: week,
+                          initialLevel: level,
+                          isTestMode: false,
                         ),
-                        (route) => false,
                       );
                     },
                     child: const Text("테스트 완료"),
