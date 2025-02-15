@@ -165,6 +165,13 @@ class TestScreenState extends State<TestScreen> {
 
                       if (isFinalTest) {
                         if (pushupCount >= 100) {
+                          await SharedPreferencesHelper.saveProgress(
+                            7,
+                            1,
+                            widget.currentLevel,
+                          );
+
+                          if (!context.mounted) return;
                           _navigateWithAnimation(
                             context,
                             const CongratulationsScreen(),
