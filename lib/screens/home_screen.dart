@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
-import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,22 +41,6 @@ class HomeScreenState extends State<HomeScreen> {
       currentDay = prefs.getInt('currentDay') ?? 1;
       currentWeek = prefs.getInt('currentWeek') ?? 1;
     });
-  }
-
-  Future<void> _resetData() async {
-    await SharedPreferencesHelper.clearAllData();
-    await _loadProgressFromPreferences();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("저장된 모든 데이터가 초기화되었습니다."),
-          duration: Duration(
-            seconds: 2,
-          ),
-        ),
-      );
-    }
   }
 
   Future<void> _confirmWorkout(BuildContext context, int nextDay) async {
@@ -173,14 +156,6 @@ class HomeScreenState extends State<HomeScreen> {
         title: const Text(
           "Push 100",
         ),
-        actions: [
-          IconButton(
-            onPressed: _resetData,
-            icon: const Icon(
-              Icons.refresh,
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Padding(

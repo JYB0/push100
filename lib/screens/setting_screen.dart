@@ -1,16 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:push100/main.dart';
+// import 'package:share_plus/share_plus.dart';
+import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/screens/tutorial_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
+  /// ✅ 기록 초기화 기능
+  Future<void> _resetData(BuildContext context) async {
+    final result = await showOkCancelAlertDialog(
+      context: context,
+      title: "데이터 초기화",
+      message: "모든 훈련 기록과 설정이 삭제됩니다.\n정말 초기화하시겠습니까?",
+      okLabel: "초기화",
+      cancelLabel: "취소",
+      isDestructiveAction: true,
+    );
+
+    if (result == OkCancelResult.ok) {
+      await SharedPreferencesHelper.clearAllData();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("기록이 초기화되었습니다.")),
+        );
+      }
+    }
+  }
+
+  /// ✅ 앱 공유 기능
+  // void _shareApp() {
+  //   String appLink = "https://www.google.com"; // 앱 링크 있으면 추후에 넣자.
+  //   String message = "🔥 푸시업 챌린지 앱을 사용해보세요! 💪\n$appLink";
+  //   Share.share(message);
+  // }
+
+  /// ✅ 앱 사용법 화면 이동
+  void _navigateToTutorial(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const TutorialScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    double baseFontSize = 16.0;
+    double dynamicFontSize = baseFontSize * (screenWidth / 400);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("설정"),
-      ),
-      body: const Center(
-        child: Text("Setting Screen"),
+      appBar: AppBar(title: const Text("설정")),
+      body: ListView(
+        children: [
+          /// 🔹 기록 초기화
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.delete,
+              color: AppColors.redPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "데이터 초기화",
+              style: TextStyle(
+                fontSize: dynamicFontSize,
+              ),
+            ),
+            onTap: () => _resetData(context),
+          ),
+
+          /// 🔹 앱 공유
+          // ListTile(
+          //   leading: const Icon(Icons.share, color: Colors.blue),
+          //   title: const Text("앱 공유하기"),
+          //   onTap: _shareApp,
+          // ),
+
+          /// 🔹 앱 사용법
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.help,
+              color: AppColors.greenPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "앱 사용법",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: () => _navigateToTutorial(context),
+          ),
+        ],
       ),
     );
   }
