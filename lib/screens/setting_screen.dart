@@ -101,7 +101,7 @@ class SettingScreen extends StatelessWidget {
               size: dynamicFontSize * 1.5,
             ),
             title: Text(
-              "앱 사용법",
+              "앱 가이드",
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: () => _navigateToTutorial(context),

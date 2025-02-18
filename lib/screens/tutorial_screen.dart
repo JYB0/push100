@@ -12,7 +12,7 @@ class TutorialScreen extends StatelessWidget {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("📌 앱 사용법")),
+      appBar: AppBar(title: const Text("📌 앱 가이드")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
