@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:push100/main.dart';
@@ -39,14 +40,26 @@ class SettingScreen extends StatelessWidget {
   /// ✅ 앱 사용법 화면 이동
   void _navigateToTutorial(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const TutorialScreen()),
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500), // 애니메이션 지속 시간
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const TutorialScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+            child: child,
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    // final screenHeight = MediaQuery.of(context).size.height;
 
     double baseFontSize = 16.0;
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
