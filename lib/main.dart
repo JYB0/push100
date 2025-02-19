@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:push100/screens/initial_test_screen.dart';
@@ -71,11 +72,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.greyPrimary,
         canvasColor: AppColors.greyPrimary,
+        fontFamily: "Pretendard",
         appBarTheme: AppBarTheme(
           toolbarHeight:
               screenWidth > 600 ? dynamicFontSize * 2.5 : dynamicFontSize * 3.5,
           backgroundColor: AppColors.greyPrimary,
-          titleTextStyle: TextStyle(
+          titleTextStyle: GoogleFonts.bebasNeue(
             fontSize: screenWidth > 600
                 ? dynamicFontSize * 1.2
                 : dynamicFontSize * 1.5,
