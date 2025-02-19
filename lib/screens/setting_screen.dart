@@ -4,6 +4,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:push100/main.dart';
 // import 'package:share_plus/share_plus.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/screens/initial_test_screen.dart';
 import 'package:push100/screens/tutorial_screen.dart';
 
 class SettingScreen extends StatelessWidget {
@@ -22,9 +23,25 @@ class SettingScreen extends StatelessWidget {
 
     if (result == OkCancelResult.ok) {
       await SharedPreferencesHelper.clearAllData();
+
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("기록이 초기화되었습니다.")),
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            transitionDuration:
+                const Duration(milliseconds: 500), // 애니메이션 지속 시간
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const InitialTestScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SharedAxisTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+                child: child,
+              );
+            },
+          ),
+          (route) => false, // ✅ 기존 모든 화면 제거 후 `InitialTestScreen()`만 남김
         );
       }
     }
