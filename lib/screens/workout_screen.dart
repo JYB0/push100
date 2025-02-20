@@ -154,8 +154,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       'rest_complete_channel',
       'Rest Complete',
       channelDescription: 'Notification for rest completion',
-      importance: Importance.high,
-      priority: Priority.high,
+      importance: Importance.max,
+      priority: Priority.max,
+      icon: 'transparent',
+      color: AppColors.greenPrimary,
+      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -380,8 +383,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       'workout_complete_channel',
       'Workout Complete',
       channelDescription: 'Notification for workout completion',
-      importance: Importance.high,
-      priority: Priority.high,
+      importance: Importance.max,
+      priority: Priority.max,
+      icon: 'transparent',
+      color: AppColors.greenPrimary,
+      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
     const NotificationDetails platformChannelSpecifics =

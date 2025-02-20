@@ -16,7 +16,7 @@ void main() async {
   await Future.delayed(const Duration(milliseconds: 500));
 
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('transparent');
 
   const DarwinInitializationSettings initializationSettingsIOS =
       DarwinInitializationSettings(
