@@ -17,7 +17,11 @@ void main() async {
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const DarwinInitializationSettings initializationSettingsIOS =
-      DarwinInitializationSettings();
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
@@ -28,6 +32,8 @@ void main() async {
     initializationSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) async {},
   );
+
+  await requestNotificationPermissions();
 
   final bool isInitialTestSet = await checkInitialTest();
   final Map<String, dynamic> progress =
@@ -43,6 +49,26 @@ void main() async {
       isTestMode: isTestMode,
     ),
   );
+}
+
+Future<void> requestNotificationPermissions() async {
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  // 📌 Android 알림 권한 요청
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
+
+  // 📌 iOS 알림 권한 요청
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>()
+      ?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 }
 
 class MyApp extends StatelessWidget {
