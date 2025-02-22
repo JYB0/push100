@@ -11,9 +11,13 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.remove();
 
-  await Future.delayed(const Duration(milliseconds: 500));
+  await Future.delayed(
+    const Duration(milliseconds: 500),
+    () {
+      FlutterNativeSplash.remove();
+    },
+  );
 
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('transparent');

@@ -158,7 +158,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       priority: Priority.max,
       icon: 'transparent',
       color: AppColors.greenPrimary,
-      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+      // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -387,7 +387,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       priority: Priority.max,
       icon: 'transparent',
       color: AppColors.greenPrimary,
-      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+      // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
     const NotificationDetails platformChannelSpecifics =
