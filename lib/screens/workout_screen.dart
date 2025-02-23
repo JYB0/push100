@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
@@ -259,6 +260,20 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
     _animationController.stop();
 
+    if (widget.week == 1 && widget.day == 3) {
+      // ✅ 1주차 3일차 완료 시 1주차의 운동 기록 검토
+      bool needToRetry = await _checkWeekOneCompletion();
+
+      if (needToRetry) {
+        int workoutCount = await _getWorkoutCountForWeek(1);
+        if (workoutCount <= 3) {
+          await _showRetryWeekOneDialog();
+          return;
+          // 🚨 여기서 리턴해서 1주차 재진행 여부 결정 후 이동
+        }
+      }
+    }
+
     if (nextDay > 3 && isTestWeek) {
       // 테스트 주차의 마지막 날인 경우 테스트 모드로 전환
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
@@ -349,7 +364,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  void _completeSet() {
+  Future<void> _completeSet() async {
     if (currentSet < sets.length - 1) {
       setState(() {
         userReps[currentSet] = currentTargetReps;
@@ -357,12 +372,12 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
         if (currentSet < sets.length) {
           currentTargetReps = userReps[currentSet]; // 다음 세트 목표 로드
+          _startRestTimer();
         }
       });
       if (currentSet == sets.length) {
         _saveWorkoutRecord(); // 운동 기록 저장
       }
-      _startRestTimer();
       _scrollToCurrentSet();
       _animationController.reset();
       _animationController.repeat(reverse: true);
@@ -370,8 +385,103 @@ class WorkoutScreenState extends State<WorkoutScreen>
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
       _showWorkoutCompleteNotification();
-      _completeWorkout();
+      await _completeWorkout();
     }
+  }
+
+  Future<bool> _checkWeekOneCompletion() async {
+    final records = await SharedPreferencesHelper.getWorkoutRecords();
+
+    for (var record in records) {
+      if (record['week'] == 1 && record['day'] <= 3) {
+        List<int> plannedReps = List<int>.from(record['plannedReps']);
+        List<int> userReps = List<int>.from(record['userReps']);
+
+        // 목표 개수를 하나라도 못 채운 경우가 있으면 재진행 필요
+        for (int i = 0; i < plannedReps.length; i++) {
+          if (userReps[i] < plannedReps[i]) {
+            return true;
+          }
+        }
+      }
+    }
+    return false; // 모든 날 목표 달성했으면 재진행 필요 없음
+  }
+
+  /// 🔥 `showOkCancelAlertDialog`를 이용한 1주차 재진행 여부 확인
+  Future<void> _showRetryWeekOneDialog() async {
+    final result = await showOkCancelAlertDialog(
+      context: context,
+      title: "1주차 재진행",
+      message: "1주차에서 목표 개수를\n달성하지 못한 날이 있습니다.\n"
+          "1주차를 다시 진행하시겠습니까?",
+      okLabel: "네",
+      cancelLabel: "아니요",
+      isDestructiveAction: true,
+    );
+
+    if (!mounted) return;
+
+    if (result == OkCancelResult.ok) {
+      // ✅ 1주차 1일차부터 다시 시작
+      await SharedPreferencesHelper.saveProgress(1, 1, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+
+      _navigateToBottomNavigation(isTestMode: false, nextWeek: 1, nextDay: 1);
+    } else {
+      // ✅ 그냥 진행
+      const nextWeek = 2;
+      await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
+
+      await Future.delayed(const Duration(milliseconds: 100)); // 🔥 딜레이 추가
+      if (!mounted) return;
+
+      _navigateToBottomNavigation(
+        isTestMode: false,
+        nextWeek: nextWeek,
+        nextDay: 1,
+      );
+    }
+  }
+
+  void _navigateToBottomNavigation(
+      {required bool isTestMode, int? nextWeek, int? nextDay}) {
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            BottomNavigation(
+          initialWeek: nextWeek ?? widget.week,
+          initialLevel: widget.level,
+          isTestMode: isTestMode,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
+      ),
+      (route) => false,
+    );
+  }
+
+  Future<int> _getWorkoutCountForWeek(int week) async {
+    final records = await SharedPreferencesHelper.getWorkoutRecords();
+    int count = 0;
+
+    for (var record in records) {
+      if (record['week'] == week) {
+        count++;
+      }
+    }
+    return count;
   }
 
   void _showWorkoutCompleteNotification() async {
@@ -419,28 +529,28 @@ class WorkoutScreenState extends State<WorkoutScreen>
     );
 
     // 저장 후 홈 화면으로 이동
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            BottomNavigation(
-          initialWeek: widget.week,
-          initialLevel: widget.level,
-          isTestMode: false, // 테스트 모드 활성화
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.horizontal,
-            child: child,
-          );
-        },
-      ),
-      (route) => false,
-    );
+    // await Future.delayed(const Duration(milliseconds: 100));
+    // if (!mounted) return;
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   PageRouteBuilder(
+    //     transitionDuration: const Duration(milliseconds: 500),
+    //     pageBuilder: (context, animation, secondaryAnimation) =>
+    //         BottomNavigation(
+    //       initialWeek: widget.week,
+    //       initialLevel: widget.level,
+    //       isTestMode: false, // 테스트 모드 활성화
+    //     ),
+    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    //       return SharedAxisTransition(
+    //         animation: animation,
+    //         secondaryAnimation: secondaryAnimation,
+    //         transitionType: SharedAxisTransitionType.horizontal,
+    //         child: child,
+    //       );
+    //     },
+    //   ),
+    //   (route) => false,
+    // );
   }
 
   @override
