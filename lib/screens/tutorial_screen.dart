@@ -26,13 +26,13 @@ class TutorialScreen extends StatelessWidget {
               ),
             ),
             Text(
-              "2. 푸시업을 한 날로부터 2일 후에 푸시업(혹은 테스트)을 시작해주세요.",
+              "2. 푸시업을 한 날로부터 2일 후에 푸시업(혹은 테스트)을 시작해 주세요.",
               style: TextStyle(
                 fontSize: dynamicFontSize,
               ),
             ),
             Text(
-              "3. 테스트를 한 날로부터 2일 후에 푸시업을 진행해주세요.",
+              "3. 테스트를 한 날로부터 2일 후에 푸시업을 진행해 주세요.",
               style: TextStyle(
                 fontSize: dynamicFontSize,
               ),
