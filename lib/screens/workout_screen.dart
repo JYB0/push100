@@ -9,7 +9,6 @@ import 'package:push100/screens/daily_workout_complete_screen.dart';
 import 'package:vibration/vibration.dart';
 
 import 'package:push100/main.dart';
-import 'package:push100/screens/bottom_navigation.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 // import 'package:push100/screens/home_screen.dart';
