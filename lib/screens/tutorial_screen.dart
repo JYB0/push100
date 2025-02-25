@@ -32,7 +32,7 @@ class TutorialScreen extends StatelessWidget {
               ),
             ),
             Text(
-              "3. 정해진 개수를 채우지 못했다면 '-' 버튼을 눌러 수행한 횟수를 조정한 후, 세트를 완료하세요.",
+              "3. 정해진 개수를 채우지 못했다면 - 버튼을 눌러 횟수를 조정한 후, 세트를 완료하세요.",
               style: TextStyle(
                 fontSize: dynamicFontSize,
               ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:push100/screens/daily_workout_complete_screen.dart';
 import 'package:vibration/vibration.dart';
 
 import 'package:push100/main.dart';
@@ -260,6 +261,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
     _animationController.stop();
 
+    final totalPushups = userReps.reduce((a, b) => a + b);
+
     if (widget.week == 1 && widget.day == 3) {
       // ✅ 1주차 3일차 완료 시 1주차의 운동 기록 검토
       bool needToRetry = await _checkWeekOneCompletion();
@@ -286,9 +289,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation, secondaryAnimation) =>
-              BottomNavigation(
-            initialWeek: widget.week,
-            initialLevel: widget.level,
+              DailyWorkoutCompleteScreen(
+            totalPushups: totalPushups,
+            week: widget.week,
+            day: widget.day,
+            level: widget.level,
             isTestMode: true, // 테스트 모드 활성화
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -316,9 +321,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation, secondaryAnimation) =>
-              BottomNavigation(
-            initialWeek: nextWeek,
-            initialLevel: widget.level,
+              DailyWorkoutCompleteScreen(
+            totalPushups: totalPushups,
+            week: nextWeek,
+            day: widget.day,
+            level: widget.level,
             isTestMode: false,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -345,9 +352,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation, secondaryAnimation) =>
-              BottomNavigation(
-            initialWeek: widget.week,
-            initialLevel: widget.level,
+              DailyWorkoutCompleteScreen(
+            totalPushups: totalPushups,
+            week: widget.week,
+            day: widget.day,
+            level: widget.level,
             isTestMode: false,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -430,7 +439,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
-      _navigateToBottomNavigation(isTestMode: false, nextWeek: 1, nextDay: 1);
+      _navigateToDailyWorkoutCompleteNavigation(
+          isTestMode: false, nextWeek: 1, nextDay: 1);
     } else {
       // ✅ 그냥 진행
       const nextWeek = 2;
@@ -440,7 +450,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await Future.delayed(const Duration(milliseconds: 100)); // 🔥 딜레이 추가
       if (!mounted) return;
 
-      _navigateToBottomNavigation(
+      _navigateToDailyWorkoutCompleteNavigation(
         isTestMode: false,
         nextWeek: nextWeek,
         nextDay: 1,
@@ -448,15 +458,19 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  void _navigateToBottomNavigation(
+  void _navigateToDailyWorkoutCompleteNavigation(
       {required bool isTestMode, int? nextWeek, int? nextDay}) {
+    final totalPushups = userReps.reduce((a, b) => a + b);
+
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            BottomNavigation(
-          initialWeek: nextWeek ?? widget.week,
-          initialLevel: widget.level,
+            DailyWorkoutCompleteScreen(
+          totalPushups: totalPushups,
+          week: nextWeek ?? widget.week,
+          day: widget.day,
+          level: widget.level,
           isTestMode: isTestMode,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -535,7 +549,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     //   PageRouteBuilder(
     //     transitionDuration: const Duration(milliseconds: 500),
     //     pageBuilder: (context, animation, secondaryAnimation) =>
-    //         BottomNavigation(
+    //         DailyWorkoutCompleteNavigation(
     //       initialWeek: widget.week,
     //       initialLevel: widget.level,
     //       isTestMode: false, // 테스트 모드 활성화

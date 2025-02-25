@@ -30,6 +30,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     const colors = [
       AppColors.greenPrimary,
       AppColors.redPrimary,
+      AppColors.yellowLight
     ];
 
     int frameTime = 1000 ~/ 24;
@@ -47,7 +48,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
         _controller1 = Confetti.launch(
           context,
           options: const ConfettiOptions(
-            particleCount: 2,
+            particleCount: 3,
             angle: 60,
             spread: 55,
             x: 0,
