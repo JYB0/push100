@@ -140,9 +140,15 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(
-                height: screenHeight * 0.1,
+              SizedBox(height: screenHeight * 0.05),
+
+              // 🎉 운동 완료 아이콘 (애니메이션 제거)
+              Icon(
+                Icons.military_tech,
+                color: AppColors.yellowPrimary,
+                size: screenWidth * 0.3,
               ),
+              SizedBox(height: screenHeight * 0.02),
               Text(
                 "푸시업 챌린지를 \n성공했습니다!",
                 textAlign: TextAlign.center,
