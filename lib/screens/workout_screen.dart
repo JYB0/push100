@@ -392,7 +392,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
-      _showWorkoutCompleteNotification();
+      // _showWorkoutCompleteNotification();
       await _completeWorkout();
     }
   }
@@ -497,36 +497,36 @@ class WorkoutScreenState extends State<WorkoutScreen>
     return count;
   }
 
-  void _showWorkoutCompleteNotification() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
+  // void _showWorkoutCompleteNotification() async {
+  //   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  //       FlutterLocalNotificationsPlugin();
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'workout_complete_channel',
-      'Workout Complete',
-      channelDescription: 'Notification for workout completion',
-      importance: Importance.max,
-      priority: Priority.max,
-      icon: 'transparent',
-      color: AppColors.greenPrimary,
-      // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
-    );
+  //   const AndroidNotificationDetails androidPlatformChannelSpecifics =
+  //       AndroidNotificationDetails(
+  //     'workout_complete_channel',
+  //     'Workout Complete',
+  //     channelDescription: 'Notification for workout completion',
+  //     importance: Importance.max,
+  //     priority: Priority.max,
+  //     icon: 'transparent',
+  //     color: AppColors.greenPrimary,
+  //     // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+  //   );
 
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+  //   const NotificationDetails platformChannelSpecifics =
+  //       NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await flutterLocalNotificationsPlugin.show(
-      1,
-      '운동 완료',
-      '오늘의 훈련을 완료했습니다!',
-      platformChannelSpecifics,
-    );
+  //   await flutterLocalNotificationsPlugin.show(
+  //     1,
+  //     '운동 완료',
+  //     '오늘의 훈련을 완료했습니다!',
+  //     platformChannelSpecifics,
+  //   );
 
-    if (await Vibration.hasVibrator() ?? false) {
-      Vibration.vibrate(duration: 1000);
-    }
-  }
+  //   if (await Vibration.hasVibrator() ?? false) {
+  //     Vibration.vibrate(duration: 1000);
+  //   }
+  // }
 
   Future<void> _saveWorkoutRecord() async {
     final now = DateTime.now();
