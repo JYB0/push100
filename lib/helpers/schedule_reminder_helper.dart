@@ -10,7 +10,7 @@ void scheduleWorkoutReminder(bool isTestMode) async {
   final now = tz.TZDateTime.now(tz.local);
 
   // 📌 2일 뒤 날짜 계산
-  final scheduledDate = now.add(const Duration(seconds: 30));
+  final scheduledDate = now.add(const Duration(days: 2));
 
   // 📌 알림 메시지 설정 (isTestMode 여부에 따라 다르게 설정)
   String title = isTestMode ? "테스트 진행할 시간이에요!" : "운동할 시간이에요!";
