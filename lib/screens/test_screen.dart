@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
@@ -183,6 +184,8 @@ class TestScreenState extends State<TestScreen> {
                             widget.currentLevel,
                           );
 
+                          scheduleWorkoutReminder(false);
+
                           if (!context.mounted) return;
                           _navigateWithAnimation(
                             context,
@@ -204,6 +207,8 @@ class TestScreenState extends State<TestScreen> {
 
                       await SharedPreferencesHelper.saveProgress(
                           nextWeek, 1, level);
+
+                      scheduleWorkoutReminder(false);
 
                       if (!context.mounted) return;
                       _navigateWithAnimation(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/screens/daily_workout_complete_screen.dart';
 import 'package:vibration/vibration.dart';
 
@@ -12,6 +13,9 @@ import 'package:push100/main.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 // import 'package:push100/screens/home_screen.dart';
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 class WorkoutScreen extends StatefulWidget {
   final String level;
@@ -147,9 +151,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
   }
 
   void _showRestCompleteNotification() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'rest_complete_channel',
@@ -281,6 +282,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await SharedPreferencesHelper.saveProgress(widget.week, 3, widget.level);
       await SharedPreferencesHelper.saveIsTestMode(true);
 
+      scheduleWorkoutReminder(true);
+
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
@@ -313,6 +316,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
       await SharedPreferencesHelper.saveIsTestMode(false);
 
+      scheduleWorkoutReminder(false);
+
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
@@ -343,6 +348,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await SharedPreferencesHelper.saveProgress(
           widget.week, nextDay, widget.level);
       await SharedPreferencesHelper.saveIsTestMode(false);
+
+      scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
@@ -435,6 +442,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       await SharedPreferencesHelper.saveProgress(1, 1, widget.level);
       await SharedPreferencesHelper.saveIsTestMode(false);
 
+      scheduleWorkoutReminder(false);
+
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
@@ -445,6 +454,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       const nextWeek = 2;
       await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
       await SharedPreferencesHelper.saveIsTestMode(false);
+
+      scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100)); // 🔥 딜레이 추가
       if (!mounted) return;

@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
@@ -158,6 +159,8 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                       final int week = initialPlan['week'];
                       final String level = initialPlan['level'];
                       _saveInitialTest(pushupCount);
+
+                      scheduleWorkoutReminder(false);
 
                       _navigateWithAnimation(
                         context,
