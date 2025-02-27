@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/screens/daily_workout_complete_screen.dart';
 import 'package:vibration/vibration.dart';
@@ -68,6 +69,10 @@ class WorkoutScreenState extends State<WorkoutScreen>
       begin: Colors.white, // 밝은 색
       end: const Color.fromARGB(67, 246, 211, 105), // 어두운 색 (강조 효과)
     ).animate(_animationController);
+
+    debugPrint("🚀 WorkoutScreen initState() 실행됨");
+
+    AdHelper.loadRewardedAd();
   }
 
   void _increaseReps() {
@@ -396,6 +401,23 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _scrollToCurrentSet();
       _animationController.reset();
       _animationController.repeat(reverse: true);
+
+      if (currentSet % 2 == 0) {
+        debugPrint("짝수 세트, 광고 조건 체크중");
+        if (AdHelper.isRewardedAdLoaded) {
+          debugPrint("광고 로드됨, 광고 표시 시도");
+          AdHelper.showRewardedAd(
+            () {
+              debugPrint("광고 시청완료, 새로운 광고 로드");
+              // 광고 시청 완료 후 다시 광고 로드
+              AdHelper.loadRewardedAd();
+            },
+          );
+        } else {
+          debugPrint("광고 로드되지 않음");
+          AdHelper.loadRewardedAd();
+        }
+      }
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
