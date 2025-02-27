@@ -12,14 +12,11 @@ void scheduleWorkoutReminder(bool isTestMode) async {
   // 📌 2일 뒤 날짜 계산
   final scheduledDate = now.add(const Duration(days: 2));
 
-  print("📅 알림 예약 시간: $scheduledDate");
-
   // 📌 알림 메시지 설정 (isTestMode 여부에 따라 다르게 설정)
   String title = isTestMode ? "테스트 진행할 시간이에요!" : "운동할 시간이에요!";
   String body = isTestMode ? "최대 개수를 측정하세요!" : "오늘 운동을 완료하세요!";
 
-  int notificationId = 0;
-
+  int notificationId = 2000;
   await flutterLocalNotificationsPlugin.cancel(notificationId);
 
   // ✅ 알림 상세 설정 (Android)
@@ -46,7 +43,6 @@ void scheduleWorkoutReminder(bool isTestMode) async {
     platformDetails,
     uiLocalNotificationDateInterpretation:
         UILocalNotificationDateInterpretation.absoluteTime,
-    matchDateTimeComponents: DateTimeComponents.time, // 특정 날짜 & 시간
     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
   );
 }
