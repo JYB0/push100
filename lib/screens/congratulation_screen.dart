@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:animations/animations.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
@@ -15,6 +16,7 @@ class CongratulationsScreen extends StatefulWidget {
 class _CongratulationsScreenState extends State<CongratulationsScreen> {
   ConfettiController? _controller1;
   ConfettiController? _controller2;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   bool isDone = false;
   int progress = 0;
   late Timer _timer;
@@ -23,6 +25,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
   void initState() {
     super.initState();
     _startConfettiEffect(); // 🎉 화면이 나타나면 자동 실행
+    _playCompletionSound();
   }
 
   /// ✅ Confetti 효과 시작
@@ -34,7 +37,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     ];
 
     int frameTime = 1000 ~/ 24;
-    int total = 5 * 1000 ~/ frameTime;
+    int total = 2 * 1000 ~/ frameTime;
 
     _timer = Timer.periodic(Duration(milliseconds: frameTime), (timer) {
       progress++;
@@ -86,15 +89,21 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     });
   }
 
+  Future<void> _playCompletionSound() async {
+    await _audioPlayer.play(AssetSource('sounds/finish.wav'));
+  }
+
   @override
   void dispose() {
     _timer.cancel();
     _controller1 = null; // ✅ null로 설정하여 메모리 해제
     _controller2 = null; // ✅ null로 설정하여 메모리 해제
+    _audioPlayer.dispose();
     super.dispose();
   }
 
   void _navigateToHome() {
+    _audioPlayer.stop();
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500), // 애니메이션 지속 시간

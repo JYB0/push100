@@ -65,7 +65,6 @@ class AdHelper {
         },
       );
     } else {
-      // print("⚠️ 보상형 광고 없음, 다시 로드합니다.");
       loadRewardedAd(); // 없으면 다시 로드
     }
   }

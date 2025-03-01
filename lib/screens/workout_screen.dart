@@ -70,8 +70,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
       end: const Color.fromARGB(67, 246, 211, 105), // 어두운 색 (강조 효과)
     ).animate(_animationController);
 
-    debugPrint("🚀 WorkoutScreen initState() 실행됨");
-
     AdHelper.loadRewardedAd();
   }
 
@@ -165,11 +163,18 @@ class WorkoutScreenState extends State<WorkoutScreen>
       priority: Priority.max,
       icon: 'transparent',
       color: AppColors.greenPrimary,
+      sound: RawResourceAndroidNotificationSound('ping'),
       // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
+      sound: 'ping.wav',
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: darwinDetails,
+    );
 
     await flutterLocalNotificationsPlugin.show(
       0,
@@ -403,18 +408,14 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.repeat(reverse: true);
 
       if (currentSet % 2 == 0) {
-        debugPrint("짝수 세트, 광고 조건 체크중");
         if (AdHelper.isRewardedAdLoaded) {
-          debugPrint("광고 로드됨, 광고 표시 시도");
           AdHelper.showRewardedAd(
             () {
-              debugPrint("광고 시청완료, 새로운 광고 로드");
               // 광고 시청 완료 후 다시 광고 로드
               AdHelper.loadRewardedAd();
             },
           );
         } else {
-          debugPrint("광고 로드되지 않음");
           AdHelper.loadRewardedAd();
         }
       }

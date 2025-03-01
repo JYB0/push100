@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:animations/animations.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
@@ -30,6 +31,7 @@ class DailyWorkoutCompleteScreen extends StatefulWidget {
 class _DailyWorkoutCompleteScreenState
     extends State<DailyWorkoutCompleteScreen> {
   ConfettiController? _confettiController;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   bool isDone = false;
   int progress = 0;
   late Timer _timer;
@@ -46,6 +48,7 @@ class _DailyWorkoutCompleteScreenState
   void initState() {
     super.initState();
     _startConfettiEffect(); // 🎉 화면이 나타나면 자동 실행
+    _playCompletionSound();
   }
 
   /// ✅ Confetti(폭죽) 효과 실행
@@ -57,7 +60,7 @@ class _DailyWorkoutCompleteScreenState
     ];
 
     int frameTime = 1000 ~/ 24;
-    int total = 3 * 1000 ~/ frameTime; // 3초 동안 Confetti
+    int total = 2 * 1000 ~/ frameTime; // 2초 동안 Confetti
 
     _timer = Timer.periodic(Duration(milliseconds: frameTime), (timer) {
       progress++;
@@ -89,15 +92,21 @@ class _DailyWorkoutCompleteScreenState
     });
   }
 
+  Future<void> _playCompletionSound() async {
+    await _audioPlayer.play(AssetSource('sounds/finish.wav'));
+  }
+
   @override
   void dispose() {
     _timer.cancel();
     _confettiController = null;
+    _audioPlayer.dispose();
     super.dispose();
   }
 
   /// ✅ 홈 화면으로 이동
   void _navigateToHome() {
+    _audioPlayer.stop();
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
