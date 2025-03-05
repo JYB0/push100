@@ -44,5 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Flutter Keystore 파일 및 관련 정보 보호
+android/key.properties
+android/app/upload-keystore.jks
+
+
 # Ignore environment variables
 *.env
+

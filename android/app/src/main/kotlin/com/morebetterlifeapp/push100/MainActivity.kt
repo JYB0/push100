@@ -1,4 +1,4 @@
-package com.example.push100
+package com.morebetterlifeapp.push100
 
 import io.flutter.embedding.android.FlutterActivity
 
