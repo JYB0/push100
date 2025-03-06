@@ -98,7 +98,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
         getPlanByLevelWeekAndDay(widget.level, widget.week, widget.day);
     if (plan != null) {
       sets = plan.sets;
-      restTime = 5; //plan.restTime;
+      restTime = plan.restTime;
       userReps = List<int>.from(sets);
       currentTargetReps = sets.isNotEmpty ? sets[0] : 0;
     } else {
