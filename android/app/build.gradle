@@ -38,7 +38,7 @@ android {
                 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storeFile = keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
                 storePassword = keystoreProperties["storePassword"] as String
             }
 
