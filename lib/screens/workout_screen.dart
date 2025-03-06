@@ -98,7 +98,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
         getPlanByLevelWeekAndDay(widget.level, widget.week, widget.day);
     if (plan != null) {
       sets = plan.sets;
-      restTime = plan.restTime;
+      restTime = 5; //plan.restTime;
       userReps = List<int>.from(sets);
       currentTargetReps = sets.isNotEmpty ? sets[0] : 0;
     } else {
@@ -163,8 +163,10 @@ class WorkoutScreenState extends State<WorkoutScreen>
       priority: Priority.max,
       icon: 'transparent',
       color: AppColors.greenPrimary,
+      enableVibration: true,
+      playSound: true,
       sound: RawResourceAndroidNotificationSound('ping'),
-      // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
     );
 
     const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(

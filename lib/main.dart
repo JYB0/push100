@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
@@ -50,6 +51,7 @@ void main() async {
   );
 
   await requestNotificationPermissions();
+  await androidRequestNotificationPermissions();
 
   final bool isInitialTestSet = await checkInitialTest();
   final Map<String, dynamic> progress =
@@ -85,6 +87,12 @@ Future<void> requestNotificationPermissions() async {
         badge: true,
         sound: true,
       );
+}
+
+Future<void> androidRequestNotificationPermissions() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
 }
 
 class MyApp extends StatelessWidget {
