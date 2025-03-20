@@ -10,6 +10,7 @@ import 'package:push100/main.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/initial_test_screen.dart';
 import 'package:push100/screens/tutorial_screen.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -88,6 +89,12 @@ class SettingScreen extends StatelessWidget {
     }
   }
 
+  void _shareApp() {
+    Share.share(
+      "🔥 푸시업 100개 도전! 저도 함께 하고 있어요!\nPush100 앱으로 함께 도전해요!\n📲 iOS 다운로드: https://apps.apple.com/kr/app/push100/id6742874163\n📲 안드로이드 다운로드: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100",
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -150,6 +157,19 @@ class SettingScreen extends StatelessWidget {
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: _openStoreListing,
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.ios_share,
+              color: AppColors.redPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "앱 공유하기",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: _shareApp,
           ),
         ],
       ),
