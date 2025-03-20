@@ -42,6 +42,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
   }
 
   void _navigateWithAnimation(BuildContext context, Widget targetScreen) {
+    if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
@@ -160,16 +161,21 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                       final String level = initialPlan['level'];
                       _saveInitialTest(pushupCount);
 
+                      await SharedPreferencesHelper.saveProgress(
+                          week, 1, level);
+
                       scheduleWorkoutReminder(false);
 
-                      _navigateWithAnimation(
-                        context,
-                        BottomNavigation(
-                          initialWeek: week,
-                          initialLevel: level,
-                          isTestMode: false,
-                        ),
-                      );
+                      if (context.mounted) {
+                        _navigateWithAnimation(
+                          context,
+                          BottomNavigation(
+                            initialWeek: week,
+                            initialLevel: level,
+                            isTestMode: false,
+                          ),
+                        );
+                      }
                     },
                     child: const Text("테스트 완료"),
                   ),
