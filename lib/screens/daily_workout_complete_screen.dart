@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:animations/animations.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
@@ -105,28 +106,38 @@ class _DailyWorkoutCompleteScreenState
   }
 
   /// ✅ 홈 화면으로 이동
-  void _navigateToHome() {
+  void _navigateToHome() async {
+    final InAppReview inAppReview = InAppReview.instance;
+
+    if (await inAppReview.isAvailable() &&
+        ((widget.week == 2 && widget.day == 3) ||
+            (widget.week == 4 && widget.day == 3))) {
+      await inAppReview.requestReview();
+    }
+
     _audioPlayer.stop();
-    Navigator.of(context).pushAndRemoveUntil(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            BottomNavigation(
-          initialWeek: widget.week, // ✅ 기존 주차 유지
-          initialLevel: widget.level, // ✅ 기존 레벨 유지
-          isTestMode: widget.isTestMode, // ✅ 테스트 모드 유지
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              BottomNavigation(
+            initialWeek: widget.week, // ✅ 기존 주차 유지
+            initialLevel: widget.level, // ✅ 기존 레벨 유지
+            isTestMode: widget.isTestMode, // ✅ 테스트 모드 유지
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+              child: child,
+            );
+          },
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
-            child: child,
-          );
-        },
-      ),
-      (route) => false, // ✅ 기존 모든 화면 제거하고 홈 화면만 남김
-    );
+        (route) => false, // ✅ 기존 모든 화면 제거하고 홈 화면만 남김
+      );
+    }
   }
 
   @override
