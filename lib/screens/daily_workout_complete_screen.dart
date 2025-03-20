@@ -7,6 +7,7 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DailyWorkoutCompleteScreen extends StatefulWidget {
   final int totalPushups; // ✅ 오늘 수행한 총 푸시업 개수
@@ -197,7 +198,36 @@ class _DailyWorkoutCompleteScreenState
                   color: Colors.grey[600],
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03),
+              SizedBox(height: screenHeight * 0.25),
+
+              ElevatedButton.icon(
+                onPressed: () {
+                  Share.share(
+                    "💪 Push100 앱으로 함께 푸쉬업 100개 도전해봐요!\n 저는 지금 ${widget.totalPushups}개 했어요!\n📲 iOS 다운로드: https://apps.apple.com/kr/app/push100/id6742874163\n📲 안드로이드 다운로드: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100",
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.redPrimary, // ✅ 메인 색깔 적용
+                  padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.25,
+                      vertical: dynamicFontSize * 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: Icon(
+                  Icons.ios_share,
+                  color: Colors.white,
+                  size: dynamicFontSize * 1.2,
+                ),
+                label: Text(
+                  '공유하기',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: dynamicFontSize,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
 
               // ✅ 홈으로 가기 버튼
               // ElevatedButton(
