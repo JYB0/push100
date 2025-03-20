@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
 // import 'package:share_plus/share_plus.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
@@ -73,6 +77,17 @@ class SettingScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openStoreListing() async {
+    final InAppReview inAppReview = InAppReview.instance;
+    if (await inAppReview.isAvailable()) {
+      if (Platform.isIOS) {
+        inAppReview.openStoreListing(appStoreId: dotenv.env['APPSTORE_ID']);
+      } else {
+        inAppReview.openStoreListing();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -122,6 +137,19 @@ class SettingScreen extends StatelessWidget {
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: () => _navigateToTutorial(context),
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.star_rate,
+              color: AppColors.yellowPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "앱 평가하기",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: _openStoreListing,
           ),
         ],
       ),
