@@ -409,18 +409,18 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.reset();
       _animationController.repeat(reverse: true);
 
-      // if (currentSet % 2 == 0) {
-      //   if (AdHelper.isRewardedAdLoaded) {
-      //     AdHelper.showRewardedAd(
-      //       () {
-      //         // 광고 시청 완료 후 다시 광고 로드
-      //         AdHelper.loadRewardedAd();
-      //       },
-      //     );
-      //   } else {
-      //     AdHelper.loadRewardedAd();
-      //   }
-      // }
+      if (currentSet % 2 == 0) {
+        if (AdHelper.isRewardedAdLoaded) {
+          AdHelper.showRewardedAd(
+            () {
+              // 광고 시청 완료 후 다시 광고 로드
+              AdHelper.loadRewardedAd();
+            },
+          );
+        } else {
+          AdHelper.loadRewardedAd();
+        }
+      }
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
