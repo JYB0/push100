@@ -8,6 +8,7 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
 // import 'package:share_plus/share_plus.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/screens/help_screen.dart';
 import 'package:push100/screens/initial_test_screen.dart';
 import 'package:push100/screens/tutorial_screen.dart';
 import 'package:share_plus/share_plus.dart';
@@ -95,6 +96,24 @@ class SettingScreen extends StatelessWidget {
     );
   }
 
+  void _navigateToHelp(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500), // 애니메이션 지속 시간
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const HelpScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal, // 가로 방향 이동
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -135,7 +154,7 @@ class SettingScreen extends StatelessWidget {
           ListTile(
             minVerticalPadding: dynamicFontSize,
             leading: Icon(
-              Icons.help,
+              Icons.menu_book,
               color: AppColors.greenPrimary,
               size: dynamicFontSize * 1.5,
             ),
@@ -170,6 +189,19 @@ class SettingScreen extends StatelessWidget {
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: _shareApp,
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.help,
+              color: AppColors.greenPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "앱 문의하기",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: () => _navigateToHelp(context),
           ),
         ],
       ),
