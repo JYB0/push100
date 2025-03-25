@@ -23,6 +23,12 @@ void main() async {
   await dotenv.load(fileName: ".env");
   MobileAds.instance.initialize();
 
+  final isDateFixed = await SharedPreferencesHelper.getDateFixed();
+  if (!isDateFixed) {
+    await SharedPreferencesHelper.fixStoredDates();
+    await SharedPreferencesHelper.setDateFixed();
+  }
+
   await Future.delayed(
     const Duration(milliseconds: 500),
     () {

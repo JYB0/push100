@@ -277,15 +277,20 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
     if (widget.week == 1 && widget.day == 3) {
       // ✅ 1주차 3일차 완료 시 1주차의 운동 기록 검토
-      bool needToRetry = await _checkWeekOneCompletion();
+      bool needToRetry = await _checkLatestWeekOneCompletion();
 
       if (needToRetry) {
-        int workoutCount = await _getWorkoutCountForWeek(1);
-        if (workoutCount <= 3) {
-          await _showRetryWeekOneDialog();
-          return;
-          // 🚨 여기서 리턴해서 1주차 재진행 여부 결정 후 이동
-        }
+        await _showRetryWeekOneDialog();
+        return;
+      }
+    }
+
+    if (widget.week == 3 && widget.day == 3) {
+      bool needToRetryWeek3 = await _checkLatestWeekThreeCompletion();
+
+      if (needToRetryWeek3) {
+        await _showRetryWeekThreeDialog();
+        return;
       }
     }
 
@@ -409,18 +414,18 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.reset();
       _animationController.repeat(reverse: true);
 
-      if (currentSet % 2 == 0) {
-        if (AdHelper.isRewardedAdLoaded) {
-          AdHelper.showRewardedAd(
-            () {
-              // 광고 시청 완료 후 다시 광고 로드
-              AdHelper.loadRewardedAd();
-            },
-          );
-        } else {
-          AdHelper.loadRewardedAd();
-        }
-      }
+      // if (currentSet % 2 == 0) {
+      //   if (AdHelper.isRewardedAdLoaded) {
+      //     AdHelper.showRewardedAd(
+      //       () {
+      //         // 광고 시청 완료 후 다시 광고 로드
+      //         AdHelper.loadRewardedAd();
+      //       },
+      //     );
+      //   } else {
+      //     AdHelper.loadRewardedAd();
+      //   }
+      // }
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
@@ -429,23 +434,83 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  Future<bool> _checkWeekOneCompletion() async {
+  // Future<bool> _checkWeekOneCompletion() async {
+  //   final records = await SharedPreferencesHelper.getWorkoutRecords();
+
+  //   for (var record in records) {
+  //     if (record['week'] == 1 && record['day'] <= 3) {
+  //       List<int> plannedReps = List<int>.from(record['plannedReps']);
+  //       List<int> userReps = List<int>.from(record['userReps']);
+
+  //       // 목표 개수를 하나라도 못 채운 경우가 있으면 재진행 필요
+  //       for (int i = 0; i < plannedReps.length; i++) {
+  //         if (userReps[i] < plannedReps[i]) {
+  //           return true;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return false; // 모든 날 목표 달성했으면 재진행 필요 없음
+  // }
+
+  Future<bool> _checkLatestWeekOneCompletion() async {
     final records = await SharedPreferencesHelper.getWorkoutRecords();
 
-    for (var record in records) {
-      if (record['week'] == 1 && record['day'] <= 3) {
-        List<int> plannedReps = List<int>.from(record['plannedReps']);
-        List<int> userReps = List<int>.from(record['userReps']);
+    // 1주차 1~3일차 최근 기록 가져오기
+    for (int day = 1; day <= 3; day++) {
+      final dayRecords = records
+          .where((record) => record['week'] == 1 && record['day'] == day)
+          .toList();
 
-        // 목표 개수를 하나라도 못 채운 경우가 있으면 재진행 필요
-        for (int i = 0; i < plannedReps.length; i++) {
-          if (userReps[i] < plannedReps[i]) {
-            return true;
-          }
+      if (dayRecords.isEmpty) {
+        return true; // 기록이 없으면 실패로 간주
+      }
+
+      // 최신 기록으로 정렬
+      dayRecords.sort((a, b) =>
+          DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+      final latest = dayRecords.first;
+
+      final plannedReps = List<int>.from(latest['plannedReps']);
+      final userReps = List<int>.from(latest['userReps']);
+
+      for (int i = 0; i < plannedReps.length; i++) {
+        if (userReps[i] < plannedReps[i]) {
+          return true;
         }
       }
     }
-    return false; // 모든 날 목표 달성했으면 재진행 필요 없음
+    return false;
+  }
+
+  static Future<bool> _checkLatestWeekThreeCompletion() async {
+    final records = await SharedPreferencesHelper.getWorkoutRecords();
+
+    // 3주차 1~3일차 최근 기록 가져오기
+    for (int day = 1; day <= 3; day++) {
+      final dayRecords = records
+          .where((record) => record['week'] == 3 && record['day'] == day)
+          .toList();
+
+      if (dayRecords.isEmpty) {
+        return true; // 기록이 없으면 실패로 간주
+      }
+
+      // 최신 기록 정렬
+      dayRecords.sort((a, b) =>
+          DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
+      final latest = dayRecords.first;
+
+      final plannedReps = List<int>.from(latest['plannedReps']);
+      final userReps = List<int>.from(latest['userReps']);
+
+      for (int i = 0; i < plannedReps.length; i++) {
+        if (userReps[i] < plannedReps[i]) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /// 🔥 `showOkCancelAlertDialog`를 이용한 1주차 재진행 여부 확인
@@ -493,6 +558,45 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
+  Future<void> _showRetryWeekThreeDialog() async {
+    final result = await showOkCancelAlertDialog(
+      context: context,
+      title: "3주차 재진행",
+      message: "3주차에서 목표 개수를\n 달성하지 못한 기록이 있습니다.\n"
+          "3주차를 다시 진행하시겠습니까?",
+      okLabel: "네",
+      cancelLabel: "아니요",
+      isDestructiveAction: true,
+    );
+
+    if (!mounted) return;
+
+    if (result == OkCancelResult.ok) {
+      // 3주차 1일차부터 다시 시작
+      await SharedPreferencesHelper.saveProgress(3, 1, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
+      scheduleWorkoutReminder(false);
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+
+      _navigateToDailyWorkoutCompleteNavigation(
+          isTestMode: false, nextWeek: 3, nextDay: 1);
+    } else {
+      // 그냥 4주차로 넘어감
+      const nextWeek = 4;
+      await SharedPreferencesHelper.saveProgress(nextWeek, 1, widget.level);
+      await SharedPreferencesHelper.saveIsTestMode(false);
+      scheduleWorkoutReminder(false);
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+
+      _navigateToDailyWorkoutCompleteNavigation(
+          isTestMode: false, nextWeek: nextWeek, nextDay: 1);
+    }
+  }
+
   void _navigateToDailyWorkoutCompleteNavigation(
       {required bool isTestMode, int? nextWeek, int? nextDay}) {
     final totalPushups = userReps.reduce((a, b) => a + b);
@@ -504,7 +608,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
             DailyWorkoutCompleteScreen(
           totalPushups: totalPushups,
           week: nextWeek ?? widget.week,
-          day: widget.day,
+          day: nextDay ?? 1,
           level: widget.level,
           isTestMode: isTestMode,
         ),
@@ -521,17 +625,17 @@ class WorkoutScreenState extends State<WorkoutScreen>
     );
   }
 
-  Future<int> _getWorkoutCountForWeek(int week) async {
-    final records = await SharedPreferencesHelper.getWorkoutRecords();
-    int count = 0;
+  // Future<int> _getWorkoutCountForWeek(int week) async {
+  //   final records = await SharedPreferencesHelper.getWorkoutRecords();
+  //   int count = 0;
 
-    for (var record in records) {
-      if (record['week'] == week) {
-        count++;
-      }
-    }
-    return count;
-  }
+  //   for (var record in records) {
+  //     if (record['week'] == week) {
+  //       count++;
+  //     }
+  //   }
+  //   return count;
+  // }
 
   // void _showWorkoutCompleteNotification() async {
   //   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

@@ -223,9 +223,10 @@ class _DailyWorkoutCompleteScreenState
                 label: Text(
                   '공유하기',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: dynamicFontSize,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: dynamicFontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
 

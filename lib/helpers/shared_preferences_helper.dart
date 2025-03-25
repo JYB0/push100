@@ -94,15 +94,55 @@ class SharedPreferencesHelper {
     }).toList();
   }
 
+  static Future<void> setDateFixed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDateFixed', true);
+  }
+
+  static Future<bool> getDateFixed() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isDateFixed') ?? false;
+  }
+
+  static Future<void> fixStoredDates() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> records = prefs.getStringList('workoutRecords') ?? [];
+
+    List<String> fixedRecords = records.map((record) {
+      final parts = record.split(':');
+      String date = parts[0];
+
+      // 날짜 포맷 수정 (yyyy-MM-dd 형식으로 맞추기)
+      List<String> dateParts = date.split('-');
+      if (dateParts.length == 3) {
+        String year = dateParts[0];
+        String month = dateParts[1].padLeft(2, '0');
+        String day = dateParts[2].padLeft(2, '0');
+        date = '$year-$month-$day';
+      }
+
+      parts[0] = date;
+      return parts.join(':');
+    }).toList();
+
+    await prefs.setStringList('workoutRecords', fixedRecords);
+  }
+
 // Save workout record (date, completed sets, reps, user reps)
   static Future<void> saveWorkoutRecord(String date, List<int> plannedReps,
       List<int> userReps, int week, int day, String level) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> records = prefs.getStringList('workoutRecords') ?? [];
 
+    final dateParts = date.split('-');
+    final year = dateParts[0];
+    final month = dateParts[1].padLeft(2, '0');
+    final dayString = dateParts[2].padLeft(2, '0');
+    final fixedDate = '$year-$month-$dayString';
+
     // Save as a single string (e.g., "2024-12-27:3,5,3,5,5:3,5,3,5,1")
     final record =
-        '$date:$week:$day:$level:${plannedReps.join(",")}:${userReps.join(",")}';
+        '$fixedDate:$week:$day:$level:${plannedReps.join(",")}:${userReps.join(",")}';
     records.add(record);
     await prefs.setStringList('workoutRecords', records);
   }
