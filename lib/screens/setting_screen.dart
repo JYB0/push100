@@ -127,21 +127,6 @@ class SettingScreen extends StatelessWidget {
       body: ListView(
         children: [
           /// 🔹 기록 초기화
-          ListTile(
-            minVerticalPadding: dynamicFontSize,
-            leading: Icon(
-              Icons.delete,
-              color: AppColors.redPrimary,
-              size: dynamicFontSize * 1.5,
-            ),
-            title: Text(
-              "데이터 초기화",
-              style: TextStyle(
-                fontSize: dynamicFontSize,
-              ),
-            ),
-            onTap: () => _resetData(context),
-          ),
 
           /// 🔹 앱 공유
           // ListTile(
@@ -167,19 +152,6 @@ class SettingScreen extends StatelessWidget {
           ListTile(
             minVerticalPadding: dynamicFontSize,
             leading: Icon(
-              Icons.star_rate,
-              color: AppColors.yellowPrimary,
-              size: dynamicFontSize * 1.5,
-            ),
-            title: Text(
-              "앱 평가하기",
-              style: TextStyle(fontSize: dynamicFontSize),
-            ),
-            onTap: _openStoreListing,
-          ),
-          ListTile(
-            minVerticalPadding: dynamicFontSize,
-            leading: Icon(
               Icons.ios_share,
               color: AppColors.redPrimary,
               size: dynamicFontSize * 1.5,
@@ -193,6 +165,19 @@ class SettingScreen extends StatelessWidget {
           ListTile(
             minVerticalPadding: dynamicFontSize,
             leading: Icon(
+              Icons.star_rate,
+              color: AppColors.yellowPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "앱 평가하기",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: _openStoreListing,
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
               Icons.help,
               color: AppColors.greenPrimary,
               size: dynamicFontSize * 1.5,
@@ -202,6 +187,21 @@ class SettingScreen extends StatelessWidget {
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: () => _navigateToHelp(context),
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.delete,
+              color: AppColors.redPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "데이터 초기화",
+              style: TextStyle(
+                fontSize: dynamicFontSize,
+              ),
+            ),
+            onTap: () => _resetData(context),
           ),
         ],
       ),
