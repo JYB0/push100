@@ -6,6 +6,9 @@ class AdHelper {
   static bool isRewardedAdLoaded = false;
   static RewardedAd? _rewardedAd;
 
+  static bool isInterstitialAdLoaded = false;
+  static InterstitialAd? _interstitialAd;
+
   // 보상형 광고 ID
   static String get rewardedAdUnitId {
     bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
@@ -18,6 +21,22 @@ class AdHelper {
       return isTestMode
           ? dotenv.env['IOS_TEST_REWARDED_AD_ID'] ?? ''
           : dotenv.env['IOS_REWARDED_AD_ID'] ?? '';
+    } else {
+      return '';
+    }
+  }
+
+  static String get interstitialAdUnitId {
+    bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
+
+    if (Platform.isAndroid) {
+      return isTestMode
+          ? dotenv.env['ANDROID_TEST_INTERSTITIAL_AD_ID'] ?? ''
+          : dotenv.env['ANDROID_INTERSTITIAL_AD_ID'] ?? '';
+    } else if (Platform.isIOS) {
+      return isTestMode
+          ? dotenv.env['IOS_TEST_INTERSTITIAL_AD_ID'] ?? ''
+          : dotenv.env['IOS_INTERSTITIAL_AD_ID'] ?? '';
     } else {
       return '';
     }
@@ -66,6 +85,47 @@ class AdHelper {
       );
     } else {
       loadRewardedAd(); // 없으면 다시 로드
+    }
+  }
+
+  static void loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          isInterstitialAdLoaded = true;
+        },
+        onAdFailedToLoad: (error) {
+          _interstitialAd = null;
+          isInterstitialAdLoaded = false;
+        },
+      ),
+    );
+  }
+
+  // ✅ 전면 광고 보여주기
+  static void showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _interstitialAd = null;
+          isInterstitialAdLoaded = false;
+          loadInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _interstitialAd = null;
+          isInterstitialAdLoaded = false;
+          loadInterstitialAd();
+        },
+      );
+
+      _interstitialAd!.show();
+    } else {
+      loadInterstitialAd();
     }
   }
 }
