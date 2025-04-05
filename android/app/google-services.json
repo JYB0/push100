@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "911540617919",
+    "project_id": "push100-72fcf",
+    "storage_bucket": "push100-72fcf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911540617919:android:83d280b6df2c8ab48c3c0a",
+        "android_client_info": {
+          "package_name": "com.morebetterlifeapp.push100"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtFFkEQsLq4YyszimnnLO6ljBUfVx2wcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

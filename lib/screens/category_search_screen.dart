@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:push100/screens/community_post_list_screen.dart';
+
+class CategorySearchScreen extends StatefulWidget {
+  const CategorySearchScreen({super.key});
+
+  @override
+  State<CategorySearchScreen> createState() => _CategorySearchScreenState();
+}
+
+class _CategorySearchScreenState extends State<CategorySearchScreen> {
+  String searchQuery = '';
+  List<String> allCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+
+    final categories = snapshot.docs
+        .map((doc) => doc['category'] as String?)
+        .where((c) => c != null && c.isNotEmpty)
+        .toSet()
+        .toList();
+
+    setState(() {
+      allCategories = categories.cast<String>();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = allCategories
+        .where((c) => c.toLowerCase().contains(searchQuery.toLowerCase()))
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("카테고리 검색")),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: '카테고리 입력',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: filtered.isEmpty
+                ? const Center(child: Text('검색 결과가 없습니다.'))
+                : ListView.separated(
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final category = filtered[index];
+                      return ListTile(
+                        title: Text('$category 게시판'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CommunityPostListScreen(category: category),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
