@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:push100/main.dart';
 import '../services/firestore_service.dart';
 
 class PostWriteScreen extends StatefulWidget {
@@ -48,6 +49,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
       }
     } catch (e) {
       // print('🔴 업로드 실패: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('업로드 실패: $e')),
       );
@@ -65,7 +67,10 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(
+                color: AppColors.redPrimary,
+              ))
             : Column(
                 children: [
                   TextField(

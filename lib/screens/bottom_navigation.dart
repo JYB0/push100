@@ -37,7 +37,7 @@ class BottomNavigationState extends State<BottomNavigation> {
         isTestMode: widget.isTestMode,
       ),
       const WorkoutHistoryScreen(),
-      CommunityCategoryScreen(),
+      const CommunityCategoryScreen(),
       const SettingScreen(),
     ]);
   }

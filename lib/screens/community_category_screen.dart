@@ -1,8 +1,11 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/category_search_screen.dart';
 import 'package:push100/screens/community_post_list_screen.dart';
 import 'package:collection/collection.dart';
+import 'package:push100/screens/post_detail_screen.dart';
 
 class CommunityCategoryScreen extends StatefulWidget {
   const CommunityCategoryScreen({super.key});
@@ -57,7 +60,10 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
               future: _fetchCategoryRanking(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                      child: CircularProgressIndicator(
+                    color: AppColors.redPrimary,
+                  ));
                 }
 
                 final data = snapshot.data ?? [];
@@ -73,7 +79,10 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Text("🔥 인기 카테고리",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
@@ -104,14 +113,17 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
               },
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // 🔥 오늘 인기 게시글
             FutureBuilder<List<DocumentSnapshot>>(
               future: _fetchTodayPopularPosts(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                      child: CircularProgressIndicator(
+                    color: AppColors.redPrimary,
+                  ));
                 }
 
                 final posts = snapshot.data ?? [];
@@ -127,10 +139,15 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Text("👑 오늘의 인기 글",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          )),
                     ),
                     ListView.separated(
                       shrinkWrap: true,
@@ -148,8 +165,10 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => CommunityPostListScreen(
-                                    category: post['category']),
+                                builder: (_) => PostDetailScreen(
+                                  postId: post.id,
+                                  category: post['category'] ?? '카테고리 없음',
+                                ),
                               ),
                             );
                           },
@@ -166,8 +185,12 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
 
       // ➕ 카테고리 생성 버튼
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.redPrimary,
         onPressed: _showCreateCategoryDialog,
-        child: const Icon(Icons.add),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -210,70 +233,61 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     return result;
   }
 
-  void _showCreateCategoryDialog() {
-    String newCategory = '';
+  void _showCreateCategoryDialog() async {
+    final contextMounted = context.mounted;
 
-    showDialog(
+    final result = await showTextInputDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("새 카테고리 생성"),
-        content: TextField(
-          onChanged: (value) => newCategory = value,
-          decoration: const InputDecoration(hintText: "카테고리 이름"),
+      title: '새 카테고리 생성',
+      textFields: const [
+        DialogTextField(
+          hintText: '카테고리 이름',
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("취소"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final normalizedNewCategory = newCategory.trim().toLowerCase();
-
-              if (normalizedNewCategory.isEmpty) return;
-
-              // Firestore에서 모든 카테고리 가져오기
-              final snapshot =
-                  await FirebaseFirestore.instance.collection('posts').get();
-
-              final existingCategories = snapshot.docs
-                  .map((doc) =>
-                      (doc['category'] as String?)?.trim().toLowerCase())
-                  .whereType<String>()
-                  .toSet();
-
-              if (existingCategories.contains(normalizedNewCategory)) {
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('이미 존재하는 카테고리입니다.')),
-                  );
-                }
-                return;
-              }
-
-              // 새 카테고리 생성
-              await FirebaseFirestore.instance.collection('posts').add({
-                'category': newCategory.trim(), // 저장은 원본대로
-                'title': newCategory,
-                'content': '첫 글',
-                'nickname': '관리자',
-                'views': 0,
-                'likes': 0,
-                'dislikes': 0,
-                'timestamp': Timestamp.now(),
-              });
-
-              if (context.mounted) {
-                Navigator.pop(context);
-                setState(() {}); // 다시 불러오기
-              }
-            },
-            child: const Text("생성"),
-          ),
-        ],
-      ),
+      ],
+      okLabel: '생성',
+      cancelLabel: '취소',
     );
+
+    if (result == null || result.isEmpty) return;
+
+    final newCategory = result.first.trim();
+    final normalizedNewCategory = newCategory.toLowerCase();
+
+    // Firestore에서 중복 확인
+    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+
+    final existingCategories = snapshot.docs
+        .map((doc) => (doc['category'] as String?)?.trim().toLowerCase())
+        .whereType<String>()
+        .toSet();
+
+    if (existingCategories.contains(normalizedNewCategory)) {
+      if (!mounted) return;
+      if (contextMounted) {
+        showOkAlertDialog(
+          context: context,
+          title: '중복된 카테고리',
+          message: '이미 존재하는 카테고리입니다.',
+        );
+      }
+      return;
+    }
+
+    // 새 카테고리 생성
+    await FirebaseFirestore.instance.collection('posts').add({
+      'category': newCategory,
+      'title': newCategory,
+      'content': '첫 글',
+      'nickname': '관리자',
+      'views': 0,
+      'likes': 0,
+      'dislikes': 0,
+      'timestamp': Timestamp.now(),
+    });
+
+    if (contextMounted) {
+      setState(() {}); // 리스트 갱신
+    }
   }
 }
 
@@ -293,6 +307,5 @@ Future<List<DocumentSnapshot>> _fetchTodayPopularPosts() async {
   final sorted = snapshot.docs
     ..sort((a, b) => (b['views'] as int).compareTo(a['views'] as int));
 
-  print("🔥 오늘 인기글 수: ${snapshot.docs.length}");
   return sorted.take(10).toList(); // 조회수 순 인기글 10개
 }

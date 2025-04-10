@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:push100/main.dart';
 import 'package:push100/screens/community_post_list_screen.dart';
 
 class CategorySearchScreen extends StatefulWidget {
@@ -46,10 +47,17 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
+              // cursorColor: AppColors.yellowPrimary,
               decoration: const InputDecoration(
                 hintText: '카테고리 입력',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: AppColors.redPrimary,
+                    width: 1,
+                  ),
+                ),
               ),
               onChanged: (value) {
                 setState(() {
