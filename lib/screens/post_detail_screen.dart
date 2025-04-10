@@ -224,11 +224,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         behavior: HitTestBehavior.translucent,
         onTap: () {
           FocusScope.of(context).unfocus();
-          setState(() {
-            _isCommenting = false;
-            _replyToCommentId = null;
-            _replyToNickname = null;
-          });
+          // setState(() {
+          //   _isCommenting = false;
+          //   _replyToCommentId = null;
+          //   _replyToNickname = null;
+          // });
         },
         child: SingleChildScrollView(
           child: Padding(
@@ -346,15 +346,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                         return Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.only(
-                            right: 12,
-                            left: 12,
-                            bottom: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _replyToCommentId == commentId
-                                ? Colors.red.shade50
-                                : Colors.transparent,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,22 +361,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   Text(
                                     nickname,
                                     style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   Row(
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.reply, size: 18),
-                                        onPressed: () {
+                                      GestureDetector(
+                                        onTap: () {
                                           _showReplyTo(commentId, nickname);
                                         },
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Icon(Icons.reply, size: 18),
+                                        ),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(
-                                            Icons.thumb_up_alt_outlined,
-                                            size: 18),
-                                        onPressed: () async {
+                                      const SizedBox(
+                                        width: 18,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () async {
                                           await FirebaseFirestore.instance
                                               .collection('posts')
                                               .doc(widget.postId)
@@ -392,18 +391,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             'likes': FieldValue.increment(1)
                                           });
                                         },
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Icon(
+                                              Icons.thumb_up_alt_outlined,
+                                              size: 18),
+                                        ),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline,
-                                            size: 18),
-                                        onPressed: () => _deleteComment(
-                                            commentId, passwordHash),
+                                      const SizedBox(
+                                        width: 18,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          _deleteComment(
+                                              commentId, passwordHash);
+                                        },
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Icon(Icons.delete_outline,
+                                              size: 18),
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-
                               // 💬 콘텐츠
                               Padding(
                                 padding:
@@ -440,6 +454,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       style: const TextStyle(
                                           fontSize: 12, color: Colors.grey),
                                     ),
+
                               StreamBuilder<QuerySnapshot>(
                                 stream: FirebaseFirestore.instance
                                     .collection('posts')
@@ -450,15 +465,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     .orderBy('timestamp')
                                     .snapshots(),
                                 builder: (context, replySnapshot) {
-                                  if (replySnapshot.connectionState !=
-                                          ConnectionState.active ||
-                                      !replySnapshot.hasData ||
-                                      replySnapshot.data!.docs.isEmpty) {
+                                  if (!replySnapshot.hasData) {
                                     return const SizedBox.shrink();
                                   }
 
                                   final replies = replySnapshot.data!.docs;
 
+                                  if (replies.isEmpty) {
+                                    return const SizedBox(); // 또는 null
+                                  }
                                   return ListView.builder(
                                     shrinkWrap: true,
                                     physics:
@@ -480,157 +495,181 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                   .format(replyTimestamp)
                                               : '';
 
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 12, top: 6, bottom: 6),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Padding(
-                                              padding: EdgeInsets.only(top: 4),
-                                              child: Icon(
-                                                Icons.subdirectory_arrow_right,
-                                                size: 18,
-                                                color: Colors.grey,
-                                              ),
+                                      return Column(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 5),
+                                            child: Container(
+                                              height: 1,
+                                              color: Colors.grey[300],
                                             ),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Container(
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Padding(
                                                 padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 12,
-                                                        vertical: 8),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
+                                                    EdgeInsets.only(top: 7),
+                                                child: Icon(
+                                                  Icons
+                                                      .subdirectory_arrow_right, // 또는 Icons.reply
+                                                  size: 18,
+                                                  color: Colors.grey,
                                                 ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    // 👤 닉네임 + 좋아요 + 삭제
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                          replyNickname,
-                                                          style:
-                                                              const TextStyle(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.w500,
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    right: 12,
+                                                    left: 4,
+                                                    top: 8,
+                                                    bottom: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[100],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      // 닉네임 + 아이콘
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            replyNickname,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
                                                           ),
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            IconButton(
-                                                              icon: const Icon(
-                                                                  Icons
-                                                                      .thumb_up_alt_outlined,
-                                                                  size: 18),
-                                                              onPressed:
-                                                                  () async {
-                                                                await FirebaseFirestore
-                                                                    .instance
-                                                                    .collection(
-                                                                        'posts')
-                                                                    .doc(widget
-                                                                        .postId)
-                                                                    .collection(
-                                                                        'comments')
-                                                                    .doc(
-                                                                        commentId)
-                                                                    .collection(
-                                                                        'replies')
-                                                                    .doc(reply
-                                                                        .id)
-                                                                    .update({
-                                                                  'likes': FieldValue
-                                                                      .increment(
-                                                                          1),
-                                                                });
-                                                              },
-                                                            ),
-                                                            IconButton(
-                                                              icon: const Icon(
-                                                                  Icons
-                                                                      .delete_outline,
-                                                                  size: 18),
-                                                              onPressed: () =>
-                                                                  _deleteReplyComment(
-                                                                commentId,
-                                                                reply.id,
-                                                                reply[
-                                                                    'passwordHash'],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-
-                                                    // ✍️ 내용
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 4),
-                                                      child: Text(replyContent),
-                                                    ),
-
-                                                    // 🕒 시간 + 좋아요 수
-                                                    replyLikes > 0
-                                                        ? Row(
+                                                          Row(
                                                             children: [
-                                                              Text(
-                                                                replyTimeFormatted,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .grey),
+                                                              GestureDetector(
+                                                                onTap:
+                                                                    () async {
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'posts')
+                                                                      .doc(widget
+                                                                          .postId)
+                                                                      .collection(
+                                                                          'comments')
+                                                                      .doc(
+                                                                          commentId)
+                                                                      .collection(
+                                                                          'replies')
+                                                                      .doc(reply
+                                                                          .id)
+                                                                      .update({
+                                                                    'likes': FieldValue
+                                                                        .increment(
+                                                                            1)
+                                                                  });
+                                                                },
+                                                                child:
+                                                                    const Padding(
+                                                                  padding: EdgeInsets
+                                                                      .symmetric(
+                                                                          horizontal:
+                                                                              4),
+                                                                  child: Icon(
+                                                                      Icons
+                                                                          .thumb_up_alt_outlined,
+                                                                      size: 18),
+                                                                ),
                                                               ),
                                                               const SizedBox(
-                                                                  width: 12),
-                                                              const Icon(
-                                                                Icons
-                                                                    .thumb_up_alt_outlined,
-                                                                size: 16,
-                                                                color: AppColors
-                                                                    .redPrimary,
+                                                                width: 18,
                                                               ),
-                                                              const SizedBox(
-                                                                  width: 4),
-                                                              Text(
-                                                                '$replyLikes',
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontSize: 12,
-                                                                  color: AppColors
-                                                                      .redPrimary,
+                                                              GestureDetector(
+                                                                onTap: () =>
+                                                                    _deleteReplyComment(
+                                                                  commentId,
+                                                                  reply.id,
+                                                                  reply[
+                                                                      'passwordHash'],
+                                                                ),
+                                                                child:
+                                                                    const Padding(
+                                                                  padding: EdgeInsets
+                                                                      .symmetric(
+                                                                          horizontal:
+                                                                              4),
+                                                                  child: Icon(
+                                                                      Icons
+                                                                          .delete_outline,
+                                                                      size: 18),
                                                                 ),
                                                               ),
                                                             ],
-                                                          )
-                                                        : Text(
-                                                            replyTimeFormatted,
-                                                            style:
-                                                                const TextStyle(
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(replyContent),
+                                                      const SizedBox(height: 4),
+                                                      replyLikes > 0
+                                                          ? Row(
+                                                              children: [
+                                                                Text(
+                                                                  replyTimeFormatted,
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          12,
+                                                                      color: Colors
+                                                                          .grey),
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 12),
+                                                                const Icon(
+                                                                  Icons
+                                                                      .thumb_up_alt_outlined,
+                                                                  size: 16,
+                                                                  color: AppColors
+                                                                      .redPrimary,
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 4),
+                                                                Text(
+                                                                  '$replyLikes',
+                                                                  style:
+                                                                      const TextStyle(
                                                                     fontSize:
                                                                         12,
-                                                                    color: Colors
-                                                                        .grey),
-                                                          ),
-                                                  ],
+                                                                    color: AppColors
+                                                                        .redPrimary,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          : Text(
+                                                              replyTimeFormatted,
+                                                              style: const TextStyle(
+                                                                  fontSize: 12,
+                                                                  color: Colors
+                                                                      .grey),
+                                                            ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                            ],
+                                          ),
+                                        ],
                                       );
                                     },
                                   );
