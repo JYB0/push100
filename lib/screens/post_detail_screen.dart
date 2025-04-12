@@ -217,6 +217,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           descending: false,
         );
 
+    double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    double bottomPadding = 0;
+    if (_replyToNickname != null && keyboardHeight > 0) {
+      // 대댓글 + 키보드 올라옴
+      bottomPadding = 150;
+    } else if (_replyToNickname != null) {
+      // 대댓글 중인데 키보드는 안 떠있음
+      bottomPadding = 150;
+    } else if (keyboardHeight > 0) {
+      // 일반 댓글 작성 중
+      bottomPadding = 130;
+    } else {
+      bottomPadding = 70;
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text('${widget.category} 게시판')),
@@ -224,15 +240,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         behavior: HitTestBehavior.translucent,
         onTap: () {
           FocusScope.of(context).unfocus();
-          // setState(() {
-          //   _isCommenting = false;
-          //   _replyToCommentId = null;
-          //   _replyToNickname = null;
-          // });
+          setState(() {
+            _isCommenting = false;
+            _replyToCommentId = null;
+            _replyToNickname = null;
+          });
         },
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 140),
+            padding: EdgeInsets.only(bottom: bottomPadding),
             child: Column(
               children: [
                 // 📄 글 내용 표시
@@ -354,69 +370,72 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // 👤 닉네임
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    nickname,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
+                              Padding(
+                                padding: const EdgeInsets.only(right: 10.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      nickname,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          _showReplyTo(commentId, nickname);
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          child: Icon(Icons.reply, size: 18),
+                                    Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            _showReplyTo(commentId, nickname);
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            child: Icon(Icons.reply, size: 18),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(
-                                        width: 18,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () async {
-                                          await FirebaseFirestore.instance
-                                              .collection('posts')
-                                              .doc(widget.postId)
-                                              .collection('comments')
-                                              .doc(commentId)
-                                              .update({
-                                            'likes': FieldValue.increment(1)
-                                          });
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          child: Icon(
-                                              Icons.thumb_up_alt_outlined,
-                                              size: 18),
+                                        const SizedBox(
+                                          width: 18,
                                         ),
-                                      ),
-                                      const SizedBox(
-                                        width: 18,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          _deleteComment(
-                                              commentId, passwordHash);
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          child: Icon(Icons.delete_outline,
-                                              size: 18),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            await FirebaseFirestore.instance
+                                                .collection('posts')
+                                                .doc(widget.postId)
+                                                .collection('comments')
+                                                .doc(commentId)
+                                                .update({
+                                              'likes': FieldValue.increment(1)
+                                            });
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            child: Icon(
+                                                Icons.thumb_up_alt_outlined,
+                                                size: 18),
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        const SizedBox(
+                                          width: 18,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            _deleteComment(
+                                                commentId, passwordHash);
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            child: Icon(Icons.delete_outline,
+                                                size: 18),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                               // 💬 콘텐츠
                               Padding(
@@ -455,6 +474,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           fontSize: 12, color: Colors.grey),
                                     ),
 
+                              // 대댓글
                               StreamBuilder<QuerySnapshot>(
                                 stream: FirebaseFirestore.instance
                                     .collection('posts')
