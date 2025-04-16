@@ -182,7 +182,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     await flutterLocalNotificationsPlugin.show(
       0,
       '휴식 완료',
-      '다음 세트를 진행하세요!',
+      '다음 세트를 시작할 시간이에요!\n필요하면 더 쉬어도 괜찮아요.',
       platformChannelSpecifics,
     );
 
@@ -197,11 +197,16 @@ class WorkoutScreenState extends State<WorkoutScreen>
     _isMotivationDialogVisible = true;
 
     final List<String> messages = [
-      "절반이나 왔어! 여기서 멈출 수 없지 🔥",
-      "지금 포기하면 어제와 똑같아. 끝까지 가자!",
-      "세트 반 완료! 이제 진짜 시작이야!",
-      "여기까지 해낸 넌 대단해 💪",
-      "포기는 없어. 오늘도 성장 중!",
+      "절반이나 해냈어! 남은 반도 충분히 할 수 있어 🔥",
+      "지금 포기하면 어제와 똑같아. 오늘의 널 믿어!",
+      "세트 반 완료! 이 정도면 이미 멋져 💪",
+      "여기까지 온 너, 진심으로 대단해 👏",
+      "포기하지 않는 너, 매일 성장 중이야!",
+      "이 순간도 넌 더 강해지고 있어 🔥",
+      "할 수 있어, 넌 이미 시작했고 절반을 넘었잖아!",
+      "지금의 땀은 미래의 너를 웃게 해줄 거야 😊",
+      "힘들수록 성장하는 거야. 넌 잘하고 있어!",
+      "혼자가 아니야. 응원할게, 끝까지 함께 가자!",
     ];
 
     final message = (messages..shuffle()).first;
@@ -219,11 +224,13 @@ class WorkoutScreenState extends State<WorkoutScreen>
         final curvedValue = Curves.easeOutBack.transform(animation.value) - 1.0;
 
         // ✅ 딜레이 후 안전하게 닫기
-        Future.delayed(const Duration(seconds: 3), () {
-          if (_isMotivationDialogVisible && dialogContext.mounted) {
-            Navigator.of(dialogContext).pop();
-            _isMotivationDialogVisible = false;
-          }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(const Duration(seconds: 4), () {
+            if (_isMotivationDialogVisible && dialogContext.mounted) {
+              Navigator.of(dialogContext).maybePop();
+              _isMotivationDialogVisible = false;
+            }
+          });
         });
 
         return Transform.translate(
@@ -502,11 +509,14 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _scrollToCurrentSet();
       _animationController.reset();
       _animationController.repeat(reverse: true);
+      // if (mounted) _showMotivationDialog();
 
       if (currentSet == (sets.length / 2).ceil()) {
         if (AdHelper.isRewardedInterstitialAdLoaded) {
           AdHelper.showRewardedInterstitialAd(() {
-            _showMotivationDialog();
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) _showMotivationDialog();
+            });
           });
         } else {
           AdHelper.loadRewardedInterstitialAd();
