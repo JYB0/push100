@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,27 @@ import 'package:push100/screens/tutorial_screen.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SettingScreen extends StatelessWidget {
-  const SettingScreen({super.key});
+  SettingScreen({super.key});
+
+  // 🔥 랜덤 문구 리스트
+  final List<String> shareAppTexts = [
+    "친구에게도 이 도전을 알려주세요!",
+    "함께하면 더 즐거워요, 앱 공유하기 💪",
+    "도전의 즐거움을 나눠보세요 🔥",
+    "Push100이 마음에 들었다면 공유해주세요!",
+  ];
+
+  final List<String> rateAppTexts = [
+    "앱이 마음에 드셨다면 따뜻한 리뷰 부탁드려요 🌟",
+    "여러분의 리뷰는 큰 힘이 됩니다 💬",
+    "한 줄 리뷰로 힘을 주세요!",
+    "Push100, 어떠셨나요? 평가로 알려주세요!",
+  ];
+
+  String getRandomText(List<String> options) {
+    final random = Random();
+    return options[random.nextInt(options.length)];
+  }
 
   /// ✅ 기록 초기화 기능
   Future<void> _resetData(BuildContext context) async {
@@ -157,7 +178,7 @@ class SettingScreen extends StatelessWidget {
               size: dynamicFontSize * 1.5,
             ),
             title: Text(
-              "앱 공유하기",
+              getRandomText(shareAppTexts),
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: _shareApp,
@@ -170,7 +191,7 @@ class SettingScreen extends StatelessWidget {
               size: dynamicFontSize * 1.5,
             ),
             title: Text(
-              "앱 평가하기",
+              getRandomText(rateAppTexts),
               style: TextStyle(fontSize: dynamicFontSize),
             ),
             onTap: _openStoreListing,

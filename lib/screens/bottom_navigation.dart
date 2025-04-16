@@ -38,7 +38,7 @@ class BottomNavigationState extends State<BottomNavigation> {
       ),
       const WorkoutHistoryScreen(),
       // const CommunityCategoryScreen(),
-      const SettingScreen(),
+      SettingScreen(),
     ]);
   }
 
