@@ -219,30 +219,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
   }
 
-  Future<void> _toggleReplyLike({
-    required String commentId,
-    required String replyId,
-    required List<String> likedBy,
-  }) async {
-    if (_deviceUid == null) return;
+  // Future<void> _toggleReplyLike({
+  //   required String commentId,
+  //   required String replyId,
+  //   required List<String> likedBy,
+  // }) async {
+  //   if (_deviceUid == null) return;
 
-    final replyRef = FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .doc(commentId)
-        .collection('replies')
-        .doc(replyId);
+  //   final replyRef = FirebaseFirestore.instance
+  //       .collection('posts')
+  //       .doc(widget.postId)
+  //       .collection('comments')
+  //       .doc(commentId)
+  //       .collection('replies')
+  //       .doc(replyId);
 
-    final hasLiked = likedBy.contains(_deviceUid);
+  //   final hasLiked = likedBy.contains(_deviceUid);
 
-    await replyRef.update({
-      'likes': FieldValue.increment(hasLiked ? -1 : 1),
-      'likedBy': hasLiked
-          ? FieldValue.arrayRemove([_deviceUid])
-          : FieldValue.arrayUnion([_deviceUid]),
-    });
-  }
+  //   await replyRef.update({
+  //     'likes': FieldValue.increment(hasLiked ? -1 : 1),
+  //     'likedBy': hasLiked
+  //         ? FieldValue.arrayRemove([_deviceUid])
+  //         : FieldValue.arrayUnion([_deviceUid]),
+  //   });
+  // }
 
   Future<void> _deleteComment(String commentId, String storedHash) async {
     final result = await showTextInputDialog(
