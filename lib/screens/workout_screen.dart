@@ -199,7 +199,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     final List<String> messages = [
       "절반이나 해냈어! 남은 반도 충분히 할 수 있어 🔥",
       "지금 포기하면 어제와 똑같아. 오늘의 널 믿어!",
-      "세트 반 완료! 이 정도면 이미 멋져 💪",
+      "세트 절반 완료! 이 정도면 이미 멋져 💪",
       "여기까지 온 너, 진심으로 대단해 👏",
       "포기하지 않는 너, 매일 성장 중이야!",
       "이 순간도 넌 더 강해지고 있어 🔥",
