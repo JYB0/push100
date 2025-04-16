@@ -182,7 +182,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     await flutterLocalNotificationsPlugin.show(
       0,
       '휴식 완료',
-      '다음 세트를 시작할 시간이에요!\n필요하면 더 쉬어도 괜찮아요.',
+      '필요하면 더 쉬어도 괜찮아요.', //다음 세트를 시작할 시간이에요!\n필요하면 더 쉬어도 괜찮아요.
       platformChannelSpecifics,
     );
 

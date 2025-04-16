@@ -51,12 +51,13 @@ dependencies:
   audioplayers: ^6.2.0
   change_app_package_name: ^1.5.0
   in_app_review: ^2.0.10
-  firebase_core: ^3.13.0
-  cloud_firestore: ^5.6.6
   crypto: ^3.0.6
   intl: ^0.20.2
   collection: ^1.19.1
   uuid: ^4.5.1
+  firebase_core: ^3.13.0
+  cloud_firestore: ^5.6.6
+  firebase_auth: ^5.5.2
 
 dev_dependencies:
   flutter_test:
