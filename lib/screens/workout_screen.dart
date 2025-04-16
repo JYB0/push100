@@ -197,16 +197,16 @@ class WorkoutScreenState extends State<WorkoutScreen>
     _isMotivationDialogVisible = true;
 
     final List<String> messages = [
-      "절반이나 해냈어! 남은 반도 충분히 할 수 있어 🔥",
-      "지금 포기하면 어제와 똑같아. 오늘의 널 믿어!",
-      "세트 절반 완료! 이 정도면 이미 멋져 💪",
-      "여기까지 온 너, 진심으로 대단해 👏",
-      "포기하지 않는 너, 매일 성장 중이야!",
-      "이 순간도 넌 더 강해지고 있어 🔥",
-      "할 수 있어, 넌 이미 시작했고 절반을 넘었잖아!",
-      "지금의 땀은 미래의 너를 웃게 해줄 거야 😊",
-      "힘들수록 성장하는 거야. 넌 잘하고 있어!",
-      "혼자가 아니야. 응원할게, 끝까지 함께 가자!",
+      "절반이나 해냈어!\n남은 반도 충분히 할 수 있어 🔥",
+      "지금 포기하면 어제와 똑같아.\n오늘의 널 믿어!",
+      "세트 절반 완료!\n이 정도면 이미 멋져 💪",
+      "여기까지 온 너\n진심으로 대단해 👏",
+      "포기하지 않는 너\n매일 성장 중이야!",
+      "이 순간도 넌\n더 강해지고 있어 🔥",
+      "할 수 있어\n넌 이미 시작했고 절반을 넘었잖아!",
+      "지금의 땀은 미래의\n너를 웃게 해줄 거야 😊",
+      "힘들수록 성장하는 거야\n넌 잘하고 있어!",
+      "혼자가 아니야.\n응원할게, 끝까지 함께 가자!",
     ];
 
     final message = (messages..shuffle()).first;
@@ -256,14 +256,15 @@ class WorkoutScreenState extends State<WorkoutScreen>
                           vertical: 24, horizontal: 20),
                       constraints: const BoxConstraints(maxWidth: 350),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Icon(Icons.flash_on,
-                              size: 28, color: AppColors.redPrimary),
+                              size: 32, color: AppColors.redPrimary),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               message,
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
@@ -509,7 +510,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _scrollToCurrentSet();
       _animationController.reset();
       _animationController.repeat(reverse: true);
-      // if (mounted) _showMotivationDialog();
+      if (mounted) _showMotivationDialog();
 
       if (currentSet == (sets.length / 2).ceil()) {
         if (AdHelper.isRewardedInterstitialAdLoaded) {
