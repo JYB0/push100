@@ -9,6 +9,7 @@ class FirestoreService {
     required String title,
     required String content,
     String? imageUrl,
+    required String deviceUid,
   }) async {
     final passwordHash = hashPassword(password);
 
@@ -23,6 +24,7 @@ class FirestoreService {
       'views': 0, // 👁️ 조회수
       'likes': 0, // 👍 좋아요
       'dislikes': 0, // 👎 싫어요
+      'deviceUid': deviceUid,
     });
   }
 }

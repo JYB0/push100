@@ -9,6 +9,9 @@ class AdHelper {
   static bool isInterstitialAdLoaded = false;
   static InterstitialAd? _interstitialAd;
 
+  static bool isRewardedInterstitialAdLoaded = false;
+  static RewardedInterstitialAd? _rewardedInterstitialAd;
+
   // 보상형 광고 ID
   static String get rewardedAdUnitId {
     bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
@@ -37,6 +40,22 @@ class AdHelper {
       return isTestMode
           ? dotenv.env['IOS_TEST_INTERSTITIAL_AD_ID'] ?? ''
           : dotenv.env['IOS_INTERSTITIAL_AD_ID'] ?? '';
+    } else {
+      return '';
+    }
+  }
+
+  static String get rewardedInterstitialAdUnitId {
+    bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
+
+    if (Platform.isAndroid) {
+      return isTestMode
+          ? dotenv.env['ANDROID_TEST_REWARDEDINTERSTITIAL_AD_ID'] ?? ''
+          : dotenv.env['ANDROID_REWARDEDINTERSTITIAL_AD_ID'] ?? '';
+    } else if (Platform.isIOS) {
+      return isTestMode
+          ? dotenv.env['IOS_TEST_REWARDEDINTERSTITIAL_AD_ID'] ?? ''
+          : dotenv.env['IOS_REWARDEDINTERSTITIAL_AD_ID'] ?? '';
     } else {
       return '';
     }
@@ -126,6 +145,56 @@ class AdHelper {
       _interstitialAd!.show();
     } else {
       loadInterstitialAd();
+    }
+  }
+
+  static void loadRewardedInterstitialAd() {
+    RewardedInterstitialAd.load(
+      adUnitId: rewardedInterstitialAdUnitId,
+      request: const AdRequest(),
+      rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedInterstitialAd = ad;
+          isRewardedInterstitialAdLoaded = true;
+        },
+        onAdFailedToLoad: (error) {
+          _rewardedInterstitialAd = null;
+          isRewardedInterstitialAdLoaded = false;
+        },
+      ),
+    );
+  }
+
+  // ✅ 보상형 전면 광고 보여주기
+  static void showRewardedInterstitialAd(Function onRewardEarned) {
+    if (_rewardedInterstitialAd != null) {
+      _rewardedInterstitialAd!.fullScreenContentCallback =
+          FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) {
+          isRewardedInterstitialAdLoaded = false; // 광고가 시작되었으니 false로 설정
+        },
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _rewardedInterstitialAd = null;
+          loadRewardedInterstitialAd(); // 광고 닫히면 새로 로드
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _rewardedInterstitialAd = null;
+          loadRewardedInterstitialAd();
+        },
+      );
+
+      _rewardedInterstitialAd!.show(
+        onUserEarnedReward: (ad, reward) {
+          onRewardEarned();
+        },
+      );
+
+      _rewardedInterstitialAd = null; // 재사용 방지
+      isRewardedInterstitialAdLoaded = false;
+    } else {
+      loadRewardedInterstitialAd();
     }
   }
 }

@@ -41,6 +41,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
   late List<int> sets;
   late ScrollController _scrollController;
+  bool _isMotivationDialogVisible = false; // class에 선언
 
   int currentSet = 0;
   int restTime = 0;
@@ -70,7 +71,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       end: const Color.fromARGB(67, 246, 211, 105), // 어두운 색 (강조 효과)
     ).animate(_animationController);
 
-    AdHelper.loadRewardedAd();
+    AdHelper.loadRewardedInterstitialAd();
   }
 
   void _increaseReps() {
@@ -188,6 +189,94 @@ class WorkoutScreenState extends State<WorkoutScreen>
     if (await Vibration.hasVibrator() ?? false) {
       Vibration.vibrate(duration: 500);
     }
+  }
+
+  void _showMotivationDialog() {
+    if (_isMotivationDialogVisible) return;
+
+    _isMotivationDialogVisible = true;
+
+    final List<String> messages = [
+      "절반이나 왔어! 여기서 멈출 수 없지 🔥",
+      "지금 포기하면 어제와 똑같아. 끝까지 가자!",
+      "세트 반 완료! 이제 진짜 시작이야!",
+      "여기까지 해낸 넌 대단해 💪",
+      "포기는 없어. 오늘도 성장 중!",
+    ];
+
+    final message = (messages..shuffle()).first;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Motivation',
+      barrierColor: const Color.fromRGBO(0, 0, 0, 0.4),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return const SizedBox.shrink();
+      },
+      transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+        final curvedValue = Curves.easeOutBack.transform(animation.value) - 1.0;
+
+        // ✅ 딜레이 후 안전하게 닫기
+        Future.delayed(const Duration(seconds: 3), () {
+          if (_isMotivationDialogVisible && dialogContext.mounted) {
+            Navigator.of(dialogContext).pop();
+            _isMotivationDialogVisible = false;
+          }
+        });
+
+        return Transform.translate(
+          offset: Offset(0, curvedValue * -50),
+          child: Opacity(
+            opacity: animation.value,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Material(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  elevation: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_isMotivationDialogVisible) {
+                        Navigator.of(dialogContext).pop();
+                        _isMotivationDialogVisible = false;
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 24, horizontal: 20),
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.flash_on,
+                              size: 28, color: AppColors.redPrimary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      _isMotivationDialogVisible = false; // 팝업이 닫히면 플래그 초기화
+    });
   }
 
   Widget _buildSetCircles() {
@@ -414,23 +503,13 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.reset();
       _animationController.repeat(reverse: true);
 
-      if (currentSet % 2 == 0) {
-        if (currentSet % 4 == 0) {
-          // ✅ 4의 배수 세트 → 보상형 광고
-          if (AdHelper.isRewardedAdLoaded) {
-            AdHelper.showRewardedAd(() {
-              AdHelper.loadRewardedAd();
-            });
-          } else {
-            AdHelper.loadRewardedAd();
-          }
+      if (currentSet == (sets.length / 2).ceil()) {
+        if (AdHelper.isRewardedInterstitialAdLoaded) {
+          AdHelper.showRewardedInterstitialAd(() {
+            _showMotivationDialog();
+          });
         } else {
-          // ✅ 2의 배수지만 4의 배수는 아닌 세트 → 전면 광고
-          if (AdHelper.isInterstitialAdLoaded) {
-            AdHelper.showInterstitialAd();
-          } else {
-            AdHelper.loadInterstitialAd();
-          }
+          AdHelper.loadRewardedInterstitialAd();
         }
       }
     } else {

@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import 'package:push100/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -31,11 +32,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isCommenting = false;
   String? _replyToCommentId;
   String? _replyToNickname;
+  String? _deviceUid;
 
   @override
   void initState() {
     super.initState();
     _increaseViewCount();
+    _loadDeviceUid();
+    // patchOldPosts();
   }
 
   @override
@@ -63,12 +67,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .update({'views': FieldValue.increment(1)});
   }
 
-  Future<void> _updateReaction(String field) async {
-    await FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.postId)
-        .update({field: FieldValue.increment(1)});
-  }
+  // Future<void> _updateReaction(String field) async {
+  //   await FirebaseFirestore.instance
+  //       .collection('posts')
+  //       .doc(widget.postId)
+  //       .update({field: FieldValue.increment(1)});
+  // }
 
   Future<void> _submitComment() async {
     final content = _commentController.text.trim();
@@ -98,6 +102,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'nickname': nickname,
         'likes': 0,
         'passwordHash': hash,
+        'likedBy': [],
         'timestamp': Timestamp.now(),
       });
     } else {
@@ -110,6 +115,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'nickname': nickname,
         'passwordHash': hash,
         'likes': 0,
+        'likedBy': [],
         'timestamp': Timestamp.now(),
       });
     }
@@ -118,17 +124,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _nicknameController.clear();
     _passwordController.clear();
 
+    if (!mounted) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _replyToCommentId = null;
       _replyToNickname = null;
       _isCommenting = false;
     });
-
-    if (!mounted) return;
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _isCommenting = false;
-    });
+    // setState(() {
+    //   _isCommenting = false;
+    // });
   }
 
   Future<void> _deleteReplyComment(
@@ -167,6 +172,76 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         const SnackBar(content: Text('비밀번호가 틀렸습니다.')),
       );
     }
+  }
+
+  // Future<void> patchOldPosts() async {
+  //   final posts = await FirebaseFirestore.instance.collection('posts').get();
+
+  //   for (var doc in posts.docs) {
+  //     final data = doc.data();
+  //     final updates = <String, dynamic>{};
+
+  //     if (!data.containsKey('likedBy')) {
+  //       updates['likedBy'] = [];
+  //     }
+  //     if (!data.containsKey('dislikedBy')) {
+  //       updates['dislikedBy'] = [];
+  //     }
+
+  //     if (updates.isNotEmpty) {
+  //       await doc.reference.update(updates);
+  //     }
+  //   }
+  // }
+
+  Future<void> _loadDeviceUid() async {
+    final prefs = await SharedPreferences.getInstance();
+    _deviceUid = prefs.getString('device_uid');
+  }
+
+  Future<void> _toggleCommentLikeByDoc(DocumentSnapshot doc) async {
+    if (_deviceUid == null) return;
+
+    final commentRef = FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .collection('comments')
+        .doc(doc.id);
+
+    final likedBy = List<String>.from(doc['likedBy'] ?? []);
+    final hasLiked = likedBy.contains(_deviceUid);
+
+    await commentRef.update({
+      'likes': FieldValue.increment(hasLiked ? -1 : 1),
+      'likedBy': hasLiked
+          ? FieldValue.arrayRemove([_deviceUid])
+          : FieldValue.arrayUnion([_deviceUid]),
+    });
+  }
+
+  Future<void> _toggleReplyLike({
+    required String commentId,
+    required String replyId,
+    required List<String> likedBy,
+  }) async {
+    if (_deviceUid == null) return;
+
+    final replyRef = FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .collection('comments')
+        .doc(commentId)
+        .collection('replies')
+        .doc(replyId);
+
+    final hasLiked = likedBy.contains(_deviceUid);
+
+    await replyRef.update({
+      'likes': FieldValue.increment(hasLiked ? -1 : 1),
+      'likedBy': hasLiked
+          ? FieldValue.arrayRemove([_deviceUid])
+          : FieldValue.arrayUnion([_deviceUid]),
+    });
   }
 
   Future<void> _deleteComment(String commentId, String storedHash) async {
@@ -277,8 +352,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             .format(timestamp.toLocal())
                         : '';
                     final views = data['views'] ?? 0;
-                    final likes = data['likes'] ?? 0;
-                    final dislikes = data['dislikes'] ?? 0;
+                    // final likes = data['likes'] ?? 0;
+                    // final dislikes = data['dislikes'] ?? 0;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(
@@ -300,25 +375,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           const SizedBox(height: 16),
                           Text(content),
                           const SizedBox(height: 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.thumb_up),
-                                onPressed: () => _updateReaction('likes'),
-                              ),
-                              Text('$likes'),
-                              const SizedBox(width: 16),
-                              IconButton(
-                                icon: const Icon(Icons.thumb_down),
-                                onPressed: () => _updateReaction('dislikes'),
-                              ),
-                              Text('$dislikes'),
-                            ],
-                          ),
-                          const Divider(
-                            height: 0,
-                          ),
+                          _buildPostReactionButtons(data),
+                          const Divider(height: 0),
                         ],
                       ),
                     );
@@ -359,6 +417,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             ? DateFormat('yyyy.MM.dd HH:mm').format(timestamp)
                             : '';
                         final likes = doc['likes'] ?? 0;
+                        final likedBy = List<String>.from(doc['likedBy'] ?? []);
+                        final hasLiked =
+                            _deviceUid != null && likedBy.contains(_deviceUid);
 
                         return Container(
                           width: double.infinity,
@@ -399,22 +460,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           width: 18,
                                         ),
                                         GestureDetector(
-                                          onTap: () async {
-                                            await FirebaseFirestore.instance
-                                                .collection('posts')
-                                                .doc(widget.postId)
-                                                .collection('comments')
-                                                .doc(commentId)
-                                                .update({
-                                              'likes': FieldValue.increment(1)
-                                            });
-                                          },
-                                          child: const Padding(
-                                            padding: EdgeInsets.symmetric(
+                                          onTap: () =>
+                                              _toggleCommentLikeByDoc(doc),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
                                                 horizontal: 4),
                                             child: Icon(
                                                 Icons.thumb_up_alt_outlined,
-                                                size: 18),
+                                                size: 18,
+                                                color: hasLiked
+                                                    ? AppColors.redPrimary
+                                                    : null),
                                           ),
                                         ),
                                         const SizedBox(
@@ -514,6 +570,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                               ? DateFormat('yyyy.MM.dd HH:mm')
                                                   .format(replyTimestamp)
                                               : '';
+                                      final replyLikedBy = List<String>.from(
+                                          reply['likedBy'] ?? []);
+                                      final hasReplyLiked =
+                                          _deviceUid != null &&
+                                              replyLikedBy.contains(_deviceUid);
 
                                       return Column(
                                         children: [
@@ -580,7 +641,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                               GestureDetector(
                                                                 onTap:
                                                                     () async {
-                                                                  await FirebaseFirestore
+                                                                  if (_deviceUid ==
+                                                                      null) {
+                                                                    return;
+                                                                  }
+
+                                                                  final replyRef = FirebaseFirestore
                                                                       .instance
                                                                       .collection(
                                                                           'posts')
@@ -593,23 +659,39 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                                       .collection(
                                                                           'replies')
                                                                       .doc(reply
-                                                                          .id)
+                                                                          .id);
+
+                                                                  await replyRef
                                                                       .update({
-                                                                    'likes': FieldValue
-                                                                        .increment(
-                                                                            1)
+                                                                    'likes': FieldValue.increment(
+                                                                        hasReplyLiked
+                                                                            ? -1
+                                                                            : 1),
+                                                                    'likedBy': hasReplyLiked
+                                                                        ? FieldValue
+                                                                            .arrayRemove([
+                                                                            _deviceUid
+                                                                          ])
+                                                                        : FieldValue
+                                                                            .arrayUnion([
+                                                                            _deviceUid
+                                                                          ]),
                                                                   });
                                                                 },
-                                                                child:
-                                                                    const Padding(
-                                                                  padding: EdgeInsets
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets
                                                                       .symmetric(
-                                                                          horizontal:
-                                                                              4),
+                                                                      horizontal:
+                                                                          4),
                                                                   child: Icon(
-                                                                      Icons
-                                                                          .thumb_up_alt_outlined,
-                                                                      size: 18),
+                                                                    Icons
+                                                                        .thumb_up_alt_outlined,
+                                                                    size: 18,
+                                                                    color: hasReplyLiked
+                                                                        ? AppColors
+                                                                            .redPrimary
+                                                                        : null,
+                                                                  ),
                                                                 ),
                                                               ),
                                                               const SizedBox(
@@ -708,6 +790,95 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
       ),
       bottomSheet: _buildCommentInputArea(),
+    );
+  }
+
+  Widget _buildPostReactionButtons(DocumentSnapshot postData) {
+    final likes = postData['likes'] ?? 0;
+    final dislikes = postData['dislikes'] ?? 0;
+    final likedBy = List<String>.from(postData['likedBy'] ?? []);
+    final dislikedBy = List<String>.from(postData['dislikedBy'] ?? []);
+
+    final hasLiked = _deviceUid != null && likedBy.contains(_deviceUid);
+    final hasDisliked = _deviceUid != null && dislikedBy.contains(_deviceUid);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.thumb_up,
+            color: hasLiked ? AppColors.redPrimary : null,
+          ),
+          onPressed: () async {
+            if (_deviceUid == null) return;
+
+            final postRef = FirebaseFirestore.instance
+                .collection('posts')
+                .doc(widget.postId);
+
+            if (hasLiked) {
+              // 🔴 좋아요 취소
+              await postRef.update({
+                'likes': FieldValue.increment(-1),
+                'likedBy': FieldValue.arrayRemove([_deviceUid])
+              });
+            } else {
+              // 🟢 좋아요 추가
+              await postRef.update({
+                'likes': FieldValue.increment(1),
+                'likedBy': FieldValue.arrayUnion([_deviceUid])
+              });
+
+              // ❌ 동시에 싫어요 누른 적이 있다면 취소
+              if (hasDisliked) {
+                await postRef.update({
+                  'dislikes': FieldValue.increment(-1),
+                  'dislikedBy': FieldValue.arrayRemove([_deviceUid])
+                });
+              }
+            }
+          },
+        ),
+        Text('$likes'),
+        const SizedBox(width: 16),
+        IconButton(
+          icon: Icon(
+            Icons.thumb_down,
+            color: hasDisliked ? AppColors.bluePrimary : null,
+          ),
+          onPressed: () async {
+            if (_deviceUid == null) return;
+
+            final postRef = FirebaseFirestore.instance
+                .collection('posts')
+                .doc(widget.postId);
+
+            if (hasDisliked) {
+              // 🔵 싫어요 취소
+              await postRef.update({
+                'dislikes': FieldValue.increment(-1),
+                'dislikedBy': FieldValue.arrayRemove([_deviceUid])
+              });
+            } else {
+              // 🔷 싫어요 추가
+              await postRef.update({
+                'dislikes': FieldValue.increment(1),
+                'dislikedBy': FieldValue.arrayUnion([_deviceUid])
+              });
+
+              // ❌ 동시에 좋아요 누른 적이 있다면 취소
+              if (hasLiked) {
+                await postRef.update({
+                  'likes': FieldValue.increment(-1),
+                  'likedBy': FieldValue.arrayRemove([_deviceUid])
+                });
+              }
+            }
+          },
+        ),
+        Text('$dislikes'),
+      ],
     );
   }
 

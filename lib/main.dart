@@ -13,6 +13,8 @@ import 'package:push100/firebase_options.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:push100/screens/initial_test_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -25,6 +27,7 @@ void main() async {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+  await initializeUid();
   await dotenv.load(fileName: ".env");
   MobileAds.instance.initialize();
 
@@ -78,6 +81,15 @@ void main() async {
       isTestMode: isTestMode,
     ),
   );
+}
+
+Future<void> initializeUid() async {
+  final prefs = await SharedPreferences.getInstance();
+  final uid = prefs.getString('device_uid');
+  if (uid == null) {
+    final newUid = const Uuid().v4();
+    await prefs.setString('device_uid', newUid);
+  }
 }
 
 Future<void> requestNotificationPermissions() async {

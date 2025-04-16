@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
 
 class PostWriteScreen extends StatefulWidget {
@@ -18,6 +19,20 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
   final _contentController = TextEditingController();
 
   bool _isLoading = false;
+  String? _deviceUid;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeviceUid();
+  }
+
+  Future<void> _loadDeviceUid() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _deviceUid = prefs.getString('device_uid');
+    });
+  }
 
   Future<void> _submitPost() async {
     if (_nicknameController.text.isEmpty ||
@@ -41,6 +56,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
         title: _titleController.text,
         content: _contentController.text,
         imageUrl: null,
+        deviceUid: _deviceUid!,
       );
       // print('🟢 업로드 완료');
 
