@@ -81,17 +81,47 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     List<String> records = prefs.getStringList('workoutRecords') ?? [];
 
-    return records.map((record) {
+    // return records.map((record) {
+    //   final parts = record.split(':');
+    //   return {
+    //     'date': parts[0], // 날짜
+    //     'week': int.parse(parts[1]),
+    //     'day': int.parse(parts[2]),
+    //     'level': parts[3],
+    //     'plannedReps': parts[4].split(',').map(int.parse).toList(), // 주어진 세트
+    //     'userReps': parts[5].split(',').map(int.parse).toList(), // 사용자가 수행한 세트
+    //   };
+    // }).toList();
+
+    List<Map<String, dynamic>> parsedRecords = records.map((record) {
       final parts = record.split(':');
       return {
-        'date': parts[0], // 날짜
+        'date': parts[0],
         'week': int.parse(parts[1]),
         'day': int.parse(parts[2]),
         'level': parts[3],
-        'plannedReps': parts[4].split(',').map(int.parse).toList(), // 주어진 세트
-        'userReps': parts[5].split(',').map(int.parse).toList(), // 사용자가 수행한 세트
+        'plannedReps': parts[4].split(',').map(int.parse).toList(),
+        'userReps': parts[5].split(',').map(int.parse).toList(),
       };
     }).toList();
+
+    parsedRecords.sort((a, b) {
+      final dateA = DateTime.tryParse(a['date']) ?? DateTime(2000);
+      final dateB = DateTime.tryParse(b['date']) ?? DateTime(2000);
+      final compareDate = dateB.compareTo(dateA);
+      if (compareDate != 0) return compareDate;
+
+      final weekA = a['week'] as int;
+      final weekB = b['week'] as int;
+      final compareWeek = weekB.compareTo(weekA);
+      if (compareWeek != 0) return compareWeek;
+
+      final dayA = a['day'] as int;
+      final dayB = b['day'] as int;
+      return dayB.compareTo(dayA); // 마지막으로 day 기준 비교
+    });
+
+    return parsedRecords;
   }
 
   static Future<void> setDateFixed() async {

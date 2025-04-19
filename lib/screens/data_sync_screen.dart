@@ -3,6 +3,9 @@ import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:push100/helpers/firebase_sync_helper.dart';
+import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/main.dart';
+import 'package:push100/screens/bottom_navigation.dart';
 import 'package:push100/screens/setting_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +20,7 @@ class DataSyncScreen extends StatefulWidget {
 class _DataSyncScreenState extends State<DataSyncScreen> {
   String? _lastBackupTimeFormatted;
   String? _lastRestoreTimeFormatted;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -40,6 +44,8 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
   }
 
   Future<void> _handleRestore(User user) async {
+    setState(() => _isLoading = true);
+
     try {
       await restoreDataFromFirebase(user);
       final prefs = await SharedPreferences.getInstance();
@@ -54,6 +60,34 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✅ 복원이 완료되었습니다!')),
         );
+
+        final progress = await SharedPreferencesHelper.getProgress();
+        final isTestMode = await SharedPreferencesHelper.getIsTestMode();
+
+        // ✅ 홈 화면(BottomNavigation)으로 이동하며 갱신
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 500),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  BottomNavigation(
+                initialWeek: progress['currentWeek'],
+                initialLevel: progress['level'],
+                isTestMode: isTestMode,
+              ),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SharedAxisTransition(
+                  animation: animation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: SharedAxisTransitionType.horizontal,
+                  child: child,
+                );
+              },
+            ),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -61,6 +95,8 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
           SnackBar(content: Text('❌ 복원 중 오류 발생: $e')),
         );
       }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -80,6 +116,8 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
   }
 
   Future<void> _handleBackup(User user) async {
+    setState(() => _isLoading = true);
+
     try {
       await syncLocalDataToFirebase(user); // 여기가 성공해야 아래 로직 실행
 
@@ -102,6 +140,8 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
           SnackBar(content: Text('❌ 백업 중 오류 발생: $e')),
         );
       }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -163,96 +203,129 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 🔝 현재 계정 (상단)
-              Text(
-                '현재 계정: ${user?.email ?? '익명 사용자'}',
-                style: TextStyle(
-                    fontSize: dynamicFontSize * 0.8, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              if (_lastBackupTimeFormatted != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  '마지막 백업: $_lastBackupTimeFormatted',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: dynamicFontSize * 0.8, color: Colors.grey),
-                ),
-              ],
-              if (_lastRestoreTimeFormatted != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '마지막 복원: $_lastRestoreTimeFormatted',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: dynamicFontSize * 0.8, color: Colors.grey),
-                ),
-              ],
-
-              const Spacer(), // 👇 아래쪽으로 밀어냄
-
-              // 🔽 하단 안내 및 버튼
-              Text(
-                '원하는 작업을 선택하세요:',
-                style: TextStyle(
-                    fontSize: dynamicFontSize, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                icon: Icon(
-                  Icons.upload,
-                  color: Colors.white,
-                  size: dynamicFontSize,
-                ),
-                label: Text(
-                  '서버로 데이터 내보내기 (백업)',
-                  style: TextStyle(fontSize: dynamicFontSize),
-                ),
-                onPressed: () async {
-                  if (user != null) await _handleBackup(user);
-                  // await syncLocalDataToFirebase(user!);
-                  // if (context.mounted) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     const SnackBar(content: Text('✅ 백업이 완료되었습니다!')),
-                  //   );
-                  // }
-                },
-              ),
-              SizedBox(height: dynamicFontSize),
-              ElevatedButton.icon(
-                icon: Icon(
-                  Icons.download,
-                  color: Colors.white,
-                  size: dynamicFontSize,
-                ),
-                label: Text(
-                  '서버에서 데이터 가져오기 (복원)',
-                  style: TextStyle(
-                    fontSize: dynamicFontSize,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 🔝 현재 계정 (상단)
+                  Text(
+                    '현재 계정: ${user?.email ?? '익명 사용자'}',
+                    style: TextStyle(
+                        fontSize: dynamicFontSize * 0.8, color: Colors.grey),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                onPressed: () async {
-                  if (user != null) await _handleRestore(user);
-                  // await restoreDataFromFirebase(user!);
-                  // if (context.mounted) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     const SnackBar(content: Text('✅ 복원이 완료되었습니다!')),
-                  //   );
-                  // }
-                },
+                  const Spacer(),
+                  if (_lastBackupTimeFormatted != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '마지막 백업 시간: $_lastBackupTimeFormatted',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: dynamicFontSize * 0.8, color: Colors.grey),
+                    ),
+                  ],
+                  if (_lastRestoreTimeFormatted != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '마지막 복원 시간: $_lastRestoreTimeFormatted',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: dynamicFontSize * 0.8, color: Colors.grey),
+                    ),
+                  ],
+
+                  const Spacer(), // 👇 아래쪽으로 밀어냄
+
+                  // 🔽 하단 안내 및 버튼
+                  Text(
+                    '원하는 작업을 선택하세요:',
+                    style: TextStyle(
+                        fontSize: dynamicFontSize, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    icon: Icon(
+                      Icons.upload,
+                      color: Colors.white,
+                      size: dynamicFontSize,
+                    ),
+                    label: Text(
+                      '서버로 데이터 내보내기 (백업)',
+                      style: TextStyle(fontSize: dynamicFontSize),
+                    ),
+                    onPressed: () async {
+                      final result = await showOkCancelAlertDialog(
+                        context: context,
+                        title: '서버로 데이터 백업',
+                        message:
+                            '이 기기의 운동 기록과 설정을\n서버에 저장합니다.\n\n현재 서버 데이터는 덮어쓰기 됩니다.\n계속할까요?',
+                        okLabel: '백업하기',
+                        cancelLabel: '취소',
+                        isDestructiveAction: true,
+                      );
+
+                      if (result == OkCancelResult.ok && user != null) {
+                        await _handleBackup(user);
+                      }
+                      // if (user != null) await _handleBackup(user);
+                      // await syncLocalDataToFirebase(user!);
+                      // if (context.mounted) {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(content: Text('✅ 백업이 완료되었습니다!')),
+                      //   );
+                      // }
+                    },
+                  ),
+                  SizedBox(height: dynamicFontSize),
+                  ElevatedButton.icon(
+                    icon: Icon(
+                      Icons.download,
+                      color: Colors.white,
+                      size: dynamicFontSize,
+                    ),
+                    label: Text(
+                      '서버에서 데이터 가져오기 (복원)',
+                      style: TextStyle(
+                        fontSize: dynamicFontSize,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final result = await showOkCancelAlertDialog(
+                        context: context,
+                        title: '서버에서 데이터 복원',
+                        message:
+                            '서버에 저장된 데이터를\n 이 기기로 가져옵니다.\n\n현재 기기의 데이터는\n덮어쓰여질 수 있습니다.\n계속할까요?',
+                        okLabel: '복원하기',
+                        cancelLabel: '취소',
+                        isDestructiveAction: true,
+                      );
+
+                      if (result == OkCancelResult.ok && user != null) {
+                        await _handleRestore(user);
+                      }
+                      // if (user != null) await _handleRestore(user);
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: const Color(0x4D000000),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.redLight,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

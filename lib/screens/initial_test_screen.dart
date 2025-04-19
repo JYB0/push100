@@ -156,6 +156,17 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                   ElevatedButton(
                     onPressed: () async {
                       _dismissKeyboard();
+
+                      if (pushupCount == 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("❗ 최소 1개 이상 입력해주세요."),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
+
                       final initialPlan = determineInitialPlan(pushupCount);
                       final int week = initialPlan['week'];
                       final String level = initialPlan['level'];
