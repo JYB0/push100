@@ -58,6 +58,8 @@ dependencies:
   firebase_core: ^3.13.0
   cloud_firestore: ^5.6.6
   firebase_auth: ^5.5.2
+  sign_in_with_apple: ^7.0.1
+  google_sign_in: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +97,7 @@ flutter:
     - .env
     - assets/sounds/ping.wav
     - assets/sounds/finish.wav
+    - assets/google_logo.png
 
   # - assets/fonts/
   #   - images/a_dot_burr.jpeg

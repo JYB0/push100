@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:animations/animations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,8 +10,10 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
 // import 'package:share_plus/share_plus.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
+import 'package:push100/screens/data_sync_screen.dart';
 import 'package:push100/screens/help_screen.dart';
 import 'package:push100/screens/initial_test_screen.dart';
+import 'package:push100/screens/login_screen.dart';
 import 'package:push100/screens/tutorial_screen.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -26,7 +29,7 @@ class SettingScreen extends StatelessWidget {
   ];
 
   final List<String> rateAppTexts = [
-    "앱이 마음에 드셨다면 따뜻한 리뷰 부탁드려요 🌟",
+    "앱이 마음에 드셨다면 따뜻한 리뷰 부탁드려요",
     "여러분의 리뷰는 큰 힘이 됩니다 💬",
     "한 줄 리뷰로 힘을 주세요!",
     "Push100, 어떠셨나요? 평가로 알려주세요!",
@@ -144,7 +147,10 @@ class SettingScreen extends StatelessWidget {
     double dynamicFontSize = baseFontSize * (screenWidth / 400);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("설정")),
+      appBar: AppBar(
+        title: const Text("설정"),
+        automaticallyImplyLeading: false,
+      ),
       body: ListView(
         children: [
           /// 🔹 기록 초기화
@@ -223,6 +229,40 @@ class SettingScreen extends StatelessWidget {
               ),
             ),
             onTap: () => _resetData(context),
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.cloud_sync,
+              color: AppColors.yellowPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title: Text(
+              "데이터 연동하기",
+              style: TextStyle(fontSize: dynamicFontSize),
+            ),
+            onTap: () {
+              final user = FirebaseAuth.instance.currentUser;
+
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 500),
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      user == null
+                          ? const LoginScreen()
+                          : const DataSyncScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SharedAxisTransition(
+                      animation: animation,
+                      secondaryAnimation: secondaryAnimation,
+                      transitionType: SharedAxisTransitionType.horizontal,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),

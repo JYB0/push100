@@ -1,0 +1,2 @@
+/Users/bjy/Desktop/push100/android/app/.cxx/Debug/ssr1u6o1/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/bjy/Desktop/push100/android/app/.cxx/Debug/ssr1u6o1/arm64-v8a/CMakeFiles/rebuild_cache.dir

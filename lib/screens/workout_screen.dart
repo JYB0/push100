@@ -510,7 +510,6 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _scrollToCurrentSet();
       _animationController.reset();
       _animationController.repeat(reverse: true);
-      if (mounted) _showMotivationDialog();
 
       if (currentSet == (sets.length / 2).ceil()) {
         if (AdHelper.isRewardedInterstitialAdLoaded) {
