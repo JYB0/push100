@@ -21,12 +21,30 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
   String? _lastBackupTimeFormatted;
   String? _lastRestoreTimeFormatted;
   bool _isLoading = false;
+  Duration syncCooldown = const Duration(minutes: 5);
 
   @override
   void initState() {
     super.initState();
     _loadLastBackupTime();
     _loadLastRestoreTime();
+  }
+
+  Future<({bool canSync, Duration? remaining})> getSyncCooldownStatus(
+      String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastSyncString = prefs.getString(key);
+
+    if (lastSyncString == null) return (canSync: true, remaining: null);
+
+    final lastSync = DateTime.tryParse(lastSyncString);
+    if (lastSync == null) return (canSync: true, remaining: null);
+
+    final elapsed = DateTime.now().difference(lastSync);
+    if (elapsed > syncCooldown) return (canSync: true, remaining: null);
+
+    final remaining = syncCooldown - elapsed;
+    return (canSync: false, remaining: remaining);
   }
 
   Future<void> _loadLastRestoreTime() async {
@@ -259,58 +277,88 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                       style: TextStyle(fontSize: dynamicFontSize),
                     ),
                     onPressed: () async {
-                      final result = await showOkCancelAlertDialog(
-                        context: context,
-                        title: '서버로 데이터 백업',
-                        message:
-                            '이 기기의 운동 기록과 설정을\n서버에 저장합니다.\n\n현재 서버 데이터는 덮어쓰기 됩니다.\n계속할까요?',
-                        okLabel: '백업하기',
-                        cancelLabel: '취소',
-                        isDestructiveAction: true,
-                      );
+                      if (user == null) return;
 
-                      if (result == OkCancelResult.ok && user != null) {
-                        await _handleBackup(user);
+                      final status =
+                          await getSyncCooldownStatus('lastBackupTime');
+                      if (!status.canSync) {
+                        final seconds = status.remaining!.inSeconds;
+                        final message = seconds <= 60
+                            ? '⏱ 백업은 약 $seconds초 후에 다시 시도해주세요.'
+                            : '⏱ 백업은 약 ${status.remaining!.inMinutes + 1}분 후에 다시 시도해주세요.';
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(message)),
+                          );
+                        }
+                        return; // ✅ 여기 안으로 들어가야 함!
                       }
-                      // if (user != null) await _handleBackup(user);
-                      // await syncLocalDataToFirebase(user!);
-                      // if (context.mounted) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     const SnackBar(content: Text('✅ 백업이 완료되었습니다!')),
-                      //   );
-                      // }
+
+                      if (context.mounted) {
+                        final result = await showOkCancelAlertDialog(
+                          context: context,
+                          title: '서버로 데이터 백업',
+                          message:
+                              '이 기기의 운동 기록과 설정을\n서버에 저장합니다.\n\n현재 서버 데이터는 덮어쓰기 됩니다.\n계속할까요?',
+                          okLabel: '백업하기',
+                          cancelLabel: '취소',
+                          isDestructiveAction: true,
+                        );
+
+                        if (result == OkCancelResult.ok) {
+                          // ⏬ 쿨다운이 끝났을 경우만 실행
+                          await _handleBackup(user);
+                        }
+                      }
                     },
                   ),
                   SizedBox(height: dynamicFontSize),
                   ElevatedButton.icon(
-                    icon: Icon(
-                      Icons.download,
-                      color: Colors.white,
-                      size: dynamicFontSize,
-                    ),
-                    label: Text(
-                      '서버에서 데이터 가져오기 (복원)',
-                      style: TextStyle(
-                        fontSize: dynamicFontSize,
+                      icon: Icon(
+                        Icons.download,
+                        color: Colors.white,
+                        size: dynamicFontSize,
                       ),
-                    ),
-                    onPressed: () async {
-                      final result = await showOkCancelAlertDialog(
-                        context: context,
-                        title: '서버에서 데이터 복원',
-                        message:
-                            '서버에 저장된 데이터를\n 이 기기로 가져옵니다.\n\n현재 기기의 데이터는\n덮어쓰여질 수 있습니다.\n계속할까요?',
-                        okLabel: '복원하기',
-                        cancelLabel: '취소',
-                        isDestructiveAction: true,
-                      );
+                      label: Text(
+                        '서버에서 데이터 가져오기 (복원)',
+                        style: TextStyle(
+                          fontSize: dynamicFontSize,
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (user == null) return;
 
-                      if (result == OkCancelResult.ok && user != null) {
-                        await _handleRestore(user);
-                      }
-                      // if (user != null) await _handleRestore(user);
-                    },
-                  ),
+                        final status =
+                            await getSyncCooldownStatus('lastRestoreTime');
+                        if (!status.canSync) {
+                          final seconds = status.remaining!.inSeconds;
+                          final message = seconds <= 60
+                              ? '⏱ 복원은 약 $seconds초 후에 다시 시도해주세요.'
+                              : '⏱ 복원은 약 ${status.remaining!.inMinutes + 1}분 후에 다시 시도해주세요.';
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(message)),
+                            );
+                          }
+                          return;
+                        }
+
+                        if (context.mounted) {
+                          final result = await showOkCancelAlertDialog(
+                            context: context,
+                            title: '서버에서 데이터 복원',
+                            message:
+                                '서버에 저장된 데이터를\n이 기기로 가져옵니다.\n\n현재 기기의 데이터는\n덮어쓰여질 수 있습니다.\n계속할까요?',
+                            okLabel: '복원하기',
+                            cancelLabel: '취소',
+                            isDestructiveAction: true,
+                          );
+
+                          if (result == OkCancelResult.ok) {
+                            await _handleRestore(user);
+                          }
+                        }
+                      }),
                   const SizedBox(height: 24),
                 ],
               ),

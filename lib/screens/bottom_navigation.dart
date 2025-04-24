@@ -1,7 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
-// import 'package:push100/screens/community_category_screen.dart';
+import 'package:push100/screens/community_category_screen.dart';
 import 'package:push100/screens/home_screen.dart';
 import 'package:push100/screens/workout_history_screen.dart';
 import 'package:push100/screens/setting_screen.dart';
@@ -37,7 +37,7 @@ class BottomNavigationState extends State<BottomNavigation> {
         isTestMode: widget.isTestMode,
       ),
       const WorkoutHistoryScreen(),
-      // const CommunityCategoryScreen(),
+      const CommunityCategoryScreen(),
       SettingScreen(),
     ]);
   }
@@ -78,10 +78,10 @@ class BottomNavigationState extends State<BottomNavigation> {
             icon: Icon(Icons.history, size: iconSize),
             label: "운동 기록",
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.groups, size: iconSize),
-          //   label: "커뮤니티", // 🔥 추가
-          // ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.groups, size: iconSize),
+            label: "커뮤니티", // 🔥 추가
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings, size: iconSize),
             label: "설정",
