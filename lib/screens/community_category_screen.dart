@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:push100/main.dart';
@@ -34,10 +35,20 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CategorySearchScreen(),
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(milliseconds: 400),
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const CategorySearchScreen(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return SharedAxisTransition(
+                          animation: animation,
+                          secondaryAnimation: secondaryAnimation,
+                          transitionType: SharedAxisTransitionType.horizontal,
+                          child: child,
+                        );
+                      },
                     ),
                   );
                 },
@@ -97,11 +108,24 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                         return ListTile(
                           title: Text("${index + 1}. ${item['name']} 게시판"),
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CommunityPostListScreen(
-                                    category: item['name']),
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                transitionDuration:
+                                    const Duration(milliseconds: 400),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        CommunityPostListScreen(
+                                            category: item['name']),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return SharedAxisTransition(
+                                    animation: animation,
+                                    secondaryAnimation: secondaryAnimation,
+                                    transitionType:
+                                        SharedAxisTransitionType.horizontal,
+                                    child: child,
+                                  );
+                                },
                               ),
                             );
                           },
@@ -162,13 +186,26 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                             '${post['category'] ?? '익명'} 게시판 • 조회수 ${post['views'] ?? 0}',
                           ),
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PostDetailScreen(
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                transitionDuration:
+                                    const Duration(milliseconds: 400),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        PostDetailScreen(
                                   postId: post.id,
                                   category: post['category'] ?? '카테고리 없음',
                                 ),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return SharedAxisTransition(
+                                    animation: animation,
+                                    secondaryAnimation: secondaryAnimation,
+                                    transitionType:
+                                        SharedAxisTransitionType.horizontal,
+                                    child: child,
+                                  );
+                                },
                               ),
                             );
                           },

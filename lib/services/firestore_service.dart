@@ -22,8 +22,8 @@ class FirestoreService {
       'timestamp': Timestamp.now(),
       'imageUrl': imageUrl ?? '',
       'views': 0, // 👁️ 조회수
-      'likes': 0, // 👍 좋아요
-      'dislikes': 0, // 👎 싫어요
+      // 'likes': 0, // 👍 좋아요
+      // 'dislikes': 0, // 👎 싫어요
       'deviceUid': deviceUid,
     });
   }

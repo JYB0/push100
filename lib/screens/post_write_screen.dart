@@ -1,5 +1,7 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
+import 'package:push100/screens/community_post_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
 
@@ -61,7 +63,33 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
       // print('🟢 업로드 완료');
 
       if (mounted) {
-        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ 글이 성공적으로 작성되었습니다.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 500),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  CommunityPostListScreen(category: widget.category),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SharedAxisTransition(
+                  animation: animation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: SharedAxisTransitionType.horizontal,
+                  child: child,
+                );
+              },
+            ),
+            (route) => false, // 모든 화면 제거 후 이동
+          );
+        }
       }
     } catch (e) {
       // print('🔴 업로드 실패: $e');

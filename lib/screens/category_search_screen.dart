@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:push100/main.dart';
@@ -77,11 +78,23 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
                       return ListTile(
                         title: Text('$category 게시판'),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              transitionDuration:
+                                  const Duration(milliseconds: 400),
+                              pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
                                   CommunityPostListScreen(category: category),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                return SharedAxisTransition(
+                                  animation: animation,
+                                  secondaryAnimation: secondaryAnimation,
+                                  transitionType:
+                                      SharedAxisTransitionType.horizontal,
+                                  child: child,
+                                );
+                              },
                             ),
                           );
                         },
