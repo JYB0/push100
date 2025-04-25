@@ -29,6 +29,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // final _commentFocusScopeNode = FocusScopeNode();
   final _focusNode = FocusNode();
   late Future<List<QuerySnapshot>> _reactionFutures;
+  bool _isTogglingReaction = false;
 
   bool _isCommenting = false;
   String? _replyToCommentId;
@@ -39,8 +40,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void initState() {
     super.initState();
     _increaseViewCount();
-    _loadDeviceUid();
-    // patchOldPosts();
+    _loadDeviceUidAndInitReactions();
   }
 
   @override
@@ -61,19 +61,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNode.requestFocus();
   }
 
+  Future<void> _refreshData() async {
+    if (!mounted) return;
+    setState(() {
+      _reactionFutures = _refreshReactions();
+    });
+  }
+
+  Future<void> _loadDeviceUidAndInitReactions() async {
+    final prefs = await SharedPreferences.getInstance();
+    _deviceUid = prefs.getString('device_uid');
+
+    if (!mounted) return;
+
+    setState(() {
+      _reactionFutures = _refreshReactions(); // ✅ 여기서 반드시 초기화
+    });
+  }
+
   Future<void> _increaseViewCount() async {
     await FirebaseFirestore.instance
         .collection('posts')
         .doc(widget.postId)
         .update({'views': FieldValue.increment(1)});
   }
-
-  // Future<void> _updateReaction(String field) async {
-  //   await FirebaseFirestore.instance
-  //       .collection('posts')
-  //       .doc(widget.postId)
-  //       .update({field: FieldValue.increment(1)});
-  // }
 
   Future<void> _submitComment() async {
     final content = _commentController.text.trim();
@@ -101,9 +112,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           .add({
         'content': content,
         'nickname': nickname,
-        'likes': 0,
         'passwordHash': hash,
-        'likedBy': [],
         'timestamp': Timestamp.now(),
       });
     } else {
@@ -115,8 +124,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'content': content,
         'nickname': nickname,
         'passwordHash': hash,
-        'likes': 0,
-        'likedBy': [],
         'timestamp': Timestamp.now(),
       });
     }
@@ -176,7 +183,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<void> _togglePostLike() async {
-    if (_deviceUid == null) return;
+    if (_deviceUid == null || _isTogglingReaction) return;
+    _isTogglingReaction = true;
     final postRef =
         FirebaseFirestore.instance.collection('posts').doc(widget.postId);
     final likeRef = postRef.collection('likes').doc(_deviceUid);
@@ -191,6 +199,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         await dislikeRef.delete();
       }
     }
+    _isTogglingReaction = false;
   }
 
   Future<void> _togglePostDislike() async {
@@ -209,34 +218,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         await likeRef.delete();
       }
     }
-  }
-
-  Future<void> _loadDeviceUid() async {
-    final prefs = await SharedPreferences.getInstance();
-    _deviceUid = prefs.getString('device_uid');
-    setState(() {
-      _reactionFutures = _refreshReactions(); // ✅ 여기에서 초기화
-    });
-  }
-
-  Future<void> _toggleCommentLikeByDoc(DocumentSnapshot doc) async {
-    if (_deviceUid == null) return;
-
-    final commentRef = FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .doc(doc.id);
-
-    final likedBy = List<String>.from(doc['likedBy'] ?? []);
-    final hasLiked = likedBy.contains(_deviceUid);
-
-    await commentRef.update({
-      'likes': FieldValue.increment(hasLiked ? -1 : 1),
-      'likedBy': hasLiked
-          ? FieldValue.arrayRemove([_deviceUid])
-          : FieldValue.arrayUnion([_deviceUid]),
-    });
   }
 
   Future<void> _deleteComment(String commentId, String storedHash) async {
@@ -316,470 +297,336 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             _replyToNickname = null;
           });
         },
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: bottomPadding),
-            child: Column(
-              children: [
-                // 📄 글 내용 표시
-                StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('posts')
-                      .doc(widget.postId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(
-                          color: AppColors.redPrimary,
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              child: Column(
+                children: [
+                  // 📄 글 내용 표시
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('posts')
+                        .doc(widget.postId)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final data = snapshot.data!;
+                      final title = data['title'] ?? '제목 없음';
+                      final content = data['content'] ?? '';
+                      final nickname = data['nickname'] ?? '익명';
+                      final timestamp = data['timestamp']?.toDate();
+                      final formattedTime = timestamp != null
+                          ? DateFormat('yyyy.MM.dd HH:mm')
+                              .format(timestamp.toLocal())
+                          : '';
+                      final views = data['views'] ?? 0;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text('$nickname'),
+                            const SizedBox(height: 8),
+                            Text('조회수 $views • $formattedTime'),
+                            const Divider(thickness: 1),
+                            const SizedBox(height: 16),
+                            Text(content),
+                            const SizedBox(height: 32),
+                            _buildPostReactionButtons(data),
+                            const Divider(height: 0),
+                          ],
                         ),
                       );
-                    }
+                    },
+                  ),
 
-                    final data = snapshot.data!;
-                    final title = data['title'] ?? '제목 없음';
-                    final content = data['content'] ?? '';
-                    final nickname = data['nickname'] ?? '익명';
-                    final timestamp = data['timestamp']?.toDate();
-                    final formattedTime = timestamp != null
-                        ? DateFormat('yyyy.MM.dd HH:mm')
-                            .format(timestamp.toLocal())
-                        : '';
-                    final views = data['views'] ?? 0;
-                    // final likes = data['likes'] ?? 0;
-                    // final dislikes = data['dislikes'] ?? 0;
+                  // 💬 댓글 목록
+                  StreamBuilder<QuerySnapshot>(
+                    stream: commentRef.snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                            child: CircularProgressIndicator(
+                          color: AppColors.redPrimary,
+                        ));
+                      }
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Text('$nickname'),
-                          const SizedBox(height: 8),
-                          Text('조회수 $views • $formattedTime'),
-                          const Divider(thickness: 1),
-                          const SizedBox(height: 16),
-                          Text(content),
-                          const SizedBox(height: 32),
-                          _buildPostReactionButtons(data),
-                          const Divider(height: 0),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                      final comments = snapshot.data!.docs;
 
-                // 💬 댓글 목록
-                StreamBuilder<QuerySnapshot>(
-                  stream: commentRef.snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(
-                          child: CircularProgressIndicator(
-                        color: AppColors.redPrimary,
-                      ));
-                    }
+                      if (comments.isEmpty) {
+                        return const Center(child: Text('첫 댓글을 남겨주세요.'));
+                      }
 
-                    final comments = snapshot.data!.docs;
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: comments.length,
+                        separatorBuilder: (_, __) => const Divider(height: 0),
+                        itemBuilder: (context, index) {
+                          final doc = comments[index];
+                          final commentId = doc.id;
+                          final content = doc['content'] ?? '';
+                          final nickname = doc['nickname'] ?? '익명';
+                          final passwordHash = doc['passwordHash'] ?? '';
+                          final timestamp =
+                              (doc['timestamp'] as Timestamp?)?.toDate();
+                          final formattedTime = timestamp != null
+                              ? DateFormat('yyyy.MM.dd HH:mm').format(timestamp)
+                              : '';
 
-                    if (comments.isEmpty) {
-                      return const Center(child: Text('첫 댓글을 남겨주세요.'));
-                    }
-
-                    return ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: comments.length,
-                      separatorBuilder: (_, __) => const Divider(height: 0),
-                      itemBuilder: (context, index) {
-                        final doc = comments[index];
-                        final commentId = doc.id;
-                        final content = doc['content'] ?? '';
-                        final nickname = doc['nickname'] ?? '익명';
-                        final passwordHash = doc['passwordHash'] ?? '';
-                        final timestamp =
-                            (doc['timestamp'] as Timestamp?)?.toDate();
-                        final formattedTime = timestamp != null
-                            ? DateFormat('yyyy.MM.dd HH:mm').format(timestamp)
-                            : '';
-                        final likes = doc['likes'] ?? 0;
-                        final likedBy = List<String>.from(doc['likedBy'] ?? []);
-                        final hasLiked =
-                            _deviceUid != null && likedBy.contains(_deviceUid);
-
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 👤 닉네임
-                              Padding(
-                                padding: const EdgeInsets.only(right: 10.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      nickname,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 👤 닉네임
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        nickname,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final result =
+                                              await showModalActionSheet<
+                                                  String>(
+                                            context: context,
+                                            title: '댓글 옵션',
+                                            actions: [
+                                              const SheetAction(
+                                                  label: '답글 달기', key: 'reply'),
+                                              const SheetAction(
+                                                  label: '삭제하기',
+                                                  key: 'delete',
+                                                  isDestructiveAction: true),
+                                            ],
+                                          );
+
+                                          if (result == 'reply') {
                                             _showReplyTo(commentId, nickname);
-                                          },
-                                          child: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4),
-                                            child: Icon(Icons.reply, size: 18),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 18,
-                                        ),
-                                        GestureDetector(
-                                          onTap: () =>
-                                              _toggleCommentLikeByDoc(doc),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 4),
-                                            child: Icon(
-                                                Icons.thumb_up_alt_outlined,
-                                                size: 18,
-                                                color: hasLiked
-                                                    ? AppColors.redPrimary
-                                                    : null),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 18,
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
+                                          } else if (result == 'delete') {
                                             _deleteComment(
                                                 commentId, passwordHash);
-                                          },
-                                          child: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4),
-                                            child: Icon(Icons.delete_outline,
-                                                size: 18),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          }
+                                        },
+                                        child: const Icon(Icons.more_horiz),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              // 💬 콘텐츠
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(content),
-                              ),
+                                // 💬 콘텐츠
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(content),
+                                ),
 
-                              // 🕒 시간
-                              likes > 0
-                                  ? Row(
-                                      children: [
-                                        Text(
-                                          formattedTime,
-                                          style: const TextStyle(
-                                              fontSize: 12, color: Colors.grey),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        const Icon(
-                                          Icons.thumb_up_alt_outlined,
-                                          size: 16,
-                                          color: AppColors.redPrimary,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '$likes',
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.redPrimary),
-                                        ),
-                                      ],
-                                    )
-                                  : Text(
-                                      formattedTime,
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.grey),
-                                    ),
+                                // 🕒 시간
+                                Text(
+                                  formattedTime,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
 
-                              // 대댓글
-                              StreamBuilder<QuerySnapshot>(
-                                stream: FirebaseFirestore.instance
-                                    .collection('posts')
-                                    .doc(widget.postId)
-                                    .collection('comments')
-                                    .doc(commentId)
-                                    .collection('replies')
-                                    .orderBy('timestamp')
-                                    .snapshots(),
-                                builder: (context, replySnapshot) {
-                                  if (!replySnapshot.hasData) {
-                                    return const SizedBox.shrink();
-                                  }
+                                // 대댓글
+                                StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('posts')
+                                      .doc(widget.postId)
+                                      .collection('comments')
+                                      .doc(commentId)
+                                      .collection('replies')
+                                      .orderBy('timestamp')
+                                      .snapshots(),
+                                  builder: (context, replySnapshot) {
+                                    if (!replySnapshot.hasData) {
+                                      return const SizedBox.shrink();
+                                    }
 
-                                  final replies = replySnapshot.data!.docs;
+                                    final replies = replySnapshot.data!.docs;
 
-                                  if (replies.isEmpty) {
-                                    return const SizedBox(); // 또는 null
-                                  }
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: replies.length,
-                                    itemBuilder: (context, replyIndex) {
-                                      final reply = replies[replyIndex];
-                                      final replyContent =
-                                          reply['content'] ?? '';
-                                      final replyNickname =
-                                          reply['nickname'] ?? '익명';
-                                      final replyLikes = reply['likes'] ?? 0;
-                                      final replyTimestamp =
-                                          (reply['timestamp'] as Timestamp?)
-                                              ?.toDate();
-                                      final replyTimeFormatted =
-                                          replyTimestamp != null
-                                              ? DateFormat('yyyy.MM.dd HH:mm')
-                                                  .format(replyTimestamp)
-                                              : '';
-                                      final replyLikedBy = List<String>.from(
-                                          reply['likedBy'] ?? []);
-                                      final hasReplyLiked =
-                                          _deviceUid != null &&
-                                              replyLikedBy.contains(_deviceUid);
+                                    if (replies.isEmpty) {
+                                      return const SizedBox();
+                                    } // 또는 null
 
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 5),
-                                            child: Container(
-                                              height: 1,
-                                              color: Colors.grey[300],
-                                            ),
-                                          ),
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 7),
-                                                child: Icon(
-                                                  Icons
-                                                      .subdirectory_arrow_right, // 또는 Icons.reply
-                                                  size: 18,
-                                                  color: Colors.grey,
-                                                ),
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: replies.length,
+                                      itemBuilder: (context, replyIndex) {
+                                        final reply = replies[replyIndex];
+                                        final replyContent =
+                                            reply['content'] ?? '';
+                                        final replyNickname =
+                                            reply['nickname'] ?? '익명';
+                                        final replyTimestamp =
+                                            (reply['timestamp'] as Timestamp?)
+                                                ?.toDate();
+                                        final replyTimeFormatted =
+                                            replyTimestamp != null
+                                                ? DateFormat('yyyy.MM.dd HH:mm')
+                                                    .format(replyTimestamp)
+                                                : '';
+
+                                        return Column(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 5),
+                                              child: Container(
+                                                height: 1,
+                                                color: Colors.grey[300],
                                               ),
-                                              Expanded(
-                                                child: Container(
+                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                    right: 12,
-                                                    left: 4,
-                                                    top: 8,
-                                                    bottom: 4,
+                                                      EdgeInsets.only(top: 7),
+                                                  child: Icon(
+                                                    Icons
+                                                        .subdirectory_arrow_right, // 또는 Icons.reply
+                                                    size: 18,
+                                                    color: Colors.grey,
                                                   ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.grey[100],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      // 닉네임 + 아이콘
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            replyNickname,
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      right: 12,
+                                                      left: 4,
+                                                      top: 8,
+                                                      bottom: 4,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.grey[100],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        // 닉네임 + 아이콘
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              replyNickname,
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              GestureDetector(
-                                                                onTap:
-                                                                    () async {
-                                                                  if (_deviceUid ==
-                                                                      null) {
-                                                                    return;
-                                                                  }
+                                                            GestureDetector(
+                                                              onTap: () async {
+                                                                final result =
+                                                                    await showModalActionSheet<
+                                                                        String>(
+                                                                  context:
+                                                                      context,
+                                                                  title:
+                                                                      '답글 옵션',
+                                                                  actions: [
+                                                                    const SheetAction(
+                                                                      label:
+                                                                          '삭제',
+                                                                      key:
+                                                                          'delete',
+                                                                      isDestructiveAction:
+                                                                          true,
+                                                                    ),
+                                                                  ],
+                                                                );
 
-                                                                  final replyRef = FirebaseFirestore
-                                                                      .instance
-                                                                      .collection(
-                                                                          'posts')
-                                                                      .doc(widget
-                                                                          .postId)
-                                                                      .collection(
-                                                                          'comments')
-                                                                      .doc(
-                                                                          commentId)
-                                                                      .collection(
-                                                                          'replies')
-                                                                      .doc(reply
-                                                                          .id);
-
-                                                                  await replyRef
-                                                                      .update({
-                                                                    'likes': FieldValue.increment(
-                                                                        hasReplyLiked
-                                                                            ? -1
-                                                                            : 1),
-                                                                    'likedBy': hasReplyLiked
-                                                                        ? FieldValue
-                                                                            .arrayRemove([
-                                                                            _deviceUid
-                                                                          ])
-                                                                        : FieldValue
-                                                                            .arrayUnion([
-                                                                            _deviceUid
-                                                                          ]),
-                                                                  });
-                                                                },
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          4),
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .thumb_up_alt_outlined,
-                                                                    size: 18,
-                                                                    color: hasReplyLiked
-                                                                        ? AppColors
-                                                                            .redPrimary
-                                                                        : null,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 18,
-                                                              ),
-                                                              GestureDetector(
-                                                                onTap: () =>
-                                                                    _deleteReplyComment(
-                                                                  commentId,
-                                                                  reply.id,
-                                                                  reply[
-                                                                      'passwordHash'],
-                                                                ),
-                                                                child:
-                                                                    const Padding(
-                                                                  padding: EdgeInsets
-                                                                      .symmetric(
-                                                                          horizontal:
-                                                                              4),
-                                                                  child: Icon(
-                                                                      Icons
-                                                                          .delete_outline,
-                                                                      size: 18),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(replyContent),
-                                                      const SizedBox(height: 4),
-                                                      replyLikes > 0
-                                                          ? Row(
-                                                              children: [
-                                                                Text(
-                                                                  replyTimeFormatted,
-                                                                  style: const TextStyle(
-                                                                      fontSize:
-                                                                          12,
-                                                                      color: Colors
-                                                                          .grey),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 12),
-                                                                const Icon(
+                                                                if (result ==
+                                                                    'delete') {
+                                                                  _deleteReplyComment(
+                                                                    commentId,
+                                                                    reply.id,
+                                                                    reply[
+                                                                        'passwordHash'],
+                                                                  );
+                                                                }
+                                                              },
+                                                              child: const Icon(
                                                                   Icons
-                                                                      .thumb_up_alt_outlined,
-                                                                  size: 16,
-                                                                  color: AppColors
-                                                                      .redPrimary,
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 4),
-                                                                Text(
-                                                                  '$replyLikes',
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: AppColors
-                                                                        .redPrimary,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            )
-                                                          : Text(
-                                                              replyTimeFormatted,
-                                                              style: const TextStyle(
+                                                                      .more_horiz), // 👈 more icon 사용
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(replyContent),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          replyTimeFormatted,
+                                                          style:
+                                                              const TextStyle(
                                                                   fontSize: 12,
                                                                   color: Colors
                                                                       .grey),
-                                                            ),
-                                                    ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -796,12 +643,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return FutureBuilder<List<QuerySnapshot>>(
       future: _reactionFutures,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator(); // 첫 로딩 중
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const SizedBox.shrink(); // ❌ 로딩 인디케이터 제거
         }
 
         final likes = snapshot.data![0].docs.length;
         final dislikes = snapshot.data![1].docs.length;
+
         final hasLiked =
             snapshot.data![0].docs.any((doc) => doc.id == _deviceUid);
         final hasDisliked =
