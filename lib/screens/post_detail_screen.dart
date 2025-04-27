@@ -1,7 +1,9 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 import 'package:intl/intl.dart';
@@ -29,6 +31,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // final _commentFocusScopeNode = FocusScopeNode();
   final _focusNode = FocusNode();
   late Future<List<QuerySnapshot>> _reactionFutures;
+  DocumentSnapshot? _postSnapshot;
   bool _isTogglingReaction = false;
 
   bool _isCommenting = false;
@@ -36,11 +39,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   String? _replyToNickname;
   String? _deviceUid;
 
+  bool get isMyPost {
+    final currentUid = _deviceUid;
+    final postData = _postSnapshot?.data() as Map<String, dynamic>?;
+    final postUid = postData?['deviceUid'];
+
+    return currentUid != null && postUid != null && currentUid == postUid;
+  }
+
+  late Future<DocumentSnapshot> _postFuture;
+  late Future<List<QueryDocumentSnapshot>> _commentsFuture;
+
   @override
   void initState() {
     super.initState();
     _increaseViewCount();
     _loadDeviceUidAndInitReactions();
+    _refreshData();
   }
 
   @override
@@ -63,9 +78,103 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _refreshData() async {
     if (!mounted) return;
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .get();
+
     setState(() {
-      _reactionFutures = _refreshReactions();
+      _postSnapshot = snapshot; // ✅ 추가
+      _postFuture = Future.value(snapshot); // ✅ 같이 초기화
+      _postFuture = FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .get();
+      _commentsFuture = FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('comments')
+          .orderBy('timestamp', descending: false)
+          .get()
+          .then((snapshot) => snapshot.docs);
+      _reactionFutures = _refreshReactions(); // 좋아요/싫어요도 같이
     });
+  }
+
+  Future<void> _reportPost() async {
+    if (_deviceUid == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('reports')
+          .doc(_deviceUid) // 한 디바이스당 1번만 신고 가능
+          .set({
+        'timestamp': FieldValue.serverTimestamp(),
+        'reason': '사용자가 신고 버튼을 눌렀습니다', // 필요하면 나중에 상세 사유 선택 추가 가능
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고가 접수되었습니다.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고 처리 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  Future<void> _deletePost() async {
+    final result = await showTextInputDialog(
+      context: context,
+      title: '게시글 삭제',
+      message: '게시글을 삭제하려면 비밀번호를 입력하세요.',
+      textFields: const [
+        DialogTextField(
+          hintText: '비밀번호',
+          obscureText: true,
+        ),
+      ],
+      okLabel: '삭제',
+      cancelLabel: '취소',
+      isDestructiveAction: true,
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    final inputPassword = result.first;
+    final inputHash = sha256.convert(utf8.encode(inputPassword)).toString();
+    final postData = _postSnapshot?.data() as Map<String, dynamic>?;
+    final postPasswordHash = postData?['passwordHash'];
+
+    if (inputHash != postPasswordHash) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호가 틀렸습니다.')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .delete();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('게시글이 삭제되었습니다.')),
+      );
+      Navigator.of(context).pop(); // 삭제 후 뒤로가기
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('게시글 삭제에 실패했습니다.')),
+      );
+    }
   }
 
   Future<void> _loadDeviceUidAndInitReactions() async {
@@ -131,6 +240,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _commentController.clear();
     _nicknameController.clear();
     _passwordController.clear();
+    await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .update({
+      'commentCount': FieldValue.increment(1),
+    });
 
     if (!mounted) return;
     FocusScope.of(context).unfocus();
@@ -139,9 +254,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       _replyToNickname = null;
       _isCommenting = false;
     });
-    // setState(() {
-    //   _isCommenting = false;
-    // });
+    await _refreshData(); // ✅ 자동 새로고침
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('댓글이 작성되었습니다.')),
+      );
+    }
   }
 
   Future<void> _deleteReplyComment(
@@ -174,6 +292,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           .collection('replies')
           .doc(replyId)
           .delete();
+
+      // 댓글 삭제 완료 후에
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .update({
+        'commentCount': FieldValue.increment(-1),
+      });
+
+      await _refreshData(); // ✅ 자동 새로고침
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('대댓글이 삭제되었습니다.')),
+        );
+      }
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -191,10 +324,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final dislikeRef = postRef.collection('dislikes').doc(_deviceUid);
 
     final likeSnap = await likeRef.get();
+    final postData = await postRef.get();
+    final currentLikesCount = (postData.data()?['likesCount'] ?? 0) as int;
     if (likeSnap.exists) {
       await likeRef.delete();
+      await postRef.update({
+        'likesCount': currentLikesCount > 0 ? currentLikesCount - 1 : 0,
+      });
     } else {
       await likeRef.set({'timestamp': FieldValue.serverTimestamp()});
+      await postRef.update({
+        'likesCount': currentLikesCount + 1,
+      });
       if ((await dislikeRef.get()).exists) {
         await dislikeRef.delete();
       }
@@ -249,6 +390,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           .collection('comments')
           .doc(commentId)
           .delete();
+
+      // 대댓글 삭제 완료 후에
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .update({
+        'commentCount': FieldValue.increment(-1),
+      });
+
+      await _refreshData(); // ✅ 자동 새로고침
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('댓글이 삭제되었습니다.')),
+        );
+      }
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -259,14 +415,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final commentRef = FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .orderBy(
-          'timestamp',
-          descending: false,
-        );
+    // final commentRef = FirebaseFirestore.instance
+    //     .collection('posts')
+    //     .doc(widget.postId)
+    //     .collection('comments')
+    //     .orderBy(
+    //       'timestamp',
+    //       descending: false,
+    //     );
 
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
@@ -286,7 +442,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text('${widget.category} 게시판')),
+      appBar: AppBar(
+        title: Text('${widget.category} 게시판'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_horiz),
+            onPressed: () async {
+              final result = await showModalActionSheet<String>(
+                context: context,
+                title: '게시물 옵션',
+                actions: [
+                  const SheetAction(label: '신고하기', key: 'report'),
+                  if (isMyPost) // 본인 글일 때만 삭제 버튼
+                    const SheetAction(
+                        label: '삭제하기',
+                        key: 'delete',
+                        isDestructiveAction: true),
+                ],
+              );
+
+              if (result == 'report') {
+                _reportPost();
+              } else if (result == 'delete') {
+                _deletePost();
+              }
+            },
+          ),
+        ],
+      ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
@@ -297,8 +480,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             _replyToNickname = null;
           });
         },
-        child: RefreshIndicator(
+        child: CustomRefreshIndicator(
           onRefresh: _refreshData,
+          offsetToArmed: 80, // 새로고침 발동 거리
+          builder: (context, child, controller) {
+            double progress = controller.value.clamp(0.0, 1.0); // 0~1 고정
+
+            double minFontSize = 20;
+            double maxFontSize = 40;
+            double fontSize =
+                minFontSize + (maxFontSize - minFontSize) * progress;
+            double opacity = progress; // 점점 선명해지게
+
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                child,
+                if (controller.value > 0)
+                  Positioned(
+                    top: 30,
+                    child: Opacity(
+                      opacity: opacity, // ✨ opacity 추가
+                      child: Text(
+                        'Push100',
+                        style: GoogleFonts.bebasNeue(
+                          color: AppColors.redPrimary,
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
@@ -306,11 +521,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Column(
                 children: [
                   // 📄 글 내용 표시
-                  StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('posts')
-                        .doc(widget.postId)
-                        .snapshots(),
+                  FutureBuilder<DocumentSnapshot>(
+                    future: _postFuture,
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const SizedBox.shrink();
@@ -356,8 +568,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
 
                   // 💬 댓글 목록
-                  StreamBuilder<QuerySnapshot>(
-                    stream: commentRef.snapshots(),
+                  FutureBuilder<List<QueryDocumentSnapshot>>(
+                    future: _commentsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
@@ -366,7 +578,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         ));
                       }
 
-                      final comments = snapshot.data!.docs;
+                      final comments = snapshot.data!;
 
                       if (comments.isEmpty) {
                         return const Center(child: Text('첫 댓글을 남겨주세요.'));
@@ -456,15 +668,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 ),
 
                                 // 대댓글
-                                StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
+                                FutureBuilder<QuerySnapshot>(
+                                  future: FirebaseFirestore.instance
                                       .collection('posts')
                                       .doc(widget.postId)
                                       .collection('comments')
                                       .doc(commentId)
                                       .collection('replies')
                                       .orderBy('timestamp')
-                                      .snapshots(),
+                                      .get(),
                                   builder: (context, replySnapshot) {
                                     if (!replySnapshot.hasData) {
                                       return const SizedBox.shrink();

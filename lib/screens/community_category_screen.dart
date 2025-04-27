@@ -1,7 +1,8 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/category_search_screen.dart';
 import 'package:push100/screens/community_post_list_screen.dart';
@@ -25,208 +26,250 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
       appBar: AppBar(
         title: const Text('Push100'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🔍 검색바
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 400),
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const CategorySearchScreen(),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        return SharedAxisTransition(
-                          animation: animation,
-                          secondaryAnimation: secondaryAnimation,
-                          transitionType: SharedAxisTransitionType.horizontal,
-                          child: child,
-                        );
-                      },
+      body: CustomRefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        offsetToArmed: 80,
+        builder: (context, child, controller) {
+          double progress = controller.value.clamp(0.0, 1.0);
+          double minFontSize = 20;
+          double maxFontSize = 40;
+          double fontSize =
+              minFontSize + (maxFontSize - minFontSize) * progress;
+          double opacity = progress;
+
+          return Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              child,
+              if (controller.value > 0)
+                Positioned(
+                  top: 30,
+                  child: Opacity(
+                    opacity: opacity,
+                    child: Text(
+                      'Push100',
+                      style: GoogleFonts.bebasNeue(
+                        color: AppColors.redPrimary,
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
-                child: const AbsorbPointer(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: '카테고리 검색',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                  ),
+                ),
+            ],
+          );
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🔍 검색바
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(milliseconds: 400),
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const CategorySearchScreen(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SharedAxisTransition(
+                            animation: animation,
+                            secondaryAnimation: secondaryAnimation,
+                            transitionType: SharedAxisTransitionType.horizontal,
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  child: const AbsorbPointer(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '카테고리 검색',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 🔹 카테고리 랭킹 리스트
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchCategoryRanking(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator(
-                    color: AppColors.redPrimary,
-                  ));
-                }
+              // 🔹 카테고리 랭킹 리스트
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: _fetchCategoryRanking(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                        child: CircularProgressIndicator(
+                      color: AppColors.redPrimary,
+                    ));
+                  }
 
-                final data = snapshot.data ?? [];
+                  final data = snapshot.data ?? [];
 
-                if (data.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('카테고리가 없습니다.'),
-                  );
-                }
+                  if (data.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('카테고리가 없습니다.'),
+                    );
+                  }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Text("🔥 인기 카테고리",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
-                      child: Text("🔥 인기 카테고리",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                    ),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: data.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final item = data[index];
-                        return ListTile(
-                          title: Text("${index + 1}. ${item['name']} 게시판"),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              PageRouteBuilder(
-                                transitionDuration:
-                                    const Duration(milliseconds: 400),
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        CommunityPostListScreen(
-                                            category: item['name']),
-                                transitionsBuilder: (context, animation,
-                                    secondaryAnimation, child) {
-                                  return SharedAxisTransition(
-                                    animation: animation,
-                                    secondaryAnimation: secondaryAnimation,
-                                    transitionType:
-                                        SharedAxisTransitionType.horizontal,
-                                    child: child,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // 🔥 오늘 인기 게시글
-            FutureBuilder<List<DocumentSnapshot>>(
-              future: _fetchTodayPopularPosts(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator(
-                    color: AppColors.redPrimary,
-                  ));
-                }
-
-                final posts = snapshot.data ?? [];
-
-                if (posts.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('오늘 올라온 인기 글이 없습니다.'),
-                  );
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Text("👑 오늘의 인기 글",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          )),
-                    ),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: posts.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final post = posts[index];
-                        return ListTile(
-                          title: Text(post['title'] ?? '제목 없음'),
-                          subtitle: Text(
-                            '${post['category'] ?? '익명'} 게시판 • 조회수 ${post['views'] ?? 0}',
-                          ),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              PageRouteBuilder(
-                                transitionDuration:
-                                    const Duration(milliseconds: 400),
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        PostDetailScreen(
-                                  postId: post.id,
-                                  category: post['category'] ?? '카테고리 없음',
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: data.length > 3 ? 3 : data.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final item = data[index];
+                          return ListTile(
+                            title: Text("${index + 1}. ${item['name']} 게시판"),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  transitionDuration:
+                                      const Duration(milliseconds: 400),
+                                  pageBuilder: (context, animation,
+                                          secondaryAnimation) =>
+                                      CommunityPostListScreen(
+                                          category: item['name']),
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    return SharedAxisTransition(
+                                      animation: animation,
+                                      secondaryAnimation: secondaryAnimation,
+                                      transitionType:
+                                          SharedAxisTransitionType.scaled,
+                                      child: child,
+                                    );
+                                  },
                                 ),
-                                transitionsBuilder: (context, animation,
-                                    secondaryAnimation, child) {
-                                  return SharedAxisTransition(
-                                    animation: animation,
-                                    secondaryAnimation: secondaryAnimation,
-                                    transitionType:
-                                        SharedAxisTransitionType.horizontal,
-                                    child: child,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
 
-      // ➕ 카테고리 생성 버튼
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.redPrimary,
-        onPressed: _showCreateCategoryDialog,
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
+              const SizedBox(height: 16),
+
+              // 🔥 오늘 인기 게시글
+              FutureBuilder<List<DocumentSnapshot>>(
+                future: _fetchTodayPopularPosts(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const SizedBox.shrink(); // ❌ 기다릴 때는 아무것도 안 보이게
+                  }
+
+                  final posts = snapshot.data ?? [];
+
+                  if (posts.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('오늘 올라온 인기 글이 없습니다.'),
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Text("👑 오늘의 인기 글",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            )),
+                      ),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: posts.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final post = posts[index];
+                          final likesCount = post['likesCount'] ?? 0;
+                          final views = post['views'] ?? 0;
+                          final category = post['category'] ?? '익명';
+                          final title = post['title'] ?? '제목 없음';
+                          return ListTile(
+                            title: Text(title),
+                            subtitle: Row(
+                              children: [
+                                Text(
+                                  '$category 게시판 • 조회수 $views ?? 0}',
+                                ),
+                                if (likesCount > 0) ...[
+                                  const Text(' • '),
+                                  const Icon(
+                                    Icons.thumb_up,
+                                    size: 16,
+                                    color: AppColors.redPrimary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text('$likesCount'),
+                                ],
+                              ],
+                            ),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  transitionDuration:
+                                      const Duration(milliseconds: 400),
+                                  pageBuilder: (context, animation,
+                                          secondaryAnimation) =>
+                                      PostDetailScreen(
+                                    postId: post.id,
+                                    category: post['category'] ?? '카테고리 없음',
+                                  ),
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    return SharedAxisTransition(
+                                      animation: animation,
+                                      secondaryAnimation: secondaryAnimation,
+                                      transitionType:
+                                          SharedAxisTransitionType.scaled,
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -270,79 +313,22 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     return result;
   }
 
-  void _showCreateCategoryDialog() async {
-    final contextMounted = context.mounted;
+  Future<List<DocumentSnapshot>> _fetchTodayPopularPosts() async {
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
 
-    final result = await showTextInputDialog(
-      context: context,
-      title: '새 카테고리 생성',
-      textFields: const [
-        DialogTextField(
-          hintText: '카테고리 이름',
-        ),
-      ],
-      okLabel: '생성',
-      cancelLabel: '취소',
-    );
-
-    if (result == null || result.isEmpty) return;
-
-    final newCategory = result.first.trim();
-    final normalizedNewCategory = newCategory.toLowerCase();
-
-    // Firestore에서 중복 확인
-    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
-
-    final existingCategories = snapshot.docs
-        .map((doc) => (doc['category'] as String?)?.trim().toLowerCase())
-        .whereType<String>()
-        .toSet();
-
-    if (existingCategories.contains(normalizedNewCategory)) {
-      if (!mounted) return;
-      if (contextMounted) {
-        showOkAlertDialog(
-          context: context,
-          title: '중복된 카테고리',
-          message: '이미 존재하는 카테고리입니다.',
-        );
-      }
-      return;
-    }
-
-    // 새 카테고리 생성
-    await FirebaseFirestore.instance.collection('posts').add({
-      'category': newCategory,
-      'title': newCategory,
-      'content': '첫 글',
-      'nickname': '관리자',
-      'views': 0,
-      'likes': 0,
-      'dislikes': 0,
-      'timestamp': Timestamp.now(),
-    });
-
-    if (contextMounted) {
-      setState(() {}); // 리스트 갱신
-    }
-  }
-}
-
-Future<List<DocumentSnapshot>> _fetchTodayPopularPosts() async {
-  final now = DateTime.now();
-  final todayMidnight = DateTime(now.year, now.month, now.day);
-
-  final snapshot = await FirebaseFirestore.instance
-      .collection('posts')
-      .where('timestamp',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
-      .orderBy('timestamp', descending: true) // 최신 글 먼저
-      .limit(50)
-      .get();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+        .orderBy('timestamp', descending: true) // 최신 글 먼저
+        .limit(50)
+        .get();
 
 // 클라이언트에서 정렬
-  final sorted = snapshot.docs
-    ..sort((a, b) => (b['views'] as int).compareTo(a['views'] as int));
+    final sorted = snapshot.docs
+      ..sort((a, b) => (b['views'] as int).compareTo(a['views'] as int));
 
-  return sorted.take(10).toList(); // 조회수 순 인기글 10개
+    return sorted.take(10).toList(); // 조회수 순 인기글 10개
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,6 +20,82 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
   void initState() {
     super.initState();
     _loadCategories();
+  }
+
+  void _showCreateCategoryDialog() async {
+    final contextMounted = context.mounted;
+
+    final result = await showTextInputDialog(
+      context: context,
+      title: '새 카테고리 생성',
+      textFields: const [
+        DialogTextField(
+          hintText: '카테고리 이름',
+        ),
+      ],
+      okLabel: '생성',
+      cancelLabel: '취소',
+      isDestructiveAction: true,
+    );
+
+    if (result == null || result.isEmpty) return;
+
+    final newCategory = result.first.trim();
+    final normalizedNewCategory = newCategory.toLowerCase();
+
+    // Firestore에서 중복 확인
+    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+
+    final existingCategories = snapshot.docs
+        .map((doc) => (doc['category'] as String?)?.trim().toLowerCase())
+        .whereType<String>()
+        .toSet();
+
+    if (existingCategories.contains(normalizedNewCategory)) {
+      if (!mounted) return;
+      if (contextMounted) {
+        showOkAlertDialog(
+          context: context,
+          title: '중복된 카테고리',
+          message: '이미 존재하는 카테고리입니다.',
+        );
+      }
+      return;
+    }
+
+    // 새 카테고리 생성
+    await FirebaseFirestore.instance.collection('posts').add({
+      'category': newCategory,
+      'title': newCategory,
+      'content': '첫 글',
+      'nickname': '관리자',
+      'views': 0,
+      'likes': 0,
+      'dislikes': 0,
+      'timestamp': Timestamp.now(),
+    });
+
+    if (contextMounted) {
+      // ✅ 생성 완료 후 바로 해당 카테고리 게시판으로 이동
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 400),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                CommunityPostListScreen(category: newCategory),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return SharedAxisTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.scaled,
+                child: child,
+              );
+            },
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -91,7 +168,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
                                   animation: animation,
                                   secondaryAnimation: secondaryAnimation,
                                   transitionType:
-                                      SharedAxisTransitionType.horizontal,
+                                      SharedAxisTransitionType.scaled,
                                   child: child,
                                 );
                               },
@@ -103,6 +180,14 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
                   ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.redPrimary,
+        onPressed: _showCreateCategoryDialog,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }

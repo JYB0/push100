@@ -72,7 +72,8 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
 
         if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.of(context).push(
             PageRouteBuilder(
               transitionDuration: const Duration(milliseconds: 500),
               pageBuilder: (context, animation, secondaryAnimation) =>
@@ -82,12 +83,11 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
                 return SharedAxisTransition(
                   animation: animation,
                   secondaryAnimation: secondaryAnimation,
-                  transitionType: SharedAxisTransitionType.horizontal,
+                  transitionType: SharedAxisTransitionType.scaled,
                   child: child,
                 );
               },
             ),
-            (route) => false, // 모든 화면 제거 후 이동
           );
         }
       }

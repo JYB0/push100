@@ -62,9 +62,26 @@ class CommunityPostListScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            '$nickname • 조회수 ${post['views'] ?? 0} • 좋아요 $likesCount',
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              Text(
+                                '$nickname • 조회수 ${post['views'] ?? 0}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (likesCount > 0) ...[
+                                const Text(' • '),
+                                const Icon(
+                                  Icons.thumb_up,
+                                  size: 16,
+                                  color: AppColors.redPrimary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$likesCount',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         Text(
