@@ -1,7 +1,5 @@
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:push100/main.dart';
-import 'package:push100/screens/community_post_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
 
@@ -72,23 +70,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
 
         if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              transitionDuration: const Duration(milliseconds: 500),
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  CommunityPostListScreen(category: widget.category),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                return SharedAxisTransition(
-                  animation: animation,
-                  secondaryAnimation: secondaryAnimation,
-                  transitionType: SharedAxisTransitionType.scaled,
-                  child: child,
-                );
-              },
-            ),
-          );
+          Navigator.of(context).pop(true);
         }
       }
     } catch (e) {

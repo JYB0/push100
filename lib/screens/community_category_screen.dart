@@ -3,6 +3,7 @@ import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/category_search_screen.dart';
 import 'package:push100/screens/community_post_list_screen.dart';
@@ -215,26 +216,63 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                         itemBuilder: (context, index) {
                           final post = posts[index];
                           final likesCount = post['likesCount'] ?? 0;
+                          final commentCount = post['commentCount'] ?? 0;
                           final views = post['views'] ?? 0;
                           final category = post['category'] ?? '익명';
                           final title = post['title'] ?? '제목 없음';
+                          final timestampRaw = post['timestamp'];
+                          final timestamp = timestampRaw is Timestamp
+                              ? timestampRaw.toDate()
+                              : null;
+
                           return ListTile(
-                            title: Text(title),
+                            title: Row(
+                              children: [
+                                Text(title),
+                                if (commentCount > 0) ...[
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '[$commentCount]',
+                                    style: const TextStyle(
+                                      color: AppColors
+                                          .redPrimary, // 🔥 댓글 수는 빨간색으로
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                             subtitle: Row(
                               children: [
-                                Text(
-                                  '$category 게시판 • 조회수 $views ?? 0}',
-                                ),
-                                if (likesCount > 0) ...[
-                                  const Text(' • '),
-                                  const Icon(
-                                    Icons.thumb_up,
-                                    size: 16,
-                                    color: AppColors.redPrimary,
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '$category 게시판 • 조회수 $views',
+                                        style:
+                                            const TextStyle(color: Colors.grey),
+                                      ),
+                                      if (likesCount > 0) ...[
+                                        const Text(
+                                          ' • ',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                        const Icon(
+                                          Icons.thumb_up,
+                                          size: 16,
+                                          color: AppColors.redPrimary,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text('$likesCount'),
+                                      ],
+                                    ],
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text('$likesCount'),
-                                ],
+                                ),
+                                if (timestamp != null)
+                                  Text(
+                                    DateFormat('HH:mm')
+                                        .format(timestamp.toLocal()),
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
                               ],
                             ),
                             onTap: () {

@@ -66,13 +66,14 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
     // 새 카테고리 생성
     await FirebaseFirestore.instance.collection('posts').add({
       'category': newCategory,
-      'title': newCategory,
+      'title': '첫 생성글',
       'content': '첫 글',
       'nickname': '관리자',
       'views': 0,
-      'likes': 0,
-      'dislikes': 0,
+      'likesCount': 0, // 좋아요 수
+      'commentCount': 0, // 댓글 수
       'timestamp': Timestamp.now(),
+      'deviceUid': 'admin', // 관리자 고정값
     });
 
     if (contextMounted) {
