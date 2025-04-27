@@ -132,9 +132,39 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
         child: posts.isEmpty
             ? const Center(child: Text('아직 작성된 글이 없습니다.'))
             : ListView.builder(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: posts.length,
+                itemCount: posts.length + 1,
                 itemBuilder: (context, index) {
+                  if (index == posts.length) {
+                    // ⭐️ 마지막에 로딩 또는 "다 읽었습니다" 문구 표시
+                    if (hasMore) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.redPrimary,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    } else {
+                      return const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(
+                          child: Text(
+                            '🎉 모든 글을 다 읽었습니다!',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  }
+
                   final post = posts[index];
                   final title = post['title'] ?? '제목 없음';
                   final likesCount = post['likesCount'] ?? 0;

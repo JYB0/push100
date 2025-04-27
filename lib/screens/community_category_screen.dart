@@ -19,7 +19,84 @@ class CommunityCategoryScreen extends StatefulWidget {
 }
 
 class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
-  String searchQuery = '';
+  final List<DocumentSnapshot> todayPopularPosts = [];
+  final ScrollController _scrollController = ScrollController();
+  DocumentSnapshot? lastDocument;
+  bool isLoading = false;
+  bool hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialTodayPosts();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
+        _fetchMoreTodayPosts();
+      }
+    });
+  }
+
+  Future<void> _fetchInitialTodayPosts() async {
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+        .orderBy('views', descending: true)
+        .limit(20)
+        .get();
+
+    todayPopularPosts.clear();
+    todayPopularPosts.addAll(
+      snapshot.docs.where((doc) => (doc['views'] ?? 0) >= 10),
+    );
+
+    if (snapshot.docs.isNotEmpty) {
+      lastDocument = snapshot.docs.last;
+    }
+
+    hasMore = snapshot.docs.length == 20;
+    setState(() {});
+  }
+
+  Future<void> _fetchMoreTodayPosts() async {
+    if (isLoading || !hasMore) return;
+
+    isLoading = true;
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+        .orderBy('views', descending: true)
+        .startAfterDocument(lastDocument!)
+        .limit(20)
+        .get();
+
+    todayPopularPosts.addAll(snapshot.docs);
+
+    if (snapshot.docs.isNotEmpty) {
+      lastDocument = snapshot.docs.last;
+    }
+    if (snapshot.docs.length < 20) {
+      hasMore = false;
+    }
+    isLoading = false;
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +105,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
         title: const Text('Push100'),
       ),
       body: CustomRefreshIndicator(
-        onRefresh: () async {
-          setState(() {});
-        },
+        onRefresh: _fetchInitialTodayPosts,
         offsetToArmed: 80,
         builder: (context, child, controller) {
           double progress = controller.value.clamp(0.0, 1.0);
@@ -63,6 +138,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
           );
         },
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Column(
@@ -178,134 +254,119 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
               const SizedBox(height: 16),
 
               // 🔥 오늘 인기 게시글
-              FutureBuilder<List<DocumentSnapshot>>(
-                future: _fetchTodayPopularPosts(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox.shrink(); // ❌ 기다릴 때는 아무것도 안 보이게
-                  }
-
-                  final posts = snapshot.data ?? [];
-
-                  if (posts.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('오늘 올라온 인기 글이 없습니다.'),
-                    );
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+              // 🔥 오늘 인기 글 파트
+              if (todayPopularPosts.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('오늘 올라온 인기 글이 없습니다.'),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        "👑 오늘의 인기 글",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Text("👑 오늘의 인기 글",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            )),
                       ),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: posts.length,
-                        separatorBuilder: (_, __) => const Divider(),
-                        itemBuilder: (context, index) {
-                          final post = posts[index];
-                          final likesCount = post['likesCount'] ?? 0;
-                          final commentCount = post['commentCount'] ?? 0;
-                          final views = post['views'] ?? 0;
-                          final category = post['category'] ?? '익명';
-                          final title = post['title'] ?? '제목 없음';
-                          final timestampRaw = post['timestamp'];
-                          final timestamp = timestampRaw is Timestamp
-                              ? timestampRaw.toDate()
-                              : null;
+                    ),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: todayPopularPosts.length,
+                      separatorBuilder: (_, __) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final post = todayPopularPosts[index];
+                        final title = post['title'] ?? '제목 없음';
+                        final commentCount = post['commentCount'] ?? 0;
+                        final likesCount = post['likesCount'] ?? 0;
+                        final views = post['views'] ?? 0;
+                        final category = post['category'] ?? '익명';
+                        final timestamp =
+                            (post['timestamp'] as Timestamp?)?.toDate();
 
-                          return ListTile(
-                            title: Row(
-                              children: [
-                                Text(title),
-                                if (commentCount > 0) ...[
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '[$commentCount]',
-                                    style: const TextStyle(
-                                      color: AppColors
-                                          .redPrimary, // 🔥 댓글 수는 빨간색으로
+                        return ListTile(
+                          title: Row(
+                            children: [
+                              Text(title),
+                              if (commentCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Text(
+                                  '[$commentCount]',
+                                  style: const TextStyle(
+                                      color: AppColors.redPrimary),
+                                ),
+                              ],
+                            ],
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '$category 게시판 • 조회수 $views',
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          const TextStyle(color: Colors.grey),
                                     ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '$category 게시판 • 조회수 $views',
-                                        style:
-                                            const TextStyle(color: Colors.grey),
-                                      ),
-                                      if (likesCount > 0) ...[
-                                        const Text(
-                                          ' • ',
-                                          style: TextStyle(color: Colors.grey),
-                                        ),
-                                        const Icon(
-                                          Icons.thumb_up,
+                                    if (likesCount > 0) ...[
+                                      const Text(' • ',
+                                          style: TextStyle(color: Colors.grey)),
+                                      const Icon(Icons.thumb_up,
                                           size: 16,
-                                          color: AppColors.redPrimary,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text('$likesCount'),
-                                      ],
+                                          color: AppColors.redPrimary),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '$likesCount',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ],
-                                  ),
+                                  ],
                                 ),
-                                if (timestamp != null)
-                                  Text(
-                                    DateFormat('HH:mm')
-                                        .format(timestamp.toLocal()),
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                              ],
-                            ),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  transitionDuration:
-                                      const Duration(milliseconds: 400),
-                                  pageBuilder: (context, animation,
-                                          secondaryAnimation) =>
-                                      PostDetailScreen(
-                                    postId: post.id,
-                                    category: post['category'] ?? '카테고리 없음',
-                                  ),
-                                  transitionsBuilder: (context, animation,
-                                      secondaryAnimation, child) {
-                                    return SharedAxisTransition(
-                                      animation: animation,
-                                      secondaryAnimation: secondaryAnimation,
-                                      transitionType:
-                                          SharedAxisTransitionType.scaled,
-                                      child: child,
-                                    );
-                                  },
+                              ),
+                              if (timestamp != null)
+                                Text(
+                                  DateFormat('HH:mm')
+                                      .format(timestamp.toLocal()),
+                                  style: const TextStyle(color: Colors.grey),
                                 ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                transitionDuration:
+                                    const Duration(milliseconds: 400),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        PostDetailScreen(
+                                  postId: post.id,
+                                  category: post['category'] ?? '카테고리 없음',
+                                ),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return SharedAxisTransition(
+                                    animation: animation,
+                                    secondaryAnimation: secondaryAnimation,
+                                    transitionType:
+                                        SharedAxisTransitionType.scaled,
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                )
             ],
           ),
         ),
@@ -349,24 +410,5 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     result.sort((a, b) => (b['views'] as int).compareTo(a['views'] as int));
 
     return result;
-  }
-
-  Future<List<DocumentSnapshot>> _fetchTodayPopularPosts() async {
-    final now = DateTime.now();
-    final todayMidnight = DateTime(now.year, now.month, now.day);
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .where('timestamp',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
-        .orderBy('timestamp', descending: true) // 최신 글 먼저
-        .limit(50)
-        .get();
-
-// 클라이언트에서 정렬
-    final sorted = snapshot.docs
-      ..sort((a, b) => (b['views'] as int).compareTo(a['views'] as int));
-
-    return sorted.take(10).toList(); // 조회수 순 인기글 10개
   }
 }

@@ -54,6 +54,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void initState() {
     super.initState();
     _increaseViewCount();
+
+    _postFuture =
+        FirebaseFirestore.instance.collection('posts').doc(widget.postId).get();
+    _commentsFuture = FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .collection('comments')
+        .orderBy('timestamp', descending: false)
+        .get()
+        .then((snapshot) => snapshot.docs);
+
     _loadDeviceUidAndInitReactions();
     _refreshData();
   }
@@ -85,18 +96,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     setState(() {
       _postSnapshot = snapshot; // ✅ 추가
-      _postFuture = Future.value(snapshot); // ✅ 같이 초기화
-      _postFuture = FirebaseFirestore.instance
-          .collection('posts')
-          .doc(widget.postId)
-          .get();
-      _commentsFuture = FirebaseFirestore.instance
-          .collection('posts')
-          .doc(widget.postId)
-          .collection('comments')
-          .orderBy('timestamp', descending: false)
-          .get()
-          .then((snapshot) => snapshot.docs);
       _reactionFutures = _refreshReactions(); // 좋아요/싫어요도 같이
     });
   }
