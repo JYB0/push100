@@ -175,7 +175,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('게시글이 삭제되었습니다.')),
       );
-      Navigator.of(context).pop(); // 삭제 후 뒤로가기
+      Navigator.of(context).pop(true); // 삭제 후 뒤로가기
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

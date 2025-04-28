@@ -285,8 +285,8 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                         ),
                       ],
                     ),
-                    onTap: () {
-                      Navigator.of(context).push(
+                    onTap: () async {
+                      final result = await Navigator.of(context).push(
                         PageRouteBuilder(
                           transitionDuration: const Duration(milliseconds: 500),
                           pageBuilder:
@@ -307,6 +307,10 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                           },
                         ),
                       );
+
+                      if (result == true) {
+                        await _fetchInitialPosts(); // 삭제하고 돌아오면 새로고침
+                      }
                     },
                   );
                 },

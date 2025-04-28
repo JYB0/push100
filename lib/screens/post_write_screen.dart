@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:profanity_filter/profanity_filter.dart';
 import 'package:push100/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
@@ -21,6 +22,82 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
   bool _isLoading = false;
   String? _deviceUid;
 
+  final englishFilter = ProfanityFilter();
+  final koreanFilter = ProfanityFilter.filterAdditionally([
+    '강간',
+    '개새끼',
+    '개자식',
+    '개좆',
+    '개차반',
+    '거유',
+    '계집년',
+    '고자',
+    '근친',
+    '노모',
+    '니기미',
+    '뒤질래',
+    '딸딸이',
+    '때씹',
+    '또라이',
+    '뙤놈',
+    '로리타',
+    '망가',
+    '몰카',
+    '미친',
+    '미친새끼',
+    '바바리맨',
+    '변태',
+    '병신',
+    '보지',
+    '불알',
+    '빠구리',
+    '사까시',
+    '섹스',
+    '스와핑',
+    '쌍놈',
+    '씨발',
+    '씨발놈',
+    '씨팔',
+    '씹',
+    '씹물',
+    '씹빨',
+    '씹새끼',
+    '씹알',
+    '씹창',
+    '씹팔',
+    '암캐',
+    '애자',
+    '야동',
+    '야사',
+    '야애니',
+    '엄창',
+    '에로',
+    '염병',
+    '옘병',
+    '유모',
+    '육갑',
+    '은꼴',
+    '자위',
+    '자지',
+    '잡년',
+    '종간나',
+    '좆',
+    '좆만',
+    '죽일년',
+    '쥐좆',
+    '직촬',
+    '짱깨',
+    '쪽바리',
+    '창녀',
+    '포르노',
+    '하드코어',
+    '호로',
+    '화냥년',
+    '후레아들',
+    '후장',
+    '희쭈그리',
+  ]);
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +118,18 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
         _contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('모든 필드를 입력해주세요')),
+      );
+      return;
+    }
+
+    if (englishFilter.hasProfanity(_nicknameController.text) ||
+        englishFilter.hasProfanity(_titleController.text) ||
+        englishFilter.hasProfanity(_contentController.text) ||
+        koreanFilter.hasProfanity(_nicknameController.text) ||
+        koreanFilter.hasProfanity(_titleController.text) ||
+        koreanFilter.hasProfanity(_contentController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('욕설이나 부적절한 내용이 포함되어 있습니다.')),
       );
       return;
     }
