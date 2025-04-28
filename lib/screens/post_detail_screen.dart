@@ -94,8 +94,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .doc(widget.postId)
         .get();
 
+    final commentsSnapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(widget.postId)
+        .collection('comments')
+        .orderBy('timestamp', descending: false)
+        .get();
+
     setState(() {
       _postSnapshot = snapshot; // ✅ 추가
+      _commentsFuture = Future.value(commentsSnapshot.docs);
       _reactionFutures = _refreshReactions(); // 좋아요/싫어요도 같이
     });
   }
@@ -480,7 +488,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           });
         },
         child: CustomRefreshIndicator(
-          onRefresh: _refreshData,
+          onRefresh: () async {
+            await _refreshData();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('새로고침 완료!'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            }
+          },
           offsetToArmed: 80, // 새로고침 발동 거리
           builder: (context, child, controller) {
             double progress = controller.value.clamp(0.0, 1.0); // 0~1 고정

@@ -18,16 +18,19 @@ class CommunityPostListScreen extends StatefulWidget {
       _CommunityPostListScreenState();
 }
 
-class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
+class _CommunityPostListScreenState extends State<CommunityPostListScreen>
+    with TickerProviderStateMixin {
   final List<QueryDocumentSnapshot> posts = [];
   final ScrollController _scrollController = ScrollController();
   DocumentSnapshot? lastDocument;
   bool isLoading = false;
   bool hasMore = true;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _fetchInitialPosts();
 
     _scrollController.addListener(() {
@@ -36,16 +39,27 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
         _fetchMorePosts();
       }
     });
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        _fetchInitialPosts(); // 탭 바꿀 때 다시 로드
+      }
+    });
   }
 
   Future<void> _fetchInitialPosts() async {
     hasMore = true;
-    final snapshot = await FirebaseFirestore.instance
+    Query query = FirebaseFirestore.instance
         .collection('posts')
-        .where('category', isEqualTo: widget.category)
-        .orderBy('timestamp', descending: true)
-        .limit(20)
-        .get();
+        .where('category', isEqualTo: widget.category);
+
+    if (_tabController.index == 1) {
+      // 베스트 탭
+      query = query.where('likesCount', isGreaterThanOrEqualTo: 5);
+    }
+
+    query = query.orderBy('timestamp', descending: true).limit(20);
+
+    final snapshot = await query.get();
 
     posts.clear();
     posts.addAll(snapshot.docs);
@@ -62,13 +76,20 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
 
     isLoading = true;
     try {
-      final snapshot = await FirebaseFirestore.instance
+      Query query = FirebaseFirestore.instance
           .collection('posts')
-          .where('category', isEqualTo: widget.category)
+          .where('category', isEqualTo: widget.category);
+
+      if (_tabController.index == 1) {
+        query = query.where('likesCount', isGreaterThanOrEqualTo: 5);
+      }
+
+      query = query
           .orderBy('timestamp', descending: true)
           .startAfterDocument(lastDocument!)
-          .limit(20)
-          .get();
+          .limit(20);
+
+      final snapshot = await query.get();
 
       posts.addAll(snapshot.docs);
 
@@ -95,9 +116,25 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.category} 게시판'),
+        bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.redPrimary,
+            labelColor: AppColors.redPrimary,
+            unselectedLabelColor: Colors.grey,
+            tabs: const [Tab(text: '전체'), Tab(text: '베스트')]),
       ),
       body: CustomRefreshIndicator(
-        onRefresh: _fetchInitialPosts,
+        onRefresh: () async {
+          await _fetchInitialPosts();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('새로고침 완료!'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          }
+        },
         offsetToArmed: 80,
         builder: (context, child, controller) {
           double progress = controller.value.clamp(0.0, 1.0);
@@ -130,7 +167,28 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen> {
           );
         },
         child: posts.isEmpty
-            ? const Center(child: Text('아직 작성된 글이 없습니다.'))
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height:
+                        MediaQuery.of(context).size.height * 0.5, // 화면 중간쯤 오게
+                    child: Center(
+                      child: Text(
+                        _tabController.index == 1
+                            ? '아직 베스트 글이 없습니다.\n첫 번째 주인공이 되어보세요!'
+                            : '아직 작성된 글이 없습니다.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
             : ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),

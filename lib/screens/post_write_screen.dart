@@ -89,7 +89,15 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('글 작성')),
+      appBar: AppBar(
+        title: const Text('글쓰기'),
+        actions: [
+          IconButton(
+            onPressed: _submitPost,
+            icon: const Icon(Icons.send),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _isLoading
@@ -99,29 +107,77 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
               ))
             : Column(
                 children: [
-                  TextField(
-                    controller: _nicknameController,
-                    decoration: const InputDecoration(labelText: '닉네임'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _nicknameController,
+                          decoration: const InputDecoration(
+                            hintText: '닉네임',
+                            focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: AppColors.redPrimary),
+                            ),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            hintText: '비밀번호',
+                            focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: AppColors.redPrimary),
+                            ),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(labelText: '비밀번호'),
-                    obscureText: true,
-                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: '제목'),
+                    decoration: const InputDecoration(
+                      hintText: '제목',
+                      // labelText: '제목',
+                      // focusedBorder: OutlineInputBorder(
+                      //   borderSide: BorderSide(color: AppColors.redPrimary),
+                      // ),
+                      // border: OutlineInputBorder(),
+                      // isDense: true,
+                    ),
                   ),
-                  TextField(
-                    controller: _contentController,
-                    decoration: const InputDecoration(labelText: '내용'),
-                    maxLines: 5,
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _contentController,
+                      decoration: const InputDecoration(
+                        hintText: '내용',
+                        alignLabelWithHint: true, // 여러 줄 텍스트일 때 레이블 위치 정렬
+                        // border: OutlineInputBorder(),
+                        // focusedBorder: OutlineInputBorder(
+                        //   borderSide: BorderSide(
+                        //       color: AppColors.redPrimary), // 포커스시 빨간색
+                        // ),
+                      ),
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null, // 무제한 줄
+                      expands: true, // 📢 요게 포인트!! => 빈공간을 모두 채움
+                      textAlignVertical: TextAlignVertical.top, // 🔥 요거 추가!!
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _submitPost,
-                    child: const Text('작성하기'),
-                  ),
+                  const SizedBox(height: 50),
+                  // ElevatedButton(
+                  //   onPressed: _submitPost,
+                  //   child: const Text('작성하기'),
+                  // ),
                 ],
               ),
       ),

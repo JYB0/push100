@@ -105,7 +105,17 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
         title: const Text('Push100'),
       ),
       body: CustomRefreshIndicator(
-        onRefresh: _fetchInitialTodayPosts,
+        onRefresh: () async {
+          await _fetchInitialTodayPosts();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('새로고침 완료!'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          }
+        },
         offsetToArmed: 80,
         builder: (context, child, controller) {
           double progress = controller.value.clamp(0.0, 1.0);
