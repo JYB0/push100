@@ -17,6 +17,7 @@ class _ReminderSettingScreenState extends State<ReminderSettingScreen> {
   Time _selectedTime = Time(hour: 18, minute: 0);
   int _intervalDays = 2;
   bool _reminderEnabled = true;
+  bool _hasCustomTime = true;
 
   @override
   void initState() {
@@ -35,6 +36,8 @@ class _ReminderSettingScreenState extends State<ReminderSettingScreen> {
       _selectedTime = Time(hour: hour, minute: minute); // ✅ 수정된 부분
       _intervalDays = interval;
       _reminderEnabled = enabled;
+      _hasCustomTime = prefs.containsKey('reminder_hour') &&
+          prefs.containsKey('reminder_minute');
     });
   }
 
@@ -126,7 +129,7 @@ class _ReminderSettingScreenState extends State<ReminderSettingScreen> {
             ListTile(
               title: Text('알림 시간', style: TextStyle(fontSize: dynamicFontSize)),
               subtitle: Text(
-                _selectedTime.format(context),
+                _hasCustomTime ? _selectedTime.format(context) : '아직 설정되지 않았어요',
                 style: TextStyle(fontSize: dynamicFontSize * 0.8),
               ),
               trailing: Icon(
