@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -9,6 +8,8 @@ void scheduleWorkoutReminder(bool isTestMode) async {
   tz.initializeTimeZones(); // 📌 타임존 초기화
 
   final prefs = await SharedPreferences.getInstance();
+  final bool hasCustomTime = prefs.containsKey('reminder_hour') &&
+      prefs.containsKey('reminder_minute');
 
   final isEnabled = prefs.getBool('reminder_enabled') ?? true;
   if (!isEnabled) return; // 🔴 알림 꺼져 있으면 종료
@@ -16,29 +17,29 @@ void scheduleWorkoutReminder(bool isTestMode) async {
   final hour = prefs.getInt('reminder_hour') ?? 18;
   final minute = prefs.getInt('reminder_minute') ?? 0;
   final intervalDays = prefs.getInt('reminder_interval') ?? 2;
-  print(intervalDays);
 
   // 📌 현재 시간 가져오기
   final now = tz.TZDateTime.now(tz.local);
 
-  tz.TZDateTime scheduledDate = tz.TZDateTime(
-    tz.local,
-    now.year,
-    now.month,
-    now.day,
-    hour,
-    minute,
-  );
+  // tz.TZDateTime scheduledDate = tz.TZDateTime(
+  //   tz.local,
+  //   now.year,
+  //   now.month,
+  //   now.day,
+  //   hour,
+  //   minute,
+  // ).add(Duration(days: intervalDays));
 
-  // 이미 지난 시간이면 다음 주기로 이동
-  if (scheduledDate.isBefore(now)) {
-    scheduledDate = scheduledDate.add(Duration(minutes: intervalDays));
-  }
-
-  print('알림 예약 시간: $scheduledDate');
-
-  final formatted = DateFormat('yyyy-MM-dd HH:mm:ss').format(scheduledDate);
-  print('알림 예약 시간: $formatted');
+  final scheduledDate = hasCustomTime
+      ? tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        ).add(Duration(days: intervalDays))
+      : now.add(Duration(days: intervalDays));
 
   // 📌 2일 뒤 날짜 계산
   // final scheduledDate = now.add(const Duration(days: 2));
