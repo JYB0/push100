@@ -8,12 +8,12 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:push100/main.dart';
-// import 'package:share_plus/share_plus.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/data_sync_screen.dart';
 import 'package:push100/screens/help_screen.dart';
 import 'package:push100/screens/initial_test_screen.dart';
 import 'package:push100/screens/login_screen.dart';
+import 'package:push100/screens/reminder_setting_screen.dart';
 import 'package:push100/screens/tutorial_screen.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -251,6 +251,34 @@ class SettingScreen extends StatelessWidget {
                       user == null
                           ? const LoginScreen()
                           : const DataSyncScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SharedAxisTransition(
+                      animation: animation,
+                      secondaryAnimation: secondaryAnimation,
+                      transitionType: SharedAxisTransitionType.horizontal,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            minVerticalPadding: dynamicFontSize,
+            leading: Icon(
+              Icons.alarm,
+              color: AppColors.greenPrimary,
+              size: dynamicFontSize * 1.5,
+            ),
+            title:
+                Text("알림 시간 설정하기", style: TextStyle(fontSize: dynamicFontSize)),
+            onTap: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 500),
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const ReminderSettingScreen(), // 이건 따로 만들 화면
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
                     return SharedAxisTransition(

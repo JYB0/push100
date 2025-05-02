@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/post_detail_screen.dart';
+import 'package:push100/screens/post_search_screen.dart';
 import 'package:push100/screens/post_write_screen.dart';
 
 class CommunityPostListScreen extends StatefulWidget {
@@ -116,6 +117,30 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.category} 게시판'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 400),
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      PostSearchScreen(category: widget.category),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SharedAxisTransition(
+                      animation: animation,
+                      secondaryAnimation: secondaryAnimation,
+                      transitionType: SharedAxisTransitionType
+                          .horizontal, // 🔁 여기 타입만 바꾸면 됨
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.redPrimary,
