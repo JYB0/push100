@@ -29,6 +29,38 @@ class AdHelper {
     }
   }
 
+  static String get adaptiveBannerAdUnitId {
+    bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
+
+    if (Platform.isAndroid) {
+      return isTestMode
+          ? dotenv.env['ANDROID_TEST_ADAPTIVE_BANNER_AD_ID'] ?? ''
+          : dotenv.env['ANDROID_ADAPTIVE_BANNER_AD_ID'] ?? '';
+    } else if (Platform.isIOS) {
+      return isTestMode
+          ? dotenv.env['IOS_TEST_ADAPTIVE_BANNER_AD_ID'] ?? ''
+          : dotenv.env['IOS_ADAPTIVE_BANNER_AD_ID'] ?? '';
+    } else {
+      return '';
+    }
+  }
+
+  static String get nativeAdUnitId {
+    bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
+
+    if (Platform.isAndroid) {
+      return isTestMode
+          ? dotenv.env['ANDROID_TEST_NATIVE_AD_ID'] ?? ''
+          : dotenv.env['ANDROID_NATIVE_AD_ID'] ?? '';
+    } else if (Platform.isIOS) {
+      return isTestMode
+          ? dotenv.env['IOS_TEST_NATIVE_AD_ID'] ?? ''
+          : dotenv.env['IOS_NATIVE_AD_ID'] ?? '';
+    } else {
+      return '';
+    }
+  }
+
   static String get interstitialAdUnitId {
     bool isTestMode = dotenv.env['USE_TEST_ADS'] == 'true';
 

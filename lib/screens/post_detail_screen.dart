@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:profanity_filter/profanity_filter.dart';
 import 'package:push100/main.dart';
+import 'package:push100/widgets/inline_adaptive_ad_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -700,30 +701,37 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           : '';
                       final views = data['views'] ?? 0;
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
                             ),
-                            const SizedBox(height: 8),
-                            Text('$nickname'),
-                            const SizedBox(height: 8),
-                            Text('조회수 $views • $formattedTime'),
-                            const Divider(thickness: 1),
-                            const SizedBox(height: 16),
-                            Text(content),
-                            const SizedBox(height: 32),
-                            _buildPostReactionButtons(data),
-                            const Divider(height: 0),
-                          ],
-                        ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('$nickname'),
+                                const SizedBox(height: 8),
+                                Text('조회수 $views • $formattedTime'),
+                                const Divider(thickness: 1),
+                                const SizedBox(height: 16),
+                                Text(content),
+                                const SizedBox(height: 32),
+                                _buildPostReactionButtons(data),
+                              ],
+                            ),
+                          ),
+                          const InlineAdaptiveAdWidget(),
+                          const Divider(height: 0),
+                        ],
                       );
                     },
                   ),

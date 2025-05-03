@@ -46,13 +46,17 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
         .collection('posts')
         .where('timestamp',
             isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+        .where('reportCount', isLessThan: 5)
         .orderBy('views', descending: true)
         .limit(20)
         .get();
 
     todayPopularPosts.clear();
     todayPopularPosts.addAll(
-      snapshot.docs.where((doc) => (doc['views'] ?? 0) >= 10),
+      snapshot.docs.where((doc) {
+        final views = doc['views'] ?? 0;
+        return views >= 10;
+      }),
     );
 
     if (snapshot.docs.isNotEmpty) {
@@ -74,12 +78,18 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
         .collection('posts')
         .where('timestamp',
             isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+        .where('reportCount', isLessThan: 5)
         .orderBy('views', descending: true)
         .startAfterDocument(lastDocument!)
         .limit(20)
         .get();
 
-    todayPopularPosts.addAll(snapshot.docs);
+    todayPopularPosts.addAll(
+      snapshot.docs.where((doc) {
+        final views = doc['views'] ?? 0;
+        return views >= 10;
+      }),
+    );
 
     if (snapshot.docs.isNotEmpty) {
       lastDocument = snapshot.docs.last;

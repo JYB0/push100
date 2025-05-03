@@ -43,6 +43,7 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
     Query baseQuery = FirebaseFirestore.instance
         .collection('posts')
         .where('category', isEqualTo: widget.category)
+        .where('reportCount', isLessThan: 5)
         .orderBy('timestamp', descending: true)
         .limit(20);
 
@@ -95,13 +96,21 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
       ),
       body: Column(
         children: [
-          if (results.isEmpty && !isLoading)
+          if (isLoading && results.isEmpty)
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.redPrimary,
+                ),
+              ),
+            )
+          else if (!isLoading && results.isEmpty)
             const Expanded(
               child: Center(
                 child: Text('검색 결과가 없습니다.'),
               ),
-            ),
-          if (results.isNotEmpty)
+            )
+          else
             Expanded(
               child: ListView.builder(
                 itemCount: results.length + 1,

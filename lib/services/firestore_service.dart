@@ -24,6 +24,7 @@ class FirestoreService {
       'views': 0, // 👁️ 조회수
       'likesCount': 0, // 👍 좋아요 수 (⭐️ 추가)
       'commentCount': 0,
+      'reportCount': 0,
       'deviceUid': deviceUid,
     });
   }

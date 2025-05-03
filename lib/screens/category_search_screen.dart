@@ -74,6 +74,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
       'commentCount': 0, // 댓글 수
       'timestamp': Timestamp.now(),
       'deviceUid': 'admin', // 관리자 고정값
+      'reportCount': 5,
     });
 
     if (contextMounted) {

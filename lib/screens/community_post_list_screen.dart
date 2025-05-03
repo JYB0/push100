@@ -51,7 +51,8 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
     hasMore = true;
     Query query = FirebaseFirestore.instance
         .collection('posts')
-        .where('category', isEqualTo: widget.category);
+        .where('category', isEqualTo: widget.category)
+        .where('reportCount', isLessThan: 5);
 
     if (_tabController.index == 1) {
       // 베스트 탭
@@ -79,7 +80,8 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
     try {
       Query query = FirebaseFirestore.instance
           .collection('posts')
-          .where('category', isEqualTo: widget.category);
+          .where('category', isEqualTo: widget.category)
+          .where('reportCount', isLessThan: 5);
 
       if (_tabController.index == 1) {
         query = query.where('likesCount', isGreaterThanOrEqualTo: 5);
