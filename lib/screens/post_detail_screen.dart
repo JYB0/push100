@@ -8,6 +8,7 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import 'package:profanity_filter/profanity_filter.dart';
+import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/widgets/inline_adaptive_ad_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -567,6 +568,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final adUnitIds = AdHelper.adaptiveBannerAdUnitIds;
+    final adUnitId = adUnitIds[widget.postId.hashCode % adUnitIds.length];
     // final commentRef = FirebaseFirestore.instance
     //     .collection('posts')
     //     .doc(widget.postId)
@@ -729,7 +732,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ],
                             ),
                           ),
-                          const InlineAdaptiveAdWidget(),
+                          InlineAdaptiveAdWidget(
+                            adUnitId: adUnitId,
+                          ),
                           const Divider(height: 0),
                         ],
                       );

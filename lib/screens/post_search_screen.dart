@@ -28,7 +28,7 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
   }
 
   Future<void> _search({bool isNewSearch = false}) async {
-    final query = _searchController.text.trim();
+    final query = _searchController.text.trim().toLowerCase();
     if (query.isEmpty) return;
 
     if (isNewSearch) {
@@ -48,7 +48,8 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
         .limit(20);
 
     if (lastDoc != null) {
-      baseQuery = baseQuery.startAfterDocument(lastDoc!);
+      final lastTimestamp = lastDoc!['timestamp'];
+      baseQuery = baseQuery.startAfter([lastTimestamp]);
     }
 
     final snapshot = await baseQuery.get();
@@ -57,13 +58,17 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
       final data = doc.data() as Map<String, dynamic>;
       final title = data['title']?.toString().toLowerCase() ?? '';
       final content = data['content']?.toString().toLowerCase() ?? '';
-      return title.contains(query.toLowerCase()) ||
-          content.contains(query.toLowerCase());
+      return title.contains(query) || content.contains(query);
     }).toList();
-
-    results.addAll(filtered);
-    if (snapshot.docs.isNotEmpty) lastDoc = snapshot.docs.last;
-    if (snapshot.docs.length < 20) hasMore = false;
+    if (snapshot.docs.isEmpty) {
+      hasMore = false; // 🔒 문서 없으면 중단
+    } else {
+      results.addAll(filtered);
+      lastDoc = snapshot.docs.last;
+      if (snapshot.docs.length < 20) {
+        hasMore = false; // 🔒 더 가져올 게 없으면 중단
+      }
+    }
 
     setState(() => isLoading = false);
   }
@@ -131,7 +136,9 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
                         ),
                       );
                     } else {
-                      _search();
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _search();
+                      });
                       return const Padding(
                         padding: EdgeInsets.all(16),
                         child: Center(

@@ -98,7 +98,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                   // ),
                   SizedBox(height: screenHeight * 0.05),
                   Text(
-                    "정자세로 푸시업을 한 뒤 푸시업 개수를 설정하세요.",
+                    "정자세로 푸쉬업을 한 뒤\n푸쉬업 개수를 설정하세요.",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: dynamicFontSize),
                   ),

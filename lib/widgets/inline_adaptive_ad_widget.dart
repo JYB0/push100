@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:push100/helpers/ad_helper.dart';
+// import 'package:push100/helpers/ad_helper.dart';
 
 class InlineAdaptiveAdWidget extends StatefulWidget {
-  const InlineAdaptiveAdWidget({super.key});
+  final String adUnitId;
+
+  const InlineAdaptiveAdWidget({super.key, required this.adUnitId});
 
   @override
   State<InlineAdaptiveAdWidget> createState() => _InlineAdaptiveAdWidgetState();
@@ -27,10 +29,8 @@ class _InlineAdaptiveAdWidgetState extends State<InlineAdaptiveAdWidget> {
 
     if (adSize == null) return;
 
-    final adUnitId = AdHelper.adaptiveBannerAdUnitId;
-
     final ad = BannerAd(
-      adUnitId: adUnitId,
+      adUnitId: widget.adUnitId,
       size: adSize,
       request: const AdRequest(),
       listener: BannerAdListener(

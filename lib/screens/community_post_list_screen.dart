@@ -4,10 +4,12 @@ import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/post_detail_screen.dart';
 import 'package:push100/screens/post_search_screen.dart';
 import 'package:push100/screens/post_write_screen.dart';
+import 'package:push100/widgets/inline_adaptive_ad_widget.dart';
 
 class CommunityPostListScreen extends StatefulWidget {
   final String category;
@@ -87,20 +89,30 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
         query = query.where('likesCount', isGreaterThanOrEqualTo: 5);
       }
 
-      query = query
-          .orderBy('timestamp', descending: true)
-          .startAfterDocument(lastDocument!)
-          .limit(20);
+      query = query.orderBy('timestamp', descending: true);
+
+      if (lastDocument != null) {
+        final lastTimestamp = lastDocument!['timestamp'];
+        query = query.startAfter([lastTimestamp]);
+      }
+
+      query = query.limit(20);
+
+      // query = query
+      //     .orderBy('timestamp', descending: true)
+      //     .startAfterDocument(lastDocument!)
+      //     .limit(20);
 
       final snapshot = await query.get();
 
-      posts.addAll(snapshot.docs);
-
-      if (snapshot.docs.isNotEmpty) {
+      if (snapshot.docs.isEmpty) {
+        hasMore = false; // 🔒 문서 없으면 무조건 중단
+      } else {
+        posts.addAll(snapshot.docs);
         lastDocument = snapshot.docs.last;
-      }
-      if (snapshot.docs.length < 20) {
-        hasMore = false;
+        if (snapshot.docs.length < 20) {
+          hasMore = false; // 🔒 더 가져올 게 없으면 중단
+        }
       }
     } finally {
       isLoading = false;
@@ -204,7 +216,7 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                       child: Text(
                         _tabController.index == 1
                             ? '아직 베스트 글이 없습니다.\n첫 번째 주인공이 되어보세요!'
-                            : '아직 작성된 글이 없습니다.',
+                            : '아직 작성된 글이 없습니다.\n첫 번째 주인공이 되어보세요!',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 16,
@@ -222,43 +234,44 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                 itemCount: posts.length + 1,
                 itemBuilder: (context, index) {
                   if (index == posts.length) {
-                    // ⭐️ 마지막에 로딩 또는 "다 읽었습니다" 문구 표시
-                    if (hasMore) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.redPrimary,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      );
-                    } else {
-                      return const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(
-                          child: Text(
-                            '🎉 모든 글을 다 읽었습니다!',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
+                    // 마지막 로딩 또는 완료 메시지
+                    return hasMore
+                        ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.redPrimary,
+                                strokeWidth: 2,
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    }
+                          )
+                        : const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(
+                              child: Text(
+                                '🎉 모든 글을 다 읽었습니다!',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          );
                   }
 
                   final post = posts[index];
                   final title = post['title'] ?? '제목 없음';
-                  final likesCount = post['likesCount'] ?? 0;
-                  final views = post['views'] ?? 0;
                   final commentCount = post['commentCount'] ?? 0;
                   final nickname = post['nickname'] ?? '익명';
+                  final views = post['views'] ?? 0;
+                  final likesCount = post['likesCount'] ?? 0;
                   final timestamp = (post['timestamp'] as Timestamp?)?.toDate();
+                  final timeText = timestamp != null
+                      ? DateFormat('HH:mm').format(timestamp.toLocal())
+                      : '';
 
-                  return ListTile(
+                  final listTile = ListTile(
                     title: Row(
                       children: [
                         Text(title),
@@ -266,9 +279,7 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                           const SizedBox(width: 6),
                           Text(
                             '[$commentCount]',
-                            style: const TextStyle(
-                              color: AppColors.redPrimary, // 🔥 댓글 수 빨간색
-                            ),
+                            style: const TextStyle(color: AppColors.redPrimary),
                           ),
                         ],
                       ],
@@ -282,64 +293,53 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                               Text(
                                 '$nickname • 조회수 $views',
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: Colors.grey), // 💬 서브텍스트 회색
+                                style: const TextStyle(color: Colors.grey),
                               ),
                               if (likesCount > 0) ...[
-                                const Text(
-                                  ' • ',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                const Icon(
-                                  Icons.thumb_up,
-                                  size: 16,
-                                  color: AppColors.redPrimary,
-                                ),
+                                const Text(' • ',
+                                    style: TextStyle(color: Colors.grey)),
+                                const Icon(Icons.thumb_up,
+                                    size: 16, color: AppColors.redPrimary),
                                 const SizedBox(width: 4),
-                                Text(
-                                  '$likesCount',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                Text('$likesCount'),
                               ],
                             ],
                           ),
                         ),
                         Text(
-                          timestamp != null
-                              ? DateFormat('HH:mm').format(timestamp.toLocal())
-                              : '',
+                          timeText,
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
                     onTap: () async {
                       final result = await Navigator.of(context).push(
-                        PageRouteBuilder(
-                          transitionDuration: const Duration(milliseconds: 500),
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  PostDetailScreen(
+                        MaterialPageRoute(
+                          builder: (_) => PostDetailScreen(
                             postId: post.id,
                             category: post['category'] ?? '카테고리 없음',
                           ),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return SharedAxisTransition(
-                              animation: animation,
-                              secondaryAnimation: secondaryAnimation,
-                              transitionType:
-                                  SharedAxisTransitionType.horizontal,
-                              child: child,
-                            );
-                          },
                         ),
                       );
-
                       if (result == true) {
-                        await _fetchInitialPosts(); // 삭제하고 돌아오면 새로고침
+                        await _fetchInitialPosts();
                       }
                     },
                   );
+
+                  if ((index - 11) % 20 == 0) {
+                    final adUnitIds = AdHelper.adaptiveBannerAdUnitIds;
+                    final adUnitId = adUnitIds[index % adUnitIds.length];
+
+                    return Column(
+                      children: [
+                        InlineAdaptiveAdWidget(adUnitId: adUnitId), // 광고 위젯 삽입
+                        listTile,
+                      ],
+                    );
+                  }
+
+                  return listTile;
                 },
               ),
       ),
