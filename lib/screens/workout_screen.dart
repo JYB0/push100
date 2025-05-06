@@ -52,9 +52,12 @@ class WorkoutScreenState extends State<WorkoutScreen>
   bool isResting = false;
   List<int> userReps = [];
 
+  late DateTime _startTime;
+
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now();
     _scrollController = ScrollController();
     sets = [];
     userReps = [];
@@ -733,52 +736,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
     );
   }
 
-  // Future<int> _getWorkoutCountForWeek(int week) async {
-  //   final records = await SharedPreferencesHelper.getWorkoutRecords();
-  //   int count = 0;
-
-  //   for (var record in records) {
-  //     if (record['week'] == week) {
-  //       count++;
-  //     }
-  //   }
-  //   return count;
-  // }
-
-  // void _showWorkoutCompleteNotification() async {
-  //   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  //       FlutterLocalNotificationsPlugin();
-
-  //   const AndroidNotificationDetails androidPlatformChannelSpecifics =
-  //       AndroidNotificationDetails(
-  //     'workout_complete_channel',
-  //     'Workout Complete',
-  //     channelDescription: 'Notification for workout completion',
-  //     importance: Importance.max,
-  //     priority: Priority.max,
-  //     icon: 'transparent',
-  //     color: AppColors.greenPrimary,
-  //     // largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
-  //   );
-
-  //   const NotificationDetails platformChannelSpecifics =
-  //       NotificationDetails(android: androidPlatformChannelSpecifics);
-
-  //   await flutterLocalNotificationsPlugin.show(
-  //     1,
-  //     '운동 완료',
-  //     '오늘의 훈련을 완료했습니다!',
-  //     platformChannelSpecifics,
-  //   );
-
-  //   if (await Vibration.hasVibrator() ?? false) {
-  //     Vibration.vibrate(duration: 1000);
-  //   }
-  // }
-
   Future<void> _saveWorkoutRecord() async {
     final now = DateTime.now();
     final date = "${now.year}-${now.month}-${now.day}";
+
+    final durationSeconds = now.difference(_startTime).inSeconds;
 
     await SharedPreferencesHelper.saveWorkoutRecord(
       date,
@@ -787,31 +749,8 @@ class WorkoutScreenState extends State<WorkoutScreen>
       widget.week,
       widget.day,
       widget.level,
+      durationSeconds,
     );
-
-    // 저장 후 홈 화면으로 이동
-    // await Future.delayed(const Duration(milliseconds: 100));
-    // if (!mounted) return;
-    // Navigator.of(context).pushAndRemoveUntil(
-    //   PageRouteBuilder(
-    //     transitionDuration: const Duration(milliseconds: 500),
-    //     pageBuilder: (context, animation, secondaryAnimation) =>
-    //         DailyWorkoutCompleteNavigation(
-    //       initialWeek: widget.week,
-    //       initialLevel: widget.level,
-    //       isTestMode: false, // 테스트 모드 활성화
-    //     ),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return SharedAxisTransition(
-    //         animation: animation,
-    //         secondaryAnimation: secondaryAnimation,
-    //         transitionType: SharedAxisTransitionType.horizontal,
-    //         child: child,
-    //       );
-    //     },
-    //   ),
-    //   (route) => false,
-    // );
   }
 
   @override

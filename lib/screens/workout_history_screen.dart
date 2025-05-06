@@ -109,6 +109,11 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   final week = record['week'];
                   final day = record['day'];
                   final level = record['level'];
+                  final totalPushups =
+                      userReps.fold<int>(0, (sum, reps) => sum + reps);
+
+                  final durationSeconds = record['durationSeconds'] ?? 0;
+                  final durationMinutes = durationSeconds ~/ 60;
 
                   return Card(
                     margin: const EdgeInsets.all(8.0),
@@ -121,7 +126,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     "$date",
@@ -130,7 +136,6 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  SizedBox(width: dynamicFontSize),
                                   Text(
                                     "Week $week, Day $day, $level",
                                     style: TextStyle(
@@ -138,6 +143,29 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                                       color: Colors.grey,
                                     ),
                                   ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "총 푸쉬업 갯수 : $totalPushups개",
+                                    style: TextStyle(
+                                      fontSize: dynamicFontSize * 0.85,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                  if (durationSeconds != null &&
+                                      durationSeconds > 0)
+                                    Text(
+                                      durationSeconds >= 60
+                                          ? "운동 시간 : $durationMinutes분"
+                                          : "운동 시간 : $durationSeconds초",
+                                      style: TextStyle(
+                                        fontSize: dynamicFontSize * 0.8,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
                                 ],
                               ),
                               IconButton(

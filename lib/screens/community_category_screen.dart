@@ -57,8 +57,8 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     todayPopularPosts.addAll(
       snapshot.docs.where((doc) {
         final views = doc['views'] ?? 0;
-        return views >= 10;
-        // return views >= 0;
+        // return views >= 10;
+        return views >= 0;
       }),
     );
 
@@ -97,8 +97,8 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
       todayPopularPosts.addAll(
         snapshot.docs.where((doc) {
           final views = doc['views'] ?? 0;
-          return views >= 10;
-          // return views >= 0;
+          // return views >= 10;
+          return views >= 0;
         }),
       );
       lastDocument = snapshot.docs.last;

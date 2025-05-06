@@ -36,6 +36,7 @@ Future<void> syncLocalDataToFirebase(User user) async {
       'level': record['level'],
       'plannedReps': record['plannedReps'],
       'userReps': record['userReps'],
+      'durationSeconds': record['durationSeconds'] ?? 0,
     });
   }
 }
@@ -78,6 +79,7 @@ Future<void> restoreDataFromFirebase(User user) async {
         serverRecord['week'],
         serverRecord['day'],
         serverRecord['level'],
+        serverRecord['durationSeconds'] ?? 0, // ✅ 추가
       );
     }
   }
