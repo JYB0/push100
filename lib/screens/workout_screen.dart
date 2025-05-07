@@ -62,6 +62,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     sets = [];
     userReps = [];
     _loadWorkoutPlan();
+    GoogleFonts.firaCode().copyWith();
 
     _animationController = AnimationController(
       vsync: this,
@@ -374,6 +375,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     _animationController.stop();
 
     final totalPushups = userReps.reduce((a, b) => a + b);
+    final durationSeconds = DateTime.now().difference(_startTime).inSeconds;
 
     if (widget.week == 1 && widget.day == 3) {
       // ✅ 1주차 3일차 완료 시 1주차의 운동 기록 검토
@@ -414,6 +416,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
             day: widget.day,
             level: widget.level,
             isTestMode: true, // 테스트 모드 활성화
+            durationSeconds: durationSeconds,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SharedAxisTransition(
@@ -448,6 +451,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
             day: 1,
             level: widget.level,
             isTestMode: false,
+            durationSeconds: durationSeconds,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SharedAxisTransition(
@@ -481,6 +485,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
             day: widget.day,
             level: widget.level,
             isTestMode: false,
+            durationSeconds: durationSeconds,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SharedAxisTransition(
@@ -711,6 +716,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
   void _navigateToDailyWorkoutCompleteNavigation(
       {required bool isTestMode, int? nextWeek, int? nextDay}) {
     final totalPushups = userReps.reduce((a, b) => a + b);
+    final durationSeconds = DateTime.now().difference(_startTime).inSeconds;
 
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
@@ -722,6 +728,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
           day: nextDay ?? 1,
           level: widget.level,
           isTestMode: isTestMode,
+          durationSeconds: durationSeconds,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SharedAxisTransition(
