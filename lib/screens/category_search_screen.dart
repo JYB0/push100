@@ -148,7 +148,18 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
           ),
           Expanded(
             child: filtered.isEmpty
-                ? const Center(child: Text('검색 결과가 없습니다.'))
+                ? const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('검색 결과가 없습니다.'),
+                      SizedBox(height: 12),
+                      Text(
+                        '원하시는 카테고리가 없다면\n아래 + 버튼을 눌러 생성해보세요!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  )
                 : ListView.separated(
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) => const Divider(),

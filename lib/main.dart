@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:push100/firebase_options.dart';
+import 'package:push100/helpers/firebase_sync_helper.dart';
 
 // import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
@@ -72,6 +74,11 @@ void main() async {
   final Map<String, dynamic> progress =
       await SharedPreferencesHelper.getProgress();
   final bool isTestMode = await SharedPreferencesHelper.getIsTestMode();
+
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    await restoreDataFromFirebase(user);
+  }
 
   runApp(
     MyApp(

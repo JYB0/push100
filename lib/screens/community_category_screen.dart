@@ -235,7 +235,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                           horizontal: 16,
                           vertical: 8,
                         ),
-                        child: Text("🔥 인기 카테고리",
+                        child: Text("🔥 인기 카테고리 TOP 3",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
@@ -281,24 +281,23 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
               const SizedBox(height: 16),
 
               // 🔥 오늘 인기 게시글
-              // 🔥 오늘 인기 글 파트
-              if (todayPopularPosts.isEmpty)
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('오늘 올라온 인기 글이 없습니다.'),
-                )
-              else
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Text(
-                      "👑 오늘의 인기 글",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    "👑 오늘의 인기글",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                ),
+                if (todayPopularPosts.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('오늘 올라온 인기글이 없습니다.\n인기글의 주인공이 되어보세요!'),
+                  )
+                else
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -328,7 +327,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                       return _buildPopularPostTile(context, post);
                     },
                   ),
-                ])
+              ])
             ],
           ),
         ),

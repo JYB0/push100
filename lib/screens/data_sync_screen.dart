@@ -237,10 +237,20 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const Spacer(),
+                  Text(
+                    '☁️ 로그인된 상태에서는\n운동 기록이 자동으로 동기화됩니다.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: dynamicFontSize * 0.9,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   if (_lastBackupTimeFormatted != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      '마지막 백업 시간: $_lastBackupTimeFormatted',
+                      '마지막 수동 백업 시간: $_lastBackupTimeFormatted',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: dynamicFontSize * 0.8, color: Colors.grey),
@@ -249,7 +259,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                   if (_lastRestoreTimeFormatted != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      '마지막 복원 시간: $_lastRestoreTimeFormatted',
+                      '마지막 수동 복원 시간: $_lastRestoreTimeFormatted',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: dynamicFontSize * 0.8, color: Colors.grey),
@@ -257,7 +267,6 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                   ],
 
                   const Spacer(), // 👇 아래쪽으로 밀어냄
-
                   // 🔽 하단 안내 및 버튼
                   Text(
                     '원하는 작업을 선택하세요:',
@@ -299,7 +308,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                           context: context,
                           title: '서버로 데이터 백업',
                           message:
-                              '이 기기의 운동 기록과 설정을\n서버에 저장합니다.\n\n현재 서버 데이터는 덮어쓰기 됩니다.\n계속할까요?',
+                              '이 기기의 운동 기록과 설정을\n서버에 저장합니다.\n\n※ 로그인된 사용자는\n운동 완료 시\n자동 백업됩니다.\n\n수동으로 백업하시겠습니까?',
                           okLabel: '백업하기',
                           cancelLabel: '취소',
                           isDestructiveAction: true,
@@ -348,7 +357,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                             context: context,
                             title: '서버에서 데이터 복원',
                             message:
-                                '서버에 저장된 데이터를\n이 기기로 가져옵니다.\n\n현재 기기의 데이터는\n덮어쓰여질 수 있습니다.\n계속할까요?',
+                                '서버에 저장된 데이터를\n이 기기로 가져옵니다.\n\n※ 로그인된 상태에서는\n앱 실행시 자동으로 동기화됩니다.\n\n수동으로 복원하시겠습니까?',
                             okLabel: '복원하기',
                             cancelLabel: '취소',
                             isDestructiveAction: true,

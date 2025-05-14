@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:push100/helpers/ad_helper.dart';
+import 'package:push100/helpers/firebase_sync_helper.dart';
 import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/screens/daily_workout_complete_screen.dart';
 import 'package:vibration/vibration.dart';
@@ -404,6 +406,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(true);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
@@ -439,6 +446,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
@@ -473,6 +485,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
@@ -651,6 +668,10 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
       if (!mounted) return;
 
       _navigateToDailyWorkoutCompleteNavigation(
@@ -664,6 +685,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100)); // 🔥 딜레이 추가
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       _navigateToDailyWorkoutCompleteNavigation(
@@ -694,6 +720,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       _navigateToDailyWorkoutCompleteNavigation(
@@ -706,6 +737,11 @@ class WorkoutScreenState extends State<WorkoutScreen>
       scheduleWorkoutReminder(false);
 
       await Future.delayed(const Duration(milliseconds: 100));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await syncLocalDataToFirebase(user); // 🔴 Firebase에 최종 상태 백업
+      }
+
       if (!mounted) return;
 
       _navigateToDailyWorkoutCompleteNavigation(

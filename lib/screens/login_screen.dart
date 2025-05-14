@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:push100/helpers/auth_helper.dart';
+import 'package:push100/helpers/firebase_sync_helper.dart';
 // import 'package:push100/helpers/firebase_sync_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/data_sync_screen.dart';
@@ -25,6 +26,14 @@ class LoginScreen extends StatelessWidget {
       }
 
       if (userCredential != null) {
+        final user = userCredential.user;
+
+        if (user != null) {
+          {
+            await restoreDataFromFirebase(user);
+          }
+        }
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('✅ 로그인 성공!')),
