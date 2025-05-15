@@ -44,6 +44,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
   late List<int> sets;
   late ScrollController _scrollController;
   bool _isMotivationDialogVisible = false; // class에 선언
+  bool _shouldShowWorkoutTutorial = false;
 
   int currentSet = 0;
   int restTime = 0;
@@ -59,6 +60,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
   @override
   void initState() {
     super.initState();
+    _initializeTutorial();
     _startTime = DateTime.now();
     _scrollController = ScrollController();
     sets = [];
@@ -365,6 +367,16 @@ class WorkoutScreenState extends State<WorkoutScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _initializeTutorial() async {
+    final seen = await SharedPreferencesHelper.getWorkoutTutorialSeen();
+    if (!seen) {
+      setState(() {
+        _shouldShowWorkoutTutorial = true;
+      });
+      await SharedPreferencesHelper.setWorkoutTutorialSeen(true);
+    }
   }
 
   Future<void> _completeWorkout() async {
@@ -914,6 +926,20 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
                 /// 🔹 버튼과 하단 공간 추가
                 // SizedBox(height: screenHeight * 0.1),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: _shouldShowWorkoutTutorial
+                      ? Text(
+                          '세트 완료 시\n노란색 원을 터치해주세요!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: dynamicFontSize * 0.9,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[700],
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
 

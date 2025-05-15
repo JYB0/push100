@@ -196,4 +196,16 @@ class SharedPreferencesHelper {
       await prefs.setStringList('workoutRecords', records);
     }
   }
+
+  // 튜토리얼(예: 세트 완료 안내)을 봤는지 여부 저장
+  static Future<void> setWorkoutTutorialSeen(bool seen) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('workoutTutorialSeen', seen);
+  }
+
+// 튜토리얼을 봤는지 여부 불러오기
+  static Future<bool> getWorkoutTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('workoutTutorialSeen') ?? false; // 기본값: 안 봄
+  }
 }
