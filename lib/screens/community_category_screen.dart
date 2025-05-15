@@ -21,7 +21,7 @@ class CommunityCategoryScreen extends StatefulWidget {
 }
 
 class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
-  final List<DocumentSnapshot> todayPopularPosts = [];
+  final List<DocumentSnapshot> weeklyPopularPosts = [];
   final ScrollController _scrollController = ScrollController();
   DocumentSnapshot? lastDocument;
   bool isLoading = false;
@@ -53,8 +53,8 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
         .limit(20)
         .get();
 
-    todayPopularPosts.clear();
-    todayPopularPosts.addAll(
+    weeklyPopularPosts.clear();
+    weeklyPopularPosts.addAll(
       snapshot.docs.where((doc) {
         final views = doc['views'] ?? 0;
         // return views >= 10;
@@ -94,7 +94,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     if (snapshot.docs.isEmpty) {
       hasMore = false;
     } else {
-      todayPopularPosts.addAll(
+      weeklyPopularPosts.addAll(
         snapshot.docs.where((doc) {
           final views = doc['views'] ?? 0;
           // return views >= 10;
@@ -292,7 +292,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                     ),
                   ),
                 ),
-                if (todayPopularPosts.isEmpty)
+                if (weeklyPopularPosts.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(16),
                     child: Text('올라온 인기글이 없습니다.\n인기글의 주인공이 되어보세요!'),
@@ -301,17 +301,17 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: todayPopularPosts.length +
-                        (todayPopularPosts.length ~/ 20),
+                    itemCount: weeklyPopularPosts.length +
+                        (weeklyPopularPosts.length ~/ 20),
                     itemBuilder: (context, index) {
                       final adUnitIds = AdHelper.adaptiveBannerAdUnitIds;
                       final postIndex = index - (index ~/ 20);
 
-                      if (postIndex >= todayPopularPosts.length) {
+                      if (postIndex >= weeklyPopularPosts.length) {
                         return const SizedBox.shrink();
                       }
 
-                      final post = todayPopularPosts[postIndex];
+                      final post = weeklyPopularPosts[postIndex];
 
                       // 광고 위치 지정 (11, 31, 51...)
                       if ((index - 11) % 20 == 0 && index != 0) {

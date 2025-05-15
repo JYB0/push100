@@ -1,4 +1,6 @@
 import 'package:animations/animations.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:push100/helpers/schedule_reminder_helper.dart';
@@ -163,6 +165,7 @@ class TestScreenState extends State<TestScreen> {
                       _saveTestResult(pushupCount);
 
                       final bool isFinalTest = (widget.week == 6);
+                      final user = FirebaseAuth.instance.currentUser;
 
                       if (isFinalTest) {
                         if (pushupCount >= 100) {
@@ -171,6 +174,19 @@ class TestScreenState extends State<TestScreen> {
                             1,
                             widget.currentLevel,
                           );
+
+                          if (user != null) {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .set({
+                              'currentWeek': 7,
+                              'currentDay': 1,
+                              'level': widget.currentLevel,
+                              'isTestMode': false,
+                              'lastUpdated': FieldValue.serverTimestamp(),
+                            }, SetOptions(merge: true));
+                          }
 
                           if (!context.mounted) return;
                           _navigateWithAnimation(
@@ -183,6 +199,19 @@ class TestScreenState extends State<TestScreen> {
                             1,
                             widget.currentLevel,
                           );
+
+                          if (user != null) {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .set({
+                              'currentWeek': 6,
+                              'currentDay': 1,
+                              'level': widget.currentLevel,
+                              'isTestMode': false,
+                              'lastUpdated': FieldValue.serverTimestamp(),
+                            }, SetOptions(merge: true));
+                          }
 
                           scheduleWorkoutReminder(false);
 
@@ -207,6 +236,19 @@ class TestScreenState extends State<TestScreen> {
 
                       await SharedPreferencesHelper.saveProgress(
                           nextWeek, 1, level);
+
+                      if (user != null) {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .set({
+                          'currentWeek': nextWeek,
+                          'currentDay': 1,
+                          'level': level,
+                          'isTestMode': false,
+                          'lastUpdated': FieldValue.serverTimestamp(),
+                        }, SetOptions(merge: true));
+                      }
 
                       scheduleWorkoutReminder(false);
 

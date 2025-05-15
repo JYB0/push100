@@ -378,7 +378,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
               color: const Color(0x4D000000),
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.redLight,
+                  color: AppColors.redPrimary,
                 ),
               ),
             ),
