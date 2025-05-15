@@ -30,24 +30,24 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchInitialTodayPosts();
+    _fetchInitialWeeklyPosts();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 300) {
-        _fetchMoreTodayPosts();
+        _fetchMoreWeeklyPosts();
       }
     });
   }
 
-  Future<void> _fetchInitialTodayPosts() async {
+  Future<void> _fetchInitialWeeklyPosts() async {
     final now = DateTime.now();
-    final todayMidnight = DateTime(now.year, now.month, now.day);
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
 
     final snapshot = await FirebaseFirestore.instance
         .collection('posts')
         .where('timestamp',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+            isGreaterThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
         .where('reportCount', isLessThan: 5)
         .orderBy('views', descending: true)
         .limit(20)
@@ -70,12 +70,12 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     setState(() {});
   }
 
-  Future<void> _fetchMoreTodayPosts() async {
+  Future<void> _fetchMoreWeeklyPosts() async {
     if (isLoading || !hasMore) return;
 
     isLoading = true;
     final now = DateTime.now();
-    final todayMidnight = DateTime(now.year, now.month, now.day);
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
 
     final lastViews = lastDocument!['views'] ?? 0;
     final lastTimestamp = lastDocument!['timestamp'];
@@ -83,7 +83,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     final snapshot = await FirebaseFirestore.instance
         .collection('posts')
         .where('timestamp',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(todayMidnight))
+            isGreaterThanOrEqualTo: Timestamp.fromDate(sevenDaysAgo))
         .where('reportCount', isLessThan: 5)
         .orderBy('views', descending: true)
         .orderBy('timestamp', descending: true)
@@ -123,7 +123,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
       ),
       body: CustomRefreshIndicator(
         onRefresh: () async {
-          await _fetchInitialTodayPosts();
+          await _fetchInitialWeeklyPosts();
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -285,7 +285,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(
-                    "👑 오늘의 인기글",
+                    "👑 주간 인기글",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -295,7 +295,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
                 if (todayPopularPosts.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text('오늘 올라온 인기글이 없습니다.\n인기글의 주인공이 되어보세요!'),
+                    child: Text('올라온 인기글이 없습니다.\n인기글의 주인공이 되어보세요!'),
                   )
                 else
                   ListView.builder(
