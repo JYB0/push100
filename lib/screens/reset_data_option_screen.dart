@@ -26,61 +26,63 @@ class _ResetDataOptionScreenState extends State<ResetDataOptionScreen> {
       appBar: AppBar(title: const Text("데이터 초기화")),
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Spacer(),
-                Text(
-                  "원하는 초기화 방식을 선택하세요",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: dynamicFontSize,
-                    fontWeight: FontWeight.bold,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(),
+                  Text(
+                    "원하는 초기화 방식을 선택하세요",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: dynamicFontSize,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "⏱ 진행 상태만 초기화하거나\n🗑 모든 데이터를 삭제할 수 있어요.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: dynamicFontSize * 0.9,
-                    color: Colors.grey[700],
-                    height: 1.5,
+                  const SizedBox(height: 16),
+                  Text(
+                    "⏱ 진행 상태만 초기화하거나\n🗑 모든 데이터를 삭제할 수 있어요.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: dynamicFontSize * 0.9,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                ElevatedButton.icon(
-                  icon: Icon(
-                    Icons.refresh,
-                    size: dynamicFontSize,
-                    color: Colors.white,
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    icon: Icon(
+                      Icons.refresh,
+                      size: dynamicFontSize,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      "진행 상태만 초기화",
+                      style: TextStyle(fontSize: dynamicFontSize),
+                    ),
+                    onPressed: _resetProgressOnly,
                   ),
-                  label: Text(
-                    "진행 상태만 초기화",
-                    style: TextStyle(fontSize: dynamicFontSize),
+                  SizedBox(height: dynamicFontSize),
+                  ElevatedButton.icon(
+                    icon: Icon(
+                      Icons.delete_forever,
+                      size: dynamicFontSize,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      "모든 데이터 삭제",
+                      style: TextStyle(fontSize: dynamicFontSize),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.redPrimary,
+                    ),
+                    onPressed: () => _resetAllData(context),
                   ),
-                  onPressed: _resetProgressOnly,
-                ),
-                SizedBox(height: dynamicFontSize),
-                ElevatedButton.icon(
-                  icon: Icon(
-                    Icons.delete_forever,
-                    size: dynamicFontSize,
-                    color: Colors.white,
-                  ),
-                  label: Text(
-                    "모든 데이터 삭제",
-                    style: TextStyle(fontSize: dynamicFontSize),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.redPrimary,
-                  ),
-                  onPressed: () => _resetAllData(context),
-                ),
-                const SizedBox(height: 24),
-              ],
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
           if (_isProcessing)
