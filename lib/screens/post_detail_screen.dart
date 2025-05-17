@@ -854,12 +854,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           final commentId = doc.id;
                           final data = doc.data() as Map<String, dynamic>;
                           final commentUid = data.containsKey('deviceUid')
-                              ? data['deviceUid']
+                              ? data['deviceUid'] as String
                               : '';
                           final isBlocked =
                               _blockedUserUids.contains(commentUid);
-                          final isMyComment =
-                              commentUid != null && commentUid == _deviceUid;
+                          final isMyComment = commentUid == _deviceUid;
                           final content = doc['content'] ?? '';
                           final nickname = doc['nickname'] ?? '익명';
                           final passwordHash = doc['passwordHash'] ?? '';
@@ -907,7 +906,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                   key: 'delete',
                                                   isDestructiveAction: true),
                                               if (!isMyComment &&
-                                                  (commentUid ?? '').isNotEmpty)
+                                                  commentUid.isNotEmpty)
                                                 SheetAction(
                                                     label: isBlocked
                                                         ? '차단 해제하기'
@@ -1020,10 +1019,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         final reply = replies[replyIndex];
                                         final replyData = reply.data()
                                             as Map<String, dynamic>;
-                                        final replyUid =
-                                            replyData.containsKey('deviceUid')
-                                                ? replyData['deviceUid']
-                                                : '';
+                                        final replyUid = replyData
+                                                .containsKey('deviceUid')
+                                            ? replyData['deviceUid'] as String
+                                            : '';
 
                                         final isBlocked =
                                             _blockedUserUids.contains(replyUid);
@@ -1123,8 +1122,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                                           true,
                                                                     ),
                                                                     if (!isMyReply &&
-                                                                        (replyUid ??
-                                                                                '')
+                                                                        replyUid
                                                                             .isNotEmpty)
                                                                       SheetAction(
                                                                         label: isBlocked
