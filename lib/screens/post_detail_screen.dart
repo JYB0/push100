@@ -1020,10 +1020,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         final reply = replies[replyIndex];
                                         final replyData = reply.data()
                                             as Map<String, dynamic>;
-                                        final replyUid = replyData
-                                                .containsKey('deviceUid')
-                                            ? replyData['deviceUid'] as String
-                                            : '';
+                                        final replyUid =
+                                            replyData.containsKey('deviceUid')
+                                                ? replyData['deviceUid']
+                                                : '';
 
                                         final isBlocked =
                                             _blockedUserUids.contains(replyUid);
