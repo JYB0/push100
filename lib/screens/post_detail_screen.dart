@@ -41,6 +41,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   String? _replyToCommentId;
   String? _replyToNickname;
   String? _deviceUid;
+  Set<String> _blockedUserUids = {};
 
   bool get isMyPost {
     final currentUid = _deviceUid;
@@ -157,6 +158,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .then((snapshot) => snapshot.docs);
 
     _loadDeviceUidAndInitReactions();
+    _loadBlockedUsers();
     _refreshData();
   }
 
@@ -176,6 +178,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       _isCommenting = true;
     });
     _focusNode.requestFocus();
+  }
+
+  Future<void> _loadBlockedUsers() async {
+    if (_deviceUid == null) return;
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_deviceUid)
+        .collection('blockedUsers')
+        .get();
+
+    setState(() {
+      _blockedUserUids = snapshot.docs.map((doc) => doc.id).toSet();
+    });
   }
 
   Future<void> _refreshData() async {
@@ -331,6 +346,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       );
       return;
     }
+    if (_deviceUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('기기 ID를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')),
+      );
+      return;
+    }
 
     final hash = sha256.convert(utf8.encode(password)).toString();
 
@@ -346,6 +367,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'nickname': nickname,
         'passwordHash': hash,
         'timestamp': Timestamp.now(),
+        'deviceUid': _deviceUid,
       });
     } else {
       await FirebaseFirestore.instance
@@ -357,6 +379,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'nickname': nickname,
         'passwordHash': hash,
         'timestamp': Timestamp.now(),
+        'deviceUid': _deviceUid,
       });
     }
 
@@ -603,16 +626,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           IconButton(
             icon: const Icon(Icons.more_horiz),
             onPressed: () async {
+              final postData = _postSnapshot?.data() as Map<String, dynamic>?;
+              final postUid = postData?['deviceUid'];
+
               final result = await showModalActionSheet<String>(
                 context: context,
                 title: '게시물 옵션',
                 actions: [
-                  const SheetAction(label: '신고하기', key: 'report'),
+                  if (!isMyPost)
+                    const SheetAction(label: '신고하기', key: 'report'),
                   if (isMyPost) // 본인 글일 때만 삭제 버튼
                     const SheetAction(
                         label: '삭제하기',
                         key: 'delete',
                         isDestructiveAction: true),
+                  if (!isMyPost && postUid != null) ...[
+                    if (_blockedUserUids.contains(postUid))
+                      const SheetAction(label: '차단 해제하기', key: 'unblock')
+                    else
+                      const SheetAction(label: '차단하기', key: 'block'),
+                  ]
                 ],
               );
 
@@ -620,6 +653,44 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 _reportPost();
               } else if (result == 'delete') {
                 _deletePost();
+              } else if (result == 'block' &&
+                  postUid != null &&
+                  _deviceUid != null) {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(_deviceUid)
+                    .collection('blockedUsers')
+                    .doc(postUid)
+                    .set({'timestamp': FieldValue.serverTimestamp()});
+
+                if (!mounted) return;
+                setState(() {
+                  _blockedUserUids.add(postUid);
+                });
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('사용자가 차단되었습니다.')),
+                  );
+                }
+              } else if (result == 'unblock' &&
+                  postUid != null &&
+                  _deviceUid != null) {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(_deviceUid)
+                    .collection('blockedUsers')
+                    .doc(postUid)
+                    .delete();
+
+                if (!mounted) return;
+                setState(() {
+                  _blockedUserUids.remove(postUid);
+                });
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('차단이 해제되었습니다.')),
+                  );
+                }
               }
             },
           ),
@@ -694,9 +765,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       }
 
                       final data = snapshot.data!;
-                      final title = data['title'] ?? '제목 없음';
-                      final content = data['content'] ?? '';
-                      final nickname = data['nickname'] ?? '익명';
+                      final postData = data.data() as Map<String, dynamic>;
+                      final postUid = postData['deviceUid'];
+
+                      final isBlockedPost =
+                          postUid != null && _blockedUserUids.contains(postUid);
+
+                      // final title = data['title'] ?? '제목 없음';
+                      // final content = data['content'] ?? '';
+                      // final nickname = data['nickname'] ?? '익명';
+                      final title = isBlockedPost
+                          ? '(차단된 글)'
+                          : (postData['title'] ?? '제목 없음');
+                      final content = isBlockedPost
+                          ? '차단된 사용자의 글입니다.'
+                          : (postData['content'] ?? '');
+                      final nickname = isBlockedPost
+                          ? '차단된 사용자'
+                          : (postData['nickname'] ?? '익명');
                       final timestamp = data['timestamp']?.toDate();
                       final formattedTime = timestamp != null
                           ? DateFormat('yyyy.MM.dd HH:mm')
@@ -766,6 +852,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         itemBuilder: (context, index) {
                           final doc = comments[index];
                           final commentId = doc.id;
+                          final data = doc.data() as Map<String, dynamic>;
+                          final commentUid = data.containsKey('deviceUid')
+                              ? data['deviceUid']
+                              : '';
+                          final isBlocked =
+                              _blockedUserUids.contains(commentUid);
+                          final isMyComment =
+                              commentUid != null && commentUid == _deviceUid;
                           final content = doc['content'] ?? '';
                           final nickname = doc['nickname'] ?? '익명';
                           final passwordHash = doc['passwordHash'] ?? '';
@@ -792,7 +886,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        nickname,
+                                        isBlocked ? '차단된 사용자' : nickname,
                                         style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
@@ -812,6 +906,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                   label: '삭제하기',
                                                   key: 'delete',
                                                   isDestructiveAction: true),
+                                              if (!isMyComment &&
+                                                  (commentUid ?? '').isNotEmpty)
+                                                SheetAction(
+                                                    label: isBlocked
+                                                        ? '차단 해제하기'
+                                                        : '차단하기',
+                                                    key: isBlocked
+                                                        ? 'unblock'
+                                                        : 'block'),
                                             ],
                                           );
 
@@ -820,6 +923,51 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           } else if (result == 'delete') {
                                             _deleteComment(
                                                 commentId, passwordHash);
+                                          } else if (result == 'block') {
+                                            await FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(_deviceUid)
+                                                .collection('blockedUsers')
+                                                .doc(commentUid)
+                                                .set({
+                                              'timestamp':
+                                                  FieldValue.serverTimestamp()
+                                            });
+
+                                            if (!mounted) return;
+                                            setState(() {
+                                              _blockedUserUids.add(commentUid);
+                                            });
+
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                    content:
+                                                        Text('사용자가 차단되었습니다.')),
+                                              );
+                                            }
+                                          } else if (result == 'unblock') {
+                                            await FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(_deviceUid)
+                                                .collection('blockedUsers')
+                                                .doc(commentUid)
+                                                .delete();
+
+                                            if (!mounted) return;
+                                            setState(() {
+                                              _blockedUserUids
+                                                  .remove(commentUid);
+                                            });
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('차단이 해제되었습니다.'),
+                                                ),
+                                              );
+                                            }
                                           }
                                         },
                                         child: const Icon(Icons.more_horiz),
@@ -831,7 +979,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 4),
-                                  child: Text(content),
+                                  child: Text(
+                                      isBlocked ? '차단된 사용자의 댓글입니다.' : content),
                                 ),
 
                                 // 🕒 시간
@@ -869,6 +1018,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       itemCount: replies.length,
                                       itemBuilder: (context, replyIndex) {
                                         final reply = replies[replyIndex];
+                                        final replyData = reply.data()
+                                            as Map<String, dynamic>;
+                                        final replyUid = replyData
+                                                .containsKey('deviceUid')
+                                            ? replyData['deviceUid'] as String
+                                            : '';
+
+                                        final isBlocked =
+                                            _blockedUserUids.contains(replyUid);
+                                        final isMyReply =
+                                            replyUid == _deviceUid;
                                         final replyContent =
                                             reply['content'] ?? '';
                                         final replyNickname =
@@ -933,7 +1093,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                                   .spaceBetween,
                                                           children: [
                                                             Text(
-                                                              replyNickname,
+                                                              isBlocked
+                                                                  ? '차단된 사용자'
+                                                                  : replyNickname,
                                                               style:
                                                                   const TextStyle(
                                                                 fontSize: 15,
@@ -960,6 +1122,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                                       isDestructiveAction:
                                                                           true,
                                                                     ),
+                                                                    if (!isMyReply &&
+                                                                        (replyUid ??
+                                                                                '')
+                                                                            .isNotEmpty)
+                                                                      SheetAction(
+                                                                        label: isBlocked
+                                                                            ? '차단 해제하기'
+                                                                            : '차단하기',
+                                                                        key: isBlocked
+                                                                            ? 'unblock'
+                                                                            : 'block',
+                                                                      ),
                                                                   ],
                                                                 );
 
@@ -971,6 +1145,70 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                                     reply[
                                                                         'passwordHash'],
                                                                   );
+                                                                } else if (result ==
+                                                                    'block') {
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'users')
+                                                                      .doc(
+                                                                          _deviceUid)
+                                                                      .collection(
+                                                                          'blockedUsers')
+                                                                      .doc(
+                                                                          replyUid)
+                                                                      .set({
+                                                                    'timestamp':
+                                                                        FieldValue
+                                                                            .serverTimestamp()
+                                                                  });
+
+                                                                  setState(() {
+                                                                    _blockedUserUids
+                                                                        .add(
+                                                                            replyUid);
+                                                                  });
+
+                                                                  if (context
+                                                                      .mounted) {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      const SnackBar(
+                                                                          content:
+                                                                              Text('사용자가 차단되었습니다.')),
+                                                                    );
+                                                                  }
+                                                                } else if (result ==
+                                                                    'unblock') {
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'users')
+                                                                      .doc(
+                                                                          _deviceUid)
+                                                                      .collection(
+                                                                          'blockedUsers')
+                                                                      .doc(
+                                                                          replyUid)
+                                                                      .delete();
+
+                                                                  setState(() {
+                                                                    _blockedUserUids
+                                                                        .remove(
+                                                                            replyUid);
+                                                                  });
+
+                                                                  if (context
+                                                                      .mounted) {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      const SnackBar(
+                                                                          content:
+                                                                              Text('차단이 해제되었습니다.')),
+                                                                    );
+                                                                  }
                                                                 }
                                                               },
                                                               child: const Icon(
@@ -981,7 +1219,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                         ),
                                                         const SizedBox(
                                                             height: 4),
-                                                        Text(replyContent),
+                                                        Text(isBlocked
+                                                            ? "차단된 사용자의 댓글입니다."
+                                                            : replyContent),
                                                         const SizedBox(
                                                             height: 4),
                                                         Text(
