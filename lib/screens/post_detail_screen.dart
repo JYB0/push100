@@ -158,7 +158,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .then((snapshot) => snapshot.docs);
 
     _loadDeviceUidAndInitReactions();
-    _loadBlockedUsers();
     _refreshData();
   }
 
@@ -312,6 +311,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     if (!mounted) return;
 
+    _loadBlockedUsers();
     setState(() {
       _reactionFutures = _refreshReactions(); // ✅ 여기서 반드시 초기화
     });
