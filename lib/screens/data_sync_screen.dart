@@ -321,7 +321,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                       }
                     },
                   ),
-                  SizedBox(height: dynamicFontSize),
+                  const SizedBox(height: 8),
                   ElevatedButton.icon(
                       icon: Icon(
                         Icons.download,
@@ -368,7 +368,83 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                           }
                         }
                       }),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    icon: Icon(
+                      Icons.delete_forever,
+                      color: Colors.white,
+                      size: dynamicFontSize,
+                    ),
+                    label: Text(
+                      '계정 삭제하기',
+                      style: TextStyle(fontSize: dynamicFontSize),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.redPrimary,
+                    ),
+                    onPressed: () async {
+                      final result = await showOkCancelAlertDialog(
+                        context: context,
+                        title: '계정 삭제',
+                        message:
+                            '계정을 삭제하면 서버에 저장된\n모든 데이터가 영구적으로 삭제되며,\n복구할 수 없습니다.\n\n정말 삭제하시겠습니까?',
+                        okLabel: '삭제',
+                        cancelLabel: '취소',
+                        isDestructiveAction: true,
+                      );
+
+                      if (result == OkCancelResult.ok) {
+                        try {
+                          await FirebaseAuth.instance.currentUser?.delete();
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('계정이 삭제되었습니다.')),
+                            );
+                            Navigator.of(context).pushReplacement(
+                              PageRouteBuilder(
+                                transitionDuration:
+                                    const Duration(milliseconds: 500),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        SettingScreen(),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return SharedAxisTransition(
+                                    animation: animation,
+                                    secondaryAnimation: secondaryAnimation,
+                                    transitionType:
+                                        SharedAxisTransitionType.horizontal,
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'requires-recent-login') {
+                            // 다시 로그인 필요
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('보안을 위해 다시 로그인 후 시도해주세요.')),
+                              );
+                            }
+                          } else {
+                            // 기타 인증 관련 오류
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      '❌ 요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      }
+                    },
+                  ),
                 ],
               ),
             ),

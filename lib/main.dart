@@ -91,6 +91,20 @@ void main() async {
   );
 }
 
+Future<void> _checkUserStatus() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    try {
+      await user.reload(); // 서버에서 계정 상태 확인
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        await FirebaseAuth.instance.signOut(); // 자동 로그아웃
+        // ❗ 로그인 화면으로 이동 등 추가 처리
+      }
+    }
+  }
+}
+
 Future<void> initializeUid() async {
   final prefs = await SharedPreferences.getInstance();
   final uid = prefs.getString('device_uid');
@@ -126,7 +140,7 @@ Future<void> androidRequestNotificationPermissions() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final bool isInitialTestSet;
   final int initialWeek;
   final int initialDay;
@@ -141,6 +155,17 @@ class MyApp extends StatelessWidget {
     required this.initialLevel,
     required this.isTestMode,
   });
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    _checkUserStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,11 +230,11 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [
         Locale('ko'),
       ],
-      home: isInitialTestSet
+      home: widget.isInitialTestSet
           ? BottomNavigation(
-              initialWeek: initialWeek,
-              initialLevel: initialLevel,
-              isTestMode: isTestMode,
+              initialWeek: widget.initialWeek,
+              initialLevel: widget.initialLevel,
+              isTestMode: widget.isTestMode,
             )
           : const InitialTestScreen(),
     );
