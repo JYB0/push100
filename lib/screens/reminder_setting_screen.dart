@@ -142,7 +142,10 @@ class _ReminderSettingScreenState extends State<ReminderSettingScreen> {
                     context: context,
                     value: _selectedTime,
                     onChange: (newTime) {
-                      setState(() => _selectedTime = newTime);
+                      setState(() {
+                        _selectedTime = newTime;
+                        _hasCustomTime = true;
+                      });
                     },
                     is24HrFormat: false,
                     accentColor: AppColors.redPrimary,

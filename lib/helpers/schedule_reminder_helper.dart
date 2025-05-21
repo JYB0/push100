@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -6,6 +7,8 @@ import 'package:push100/main.dart'; // 알림 플러그인 접근을 위해 필�
 
 void scheduleWorkoutReminder(bool isTestMode) async {
   tz.initializeTimeZones(); // 📌 타임존 초기화
+  final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+  tz.setLocalLocation(tz.getLocation(timeZoneName));
 
   final prefs = await SharedPreferences.getInstance();
   final bool hasCustomTime = prefs.containsKey('reminder_hour') &&
@@ -20,15 +23,6 @@ void scheduleWorkoutReminder(bool isTestMode) async {
 
   // 📌 현재 시간 가져오기
   final now = tz.TZDateTime.now(tz.local);
-
-  // tz.TZDateTime scheduledDate = tz.TZDateTime(
-  //   tz.local,
-  //   now.year,
-  //   now.month,
-  //   now.day,
-  //   hour,
-  //   minute,
-  // ).add(Duration(days: intervalDays));
 
   final scheduledDate = hasCustomTime
       ? tz.TZDateTime(
