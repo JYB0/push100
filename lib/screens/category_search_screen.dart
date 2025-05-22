@@ -31,6 +31,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
       textFields: const [
         DialogTextField(
           hintText: '카테고리 이름',
+          maxLength: 13,
         ),
       ],
       okLabel: '생성',

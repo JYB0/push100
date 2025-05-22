@@ -9,6 +9,8 @@ import 'package:push100/main.dart';
 import 'package:push100/screens/category_search_screen.dart';
 import 'package:push100/screens/community_post_list_screen.dart';
 import 'package:collection/collection.dart';
+import 'package:push100/screens/my_comments_screen.dart';
+import 'package:push100/screens/my_posts_screen.dart';
 import 'package:push100/screens/post_detail_screen.dart';
 import 'package:push100/widgets/inline_adaptive_ad_widget.dart';
 
@@ -120,6 +122,82 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Push100'),
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            icon: const Icon(Icons.menu),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: AppColors.greyPrimary,
+          child: SafeArea(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.article),
+                  title: const Text('내가 쓴 글'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // 드로워 닫기
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      if (context.mounted) {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            transitionDuration:
+                                const Duration(milliseconds: 400),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const MyPostsScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return SharedAxisTransition(
+                                animation: animation,
+                                secondaryAnimation: secondaryAnimation,
+                                transitionType: SharedAxisTransitionType.scaled,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      }
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.comment),
+                  title: const Text('댓글 단 게시글'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // 드로워 닫기
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      if (context.mounted) {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            transitionDuration:
+                                const Duration(milliseconds: 400),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const MyCommentsScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return SharedAxisTransition(
+                                animation: animation,
+                                secondaryAnimation: secondaryAnimation,
+                                transitionType: SharedAxisTransitionType.scaled,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: CustomRefreshIndicator(
         onRefresh: () async {

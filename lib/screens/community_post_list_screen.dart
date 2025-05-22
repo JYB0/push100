@@ -314,11 +314,24 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
                     ),
                     onTap: () async {
                       final result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => PostDetailScreen(
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 400),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  PostDetailScreen(
                             postId: post.id,
                             category: post['category'] ?? '카테고리 없음',
                           ),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return SharedAxisTransition(
+                              animation: animation,
+                              secondaryAnimation: secondaryAnimation,
+                              transitionType: SharedAxisTransitionType
+                                  .scaled, // 또는 .horizontal
+                              child: child,
+                            );
+                          },
                         ),
                       );
                       if (result == true) {

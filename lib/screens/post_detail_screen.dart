@@ -287,10 +287,46 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     try {
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(widget.postId)
-          .delete();
+      final postRef =
+          FirebaseFirestore.instance.collection('posts').doc(widget.postId);
+
+      // 🔴 댓글 삭제
+      final commentsSnapshot = await postRef.collection('comments').get();
+      for (final comment in commentsSnapshot.docs) {
+        // 대댓글도 삭제
+        final repliesSnapshot =
+            await comment.reference.collection('replies').get();
+        for (final reply in repliesSnapshot.docs) {
+          await reply.reference.delete();
+        }
+
+        await comment.reference.delete();
+      }
+
+      // 🔴 좋아요 삭제
+      final likesSnapshot = await postRef.collection('likes').get();
+      for (final like in likesSnapshot.docs) {
+        await like.reference.delete();
+      }
+
+      // 🔴 싫어요 삭제
+      final dislikesSnapshot = await postRef.collection('dislikes').get();
+      for (final dislike in dislikesSnapshot.docs) {
+        await dislike.reference.delete();
+      }
+
+      // 🔴 신고 삭제
+      final reportsSnapshot = await postRef.collection('reports').get();
+      for (final report in reportsSnapshot.docs) {
+        await report.reference.delete();
+      }
+
+      // ✅ 마지막으로 게시글 삭제
+      await postRef.delete();
+      // await FirebaseFirestore.instance
+      //     .collection('posts')
+      //     .doc(widget.postId)
+      //     .delete();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -368,6 +404,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'passwordHash': hash,
         'timestamp': Timestamp.now(),
         'deviceUid': _deviceUid,
+        'postId': widget.postId,
+        'category': widget.category,
       });
     } else {
       await FirebaseFirestore.instance
@@ -380,6 +418,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'passwordHash': hash,
         'timestamp': Timestamp.now(),
         'deviceUid': _deviceUid,
+        'postId': widget.postId,
+        'category': widget.category,
       });
     }
 
