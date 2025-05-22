@@ -98,134 +98,185 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               }
 
               final records = snapshot.data!;
-              return ListView.builder(
-                itemCount: records.length,
-                itemBuilder: (context, index) {
-                  final originalIndex = index;
-                  final record = records[index];
-                  final date = record['date'];
-                  final plannedReps = record['plannedReps'] as List<int>;
-                  final userReps = record['userReps'] as List<int>;
-                  final week = record['week'];
-                  final day = record['day'];
-                  final level = record['level'];
-                  final totalPushups =
-                      userReps.fold<int>(0, (sum, reps) => sum + reps);
+              int totalPushupsSum = records.fold<int>(0, (sum, r) {
+                final userReps = r['userReps'] as List<int>;
+                return sum + userReps.fold<int>(0, (s, reps) => s + reps);
+              });
 
-                  final durationSeconds = record['durationSeconds'] ?? 0;
-                  final durationMinutes = durationSeconds ~/ 60;
+              int totalDuration = records.fold<int>(0, (sum, r) {
+                final raw = r['durationSeconds'];
+                final duration = (raw is int)
+                    ? raw
+                    : int.tryParse(raw?.toString() ?? '0') ?? 0;
+                return sum + duration;
+              });
 
-                  return Card(
-                    margin: const EdgeInsets.all(8.0),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 16.0, left: 16, right: 16, top: 4),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "$date",
-                                    style: TextStyle(
-                                      fontSize: dynamicFontSize,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Week $week, Day $day, $level",
-                                    style: TextStyle(
-                                      fontSize: dynamicFontSize * 0.8,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    "총 푸쉬업 갯수 : $totalPushups개",
-                                    style: TextStyle(
-                                      fontSize: dynamicFontSize * 0.85,
-                                      color: Colors.grey[800],
-                                    ),
-                                  ),
-                                  if (durationSeconds != null &&
-                                      durationSeconds > 0)
-                                    Text(
-                                      durationSeconds >= 60
-                                          ? "운동 시간 : $durationMinutes분"
-                                          : "운동 시간 : $durationSeconds초",
-                                      style: TextStyle(
-                                        fontSize: dynamicFontSize * 0.8,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete,
-                                  color: AppColors.redPrimary,
-                                  size: dynamicFontSize * 1.5,
-                                ),
-                                onPressed: () async {
-                                  await _confirmDeleteRecord(
-                                      context, originalIndex);
-                                },
-                              ),
-                            ],
+              final durationMinutes = totalDuration ~/ 60;
+              final durationSeconds = totalDuration % 60;
+
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16, left: 16, top: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "총 푸쉬업: $totalPushupsSum개",
+                          style: TextStyle(
+                            fontSize: dynamicFontSize * 0.95,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            children: List.generate(plannedReps.length, (i) {
-                              final planned = plannedReps[i];
-                              final user = userReps[i];
-                              final percent = user / planned;
-
-                              return Container(
-                                width: itemSize,
-                                height: itemSize,
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: percent >= 1.0
-                                        ? AppColors.greenPrimary
-                                        : AppColors.redPrimary,
-                                    width: itemSize * 0.05,
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    "$user/$planned",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: itemSize * 0.3,
-                                      fontWeight: FontWeight.bold,
-                                      color: percent >= 1.0
-                                          ? AppColors.greenPrimary
-                                          : AppColors.redPrimary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
+                        ),
+                        Text(
+                          "총 운동 시간: "
+                          "${durationMinutes > 0 ? '$durationMinutes분 ' : ''}"
+                          "${durationSeconds > 0 ? '$durationSeconds초' : ''}",
+                          style: TextStyle(
+                            fontSize: dynamicFontSize * 0.9,
+                            color: Colors.grey[800],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: records.length,
+                      itemBuilder: (context, index) {
+                        final originalIndex = index;
+                        final record = records[index];
+                        final date = record['date'];
+                        final plannedReps = record['plannedReps'] as List<int>;
+                        final userReps = record['userReps'] as List<int>;
+                        final week = record['week'];
+                        final day = record['day'];
+                        final level = record['level'];
+                        final totalPushups =
+                            userReps.fold<int>(0, (sum, reps) => sum + reps);
+
+                        final durationSeconds = record['durationSeconds'] ?? 0;
+                        final durationMinutes = durationSeconds ~/ 60;
+
+                        return Card(
+                          margin: const EdgeInsets.all(8.0),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 16.0, left: 16, right: 16, top: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "$date",
+                                          style: TextStyle(
+                                            fontSize: dynamicFontSize,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Week $week, Day $day, $level",
+                                          style: TextStyle(
+                                            fontSize: dynamicFontSize * 0.8,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          "총 푸쉬업 갯수 : $totalPushups개",
+                                          style: TextStyle(
+                                            fontSize: dynamicFontSize * 0.85,
+                                            color: Colors.grey[800],
+                                          ),
+                                        ),
+                                        if (durationSeconds != null &&
+                                            durationSeconds > 0)
+                                          Text(
+                                            durationSeconds >= 60
+                                                ? "운동 시간 : $durationMinutes분"
+                                                : "운동 시간 : $durationSeconds초",
+                                            style: TextStyle(
+                                              fontSize: dynamicFontSize * 0.8,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: AppColors.redPrimary,
+                                        size: dynamicFontSize * 1.5,
+                                      ),
+                                      onPressed: () async {
+                                        await _confirmDeleteRecord(
+                                            context, originalIndex);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: screenHeight * 0.01),
+                                Wrap(
+                                  spacing: 8.0,
+                                  runSpacing: 8.0,
+                                  children:
+                                      List.generate(plannedReps.length, (i) {
+                                    final planned = plannedReps[i];
+                                    final user = userReps[i];
+                                    final percent = user / planned;
+
+                                    return Container(
+                                      width: itemSize,
+                                      height: itemSize,
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: percent >= 1.0
+                                              ? AppColors.greenPrimary
+                                              : AppColors.redPrimary,
+                                          width: itemSize * 0.05,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          "$user/$planned",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: itemSize * 0.3,
+                                            fontWeight: FontWeight.bold,
+                                            color: percent >= 1.0
+                                                ? AppColors.greenPrimary
+                                                : AppColors.redPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               );
             },
           ),
