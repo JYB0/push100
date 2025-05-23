@@ -157,22 +157,27 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
                   final nickname = data['nickname'] ?? '익명';
                   final views = data['views'] ?? 0;
                   final likes = data['likesCount'] ?? 0;
-                  final comments = data['commentCount'] ?? 0;
+                  final commentCount = data['commentCount'] ?? 0;
                   final timestamp = data['timestamp'] as Timestamp?;
 
                   return ListTile(
                     title: Row(
+                      mainAxisSize: MainAxisSize.min, // Row 너비 최소화
                       children: [
-                        Text(title),
-                        if (comments > 0) ...[
+                        Flexible(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        if (commentCount > 0) ...[
                           const SizedBox(width: 6),
                           Text(
-                            '[$comments]',
-                            style: const TextStyle(
-                              color: AppColors.redPrimary,
-                            ),
+                            '[$commentCount]',
+                            style: const TextStyle(color: AppColors.redPrimary),
                           ),
-                        ]
+                        ],
                       ],
                     ),
                     subtitle: Row(

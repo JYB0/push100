@@ -273,8 +273,15 @@ class _CommunityPostListScreenState extends State<CommunityPostListScreen>
 
                   final listTile = ListTile(
                     title: Row(
+                      mainAxisSize: MainAxisSize.min, // Row 너비 최소화
                       children: [
-                        Text(title),
+                        Flexible(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                         if (commentCount > 0) ...[
                           const SizedBox(width: 6),
                           Text(

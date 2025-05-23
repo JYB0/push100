@@ -462,12 +462,21 @@ Widget _buildPopularPostTile(BuildContext context, DocumentSnapshot post) {
 
   return ListTile(
     title: Row(
+      mainAxisSize: MainAxisSize.min, // Row 너비 최소화
       children: [
-        Text(title),
+        Flexible(
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
         if (commentCount > 0) ...[
           const SizedBox(width: 6),
-          Text('[$commentCount]',
-              style: const TextStyle(color: AppColors.redPrimary)),
+          Text(
+            '[$commentCount]',
+            style: const TextStyle(color: AppColors.redPrimary),
+          ),
         ],
       ],
     ),

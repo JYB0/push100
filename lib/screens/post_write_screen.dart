@@ -248,7 +248,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _titleController,
-                    maxLength: 23,
+                    maxLength: 30,
                     decoration: const InputDecoration(
                       hintText: '제목',
                       counterText: '', //글자수 제한 가리기
