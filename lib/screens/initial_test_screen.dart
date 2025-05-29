@@ -176,6 +176,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
 
                       await SharedPreferencesHelper.saveProgress(
                           week, 1, level);
+                      await SharedPreferencesHelper.saveIsTestMode(false);
 
                       final user = FirebaseAuth.instance.currentUser;
                       if (user != null) {

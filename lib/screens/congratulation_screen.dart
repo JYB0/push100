@@ -43,7 +43,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     const colors = [
       AppColors.greenPrimary,
       AppColors.redPrimary,
-      AppColors.yellowLight
+      AppColors.yellowPrimary
     ];
 
     int frameTime = 1000 ~/ 24;

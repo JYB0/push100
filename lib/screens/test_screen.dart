@@ -174,6 +174,7 @@ class TestScreenState extends State<TestScreen> {
                             1,
                             widget.currentLevel,
                           );
+                          await SharedPreferencesHelper.saveIsTestMode(false);
 
                           if (user != null) {
                             await FirebaseFirestore.instance
@@ -199,6 +200,7 @@ class TestScreenState extends State<TestScreen> {
                             1,
                             widget.currentLevel,
                           );
+                          await SharedPreferencesHelper.saveIsTestMode(false);
 
                           if (user != null) {
                             await FirebaseFirestore.instance
@@ -236,6 +238,7 @@ class TestScreenState extends State<TestScreen> {
 
                       await SharedPreferencesHelper.saveProgress(
                           nextWeek, 1, level);
+                      await SharedPreferencesHelper.saveIsTestMode(false);
 
                       if (user != null) {
                         await FirebaseFirestore.instance
