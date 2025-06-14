@@ -69,6 +69,8 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     }
 
     hasMore = snapshot.docs.length == 20;
+
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -108,6 +110,7 @@ class _CommunityCategoryScreenState extends State<CommunityCategoryScreen> {
     }
 
     isLoading = false;
+    if (!mounted) return;
     setState(() {});
   }
 

@@ -123,6 +123,16 @@ Future<void> requestNotificationPermissions() async {
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestNotificationsPermission();
 
+  try {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
+  } catch (e) {
+    // 일부 기기나 OS에서는 예외가 발생할 수 있음
+    debugPrint('requestExactAlarmsPermission error: $e');
+  }
+
   // 📌 iOS 알림 권한 요청
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<

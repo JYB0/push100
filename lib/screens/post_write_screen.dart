@@ -98,6 +98,7 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
     '후레아들',
     '후장',
     '희쭈그리',
+    '새끼',
   ]);
 
   final RegExp koreanBadWordPattern = RegExp(

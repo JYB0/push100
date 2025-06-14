@@ -387,7 +387,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
                         context: context,
                         title: '계정 삭제',
                         message:
-                            '계정을 삭제하면 서버에 저장된\n모든 데이터가 영구적으로 삭제되며,\n복구할 수 없습니다.\n\n정말 삭제하시겠습니까?',
+                            '계정을 삭제하면\nPush100, Squat200 등 연동된\n모든 앱의 서버 데이터가\n영구적으로 삭제되며,\n복구할 수 없습니다.\n\n정말 삭제하시겠습니까?',
                         okLabel: '삭제',
                         cancelLabel: '취소',
                         isDestructiveAction: true,

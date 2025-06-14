@@ -78,7 +78,10 @@ class _MyCommentsScreenState extends State<MyCommentsScreen> {
       }
     }
 
-    postCategories = categoryMap;
+    setState(() {
+      postCategories = categoryMap;
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchMorePosts() async {

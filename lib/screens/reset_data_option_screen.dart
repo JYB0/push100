@@ -129,6 +129,23 @@ class _ResetDataOptionScreenState extends State<ResetDataOptionScreen> {
     }
   }
 
+  Future<void> clearPush100FirestoreData(User user) async {
+    final userDoc =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    await userDoc.update({
+      'initialPushupCount': FieldValue.delete(),
+      'currentWeek': FieldValue.delete(),
+      'currentDay': FieldValue.delete(),
+      'level': FieldValue.delete(),
+      'isTestMode': FieldValue.delete(),
+      'records': FieldValue.delete(),
+      'lastUpdated': FieldValue.delete(),
+    }).catchError((e) {
+      debugPrint("❗️Push100 Firebase 데이터 삭제 실패: $e");
+    });
+  }
+
   Future<void> _resetAllData(BuildContext context) async {
     setState(() => _isProcessing = true);
     final user = FirebaseAuth.instance.currentUser;
@@ -152,10 +169,11 @@ class _ResetDataOptionScreenState extends State<ResetDataOptionScreen> {
 
       if (user != null) {
         try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .delete();
+          // await FirebaseFirestore.instance
+          //     .collection('users')
+          //     .doc(user.uid)
+          //     .delete();
+          await clearPush100FirestoreData(user);
         } catch (e) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
