@@ -340,24 +340,31 @@ class WorkoutScreenState extends State<WorkoutScreen>
 
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: spacing / 2),
-                child: Container(
-                  width: circleSize,
-                  height: circleSize,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: borderColor,
-                    border: Border.all(
+                child: GestureDetector(
+                  onTap: () {
+                    if (index < currentSet) {
+                      _editSetReps(index);
+                    }
+                  },
+                  child: Container(
+                    width: circleSize,
+                    height: circleSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
                       color: borderColor,
-                      width: textWidth,
+                      border: Border.all(
+                        color: borderColor,
+                        width: textWidth,
+                      ),
                     ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "${userReps[index]}",
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "${userReps[index]}",
+                      style: TextStyle(
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
                   ),
                 ),
@@ -377,6 +384,50 @@ class WorkoutScreenState extends State<WorkoutScreen>
       });
       await SharedPreferencesHelper.setWorkoutTutorialSeen(true);
     }
+  }
+
+  Future<void> _editSetReps(int index) async {
+    final result = await showTextInputDialog(
+      context: context,
+      title: '세트 수정',
+      message: '세트 ${index + 1}의 수행 횟수를 입력하세요.',
+      textFields: [
+        DialogTextField(
+          hintText: '수행한 갯수',
+          initialText: userReps[index].toString(),
+          keyboardType: TextInputType.number,
+        ),
+      ],
+      isDestructiveAction: true,
+    );
+
+    if (!mounted || result == null) return;
+    if (result.isEmpty || result.first.trim().isEmpty) {
+      // 빈 입력
+      if (!mounted) return;
+      showOkAlertDialog(
+        context: context,
+        title: '입력 오류',
+        message: '숫자를 입력해주세요.',
+      );
+      return;
+    }
+
+    final newValue = int.tryParse(result.first.trim());
+    if (!mounted) return;
+    if (newValue == null) {
+      // 숫자 변환 실패
+      showOkAlertDialog(
+        context: context,
+        title: '입력 오류',
+        message: '유효한 숫자를 입력해주세요.',
+      );
+      return;
+    }
+
+    setState(() {
+      userReps[index] = newValue;
+    });
   }
 
   Future<void> _completeWorkout() async {

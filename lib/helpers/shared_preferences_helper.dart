@@ -187,14 +187,19 @@ class SharedPreferencesHelper {
   }
 
   // Delete a workout record by index
-  static Future<void> deleteWorkoutRecord(int index) async {
+  static Future<void> deleteWorkoutRecordByContent(
+      Map<String, dynamic> target) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> records = prefs.getStringList('workoutRecords') ?? [];
 
-    if (index >= 0 && index < records.length) {
-      records.removeAt(index); // 해당 인덱스 기록 삭제
-      await prefs.setStringList('workoutRecords', records);
-    }
+    final targetString =
+        '${target['date']}:${target['week']}:${target['day']}:${target['level']}:'
+        '${(target['plannedReps'] as List<int>).join(",")}:${(target['userReps'] as List<int>).join(",")}'
+        ':${target['durationSeconds']}';
+
+    records.removeWhere((r) => r == targetString);
+
+    await prefs.setStringList('workoutRecords', records);
   }
 
   // 튜토리얼(예: 세트 완료 안내)을 봤는지 여부 저장

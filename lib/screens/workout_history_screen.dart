@@ -27,12 +27,13 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     });
   }
 
-  Future<void> _deleteRecord(int index) async {
+  Future<void> _deleteRecord(Map<String, dynamic> record) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     setState(() => _isLoading = true); // ⬅️ 로딩 시작
     try {
-      await SharedPreferencesHelper.deleteWorkoutRecord(index);
+      await SharedPreferencesHelper.deleteWorkoutRecordByContent(record);
+
       scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text("✅ 기록이 삭제되었습니다.")),
       );
@@ -47,11 +48,20 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     }
   }
 
-  Future<void> _confirmDeleteRecord(BuildContext context, int index) async {
+  Future<void> _confirmDeleteRecord(
+      BuildContext context, Map<String, dynamic> record) async {
+    final date = record['date'] ?? '';
+    final week = record['week'];
+    final day = record['day'];
+    final level = record['level'];
+
+    final message =
+        '$date (Week $week, Day $day, $level)의\n운동 기록을 삭제하시겠습니까?\n삭제시 되돌릴 수 없습니다.';
+
     final result = await showModalActionSheet<bool>(
       context: context,
       title: '기록 삭제',
-      message: '이 운동 기록을 삭제하시겠습니까?',
+      message: message,
       cancelLabel: '취소',
       actions: [
         const SheetAction(
@@ -65,7 +75,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     // 사용자가 "삭제"를 선택한 경우에만 삭제 진행
     if (result == true) {
       // 삭제 작업 수행
-      await _deleteRecord(index);
+      await _deleteRecord(record);
     }
   }
 
@@ -145,7 +155,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                     child: ListView.builder(
                       itemCount: records.length,
                       itemBuilder: (context, index) {
-                        final originalIndex = index;
+                        // final originalIndex = index;
                         final record = records[index];
                         final date = record['date'];
                         final plannedReps = record['plannedReps'] as List<int>;
@@ -223,7 +233,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                                       ),
                                       onPressed: () async {
                                         await _confirmDeleteRecord(
-                                            context, originalIndex);
+                                            context, record);
                                       },
                                     ),
                                   ],
