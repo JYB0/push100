@@ -8,6 +8,7 @@ import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/helpers/workout_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
+import 'package:push100/screens/tutorial_screen.dart';
 
 class InitialTestScreen extends StatefulWidget {
   const InitialTestScreen({super.key});
@@ -195,13 +196,28 @@ class InitialTestScreenState extends State<InitialTestScreen> {
 
                       scheduleWorkoutReminder(false);
 
-                      if (context.mounted) {
+                      final seen =
+                          await SharedPreferencesHelper.getAppTutorialSeen();
+
+                      if (!context.mounted) return;
+
+                      if (seen) {
                         _navigateWithAnimation(
                           context,
                           BottomNavigation(
                             initialWeek: week,
                             initialLevel: level,
                             isTestMode: false,
+                          ),
+                        );
+                      } else {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => TutorialScreen(
+                              initialWeek: week,
+                              initialLevel: level,
+                              isTestMode: false,
+                            ),
                           ),
                         );
                       }

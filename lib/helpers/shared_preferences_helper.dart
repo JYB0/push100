@@ -213,4 +213,16 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('workoutTutorialSeen') ?? false; // 기본값: 안 봄
   }
+
+  // 앱 튜토리얼을 봤는지 여부 저장
+  static Future<void> setAppTutorialSeen(bool seen) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('appTutorialSeen', seen);
+  }
+
+// 앱 튜토리얼을 봤는지 여부 확인
+  static Future<bool> getAppTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('appTutorialSeen') ?? false; // 기본값: 안 봄
+  }
 }

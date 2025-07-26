@@ -16,6 +16,7 @@ import 'package:push100/helpers/firebase_sync_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:push100/screens/initial_test_screen.dart';
+import 'package:push100/screens/tutorial_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -33,6 +34,7 @@ void main() async {
   await initializeUid();
   await dotenv.load(fileName: ".env");
   MobileAds.instance.initialize();
+  await debugResetTutorialFlag();
 
   final isDateFixed = await SharedPreferencesHelper.getDateFixed();
   if (!isDateFixed) {
@@ -71,6 +73,9 @@ void main() async {
   await androidRequestNotificationPermissions();
 
   final bool isInitialTestSet = await checkInitialTest();
+  final bool hasSeenTutorial =
+      await SharedPreferencesHelper.getAppTutorialSeen();
+
   final Map<String, dynamic> progress =
       await SharedPreferencesHelper.getProgress();
   final bool isTestMode = await SharedPreferencesHelper.getIsTestMode();
@@ -83,6 +88,7 @@ void main() async {
   runApp(
     MyApp(
       isInitialTestSet: isInitialTestSet,
+      hasSeenTutorial: hasSeenTutorial,
       initialWeek: progress['currentWeek'],
       initialDay: progress['currentDay'],
       initialLevel: progress['level'],
@@ -150,8 +156,15 @@ Future<void> androidRequestNotificationPermissions() async {
   }
 }
 
+Future<void> debugResetTutorialFlag() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('appTutorialSeen', false);
+  await prefs.setInt('initialPushupCount', 10);
+}
+
 class MyApp extends StatefulWidget {
   final bool isInitialTestSet;
+  final bool hasSeenTutorial;
   final int initialWeek;
   final int initialDay;
   final String initialLevel;
@@ -160,6 +173,7 @@ class MyApp extends StatefulWidget {
   const MyApp({
     super.key,
     required this.isInitialTestSet,
+    required this.hasSeenTutorial,
     required this.initialWeek,
     required this.initialDay,
     required this.initialLevel,
@@ -240,13 +254,19 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: const [
         Locale('ko'),
       ],
-      home: widget.isInitialTestSet
-          ? BottomNavigation(
+      home: widget.isInitialTestSet && !widget.hasSeenTutorial
+          ? TutorialScreen(
               initialWeek: widget.initialWeek,
               initialLevel: widget.initialLevel,
               isTestMode: widget.isTestMode,
             )
-          : const InitialTestScreen(),
+          : widget.isInitialTestSet
+              ? BottomNavigation(
+                  initialWeek: widget.initialWeek,
+                  initialLevel: widget.initialLevel,
+                  isTestMode: widget.isTestMode,
+                )
+              : const InitialTestScreen(),
     );
   }
 }

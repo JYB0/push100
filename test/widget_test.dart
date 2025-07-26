@@ -16,6 +16,7 @@ void main() {
     await tester.pumpWidget(
       const MyApp(
         isInitialTestSet: false,
+        hasSeenTutorial: true,
         initialWeek: 1,
         initialDay: 1,
         initialLevel: '초급',
