@@ -34,7 +34,6 @@ void main() async {
   await initializeUid();
   await dotenv.load(fileName: ".env");
   MobileAds.instance.initialize();
-  await debugResetTutorialFlag();
 
   final isDateFixed = await SharedPreferencesHelper.getDateFixed();
   if (!isDateFixed) {
@@ -73,6 +72,7 @@ void main() async {
   await androidRequestNotificationPermissions();
 
   final bool isInitialTestSet = await checkInitialTest();
+  final bool isInitialTestDone = await checkInitialTestBool();
   final bool hasSeenTutorial =
       await SharedPreferencesHelper.getAppTutorialSeen();
 
@@ -87,7 +87,7 @@ void main() async {
 
   runApp(
     MyApp(
-      isInitialTestSet: isInitialTestSet,
+      isInitialTestSet: isInitialTestDone || isInitialTestSet,
       hasSeenTutorial: hasSeenTutorial,
       initialWeek: progress['currentWeek'],
       initialDay: progress['currentDay'],
@@ -154,12 +154,6 @@ Future<void> androidRequestNotificationPermissions() async {
   if (await Permission.notification.isDenied) {
     await Permission.notification.request();
   }
-}
-
-Future<void> debugResetTutorialFlag() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('appTutorialSeen', false);
-  await prefs.setInt('initialPushupCount', 10);
 }
 
 class MyApp extends StatefulWidget {
@@ -274,6 +268,10 @@ class _MyAppState extends State<MyApp> {
 Future<bool> checkInitialTest() async {
   final pushupCount = await SharedPreferencesHelper.getInitialPushupCount();
   return pushupCount > 0;
+}
+
+Future<bool> checkInitialTestBool() async {
+  return await SharedPreferencesHelper.isInitialTestDone();
 }
 
 class AppColors {

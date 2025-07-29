@@ -160,15 +160,15 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                     onPressed: () async {
                       _dismissKeyboard();
 
-                      if (pushupCount == 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("❗ 최소 1개 이상 입력해주세요."),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                        return;
-                      }
+                      // if (pushupCount == 0) {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(
+                      //       content: Text("❗ 최소 1개 이상 입력해주세요."),
+                      //       duration: Duration(seconds: 2),
+                      //     ),
+                      //   );
+                      //   return;
+                      // }
 
                       final initialPlan = determineInitialPlan(pushupCount);
                       final int week = initialPlan['week'];
@@ -178,6 +178,7 @@ class InitialTestScreenState extends State<InitialTestScreen> {
                       await SharedPreferencesHelper.saveProgress(
                           week, 1, level);
                       await SharedPreferencesHelper.saveIsTestMode(false);
+                      await SharedPreferencesHelper.setInitialTestDone(true);
 
                       final user = FirebaseAuth.instance.currentUser;
                       if (user != null) {

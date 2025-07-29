@@ -225,4 +225,16 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('appTutorialSeen') ?? false; // 기본값: 안 봄
   }
+
+  // 저장
+  static Future<void> setInitialTestDone(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('initial_test_done', value);
+  }
+
+// 불러오기
+  static Future<bool> isInitialTestDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('initial_test_done') ?? false;
+  }
 }
