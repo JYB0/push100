@@ -10,7 +10,7 @@ import 'package:push100/helpers/ad_helper.dart';
 import 'package:push100/helpers/firebase_sync_helper.dart';
 import 'package:push100/helpers/schedule_reminder_helper.dart';
 import 'package:push100/screens/daily_workout_complete_screen.dart';
-import 'package:vibration/vibration.dart';
+// import 'package:vibration/vibration.dart';
 
 import 'package:push100/main.dart';
 import 'package:push100/helpers/workout_helper.dart';
@@ -37,7 +37,7 @@ class WorkoutScreen extends StatefulWidget {
 }
 
 class WorkoutScreenState extends State<WorkoutScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _animationController;
   late Animation<Color?> _colorAnimation;
 
@@ -56,6 +56,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
   List<int> userReps = [];
 
   late DateTime _startTime;
+  DateTime? restStartTime;
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     userReps = [];
     _loadWorkoutPlan();
     GoogleFonts.firaCode().copyWith();
+    WidgetsBinding.instance.addObserver(this);
 
     _animationController = AnimationController(
       vsync: this,
@@ -92,6 +94,20 @@ class WorkoutScreenState extends State<WorkoutScreen>
         currentTargetReps++;
       }
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        isResting &&
+        restStartTime != null) {
+      final now = DateTime.now();
+      final diff = now.difference(restStartTime!).inSeconds;
+
+      setState(() {
+        elapsedSeconds = diff.clamp(0, restTime);
+      });
+    }
   }
 
   void _decreaseReps() {
@@ -127,16 +143,20 @@ class WorkoutScreenState extends State<WorkoutScreen>
     setState(() {
       elapsedSeconds = 0;
       isResting = true;
+      restStartTime = DateTime.now();
     });
+
+    scheduleRestCompleteNotification(restTime);
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         elapsedSeconds += 1;
       });
 
-      if (elapsedSeconds == restTime) {
-        _showRestCompleteNotification();
-      }
+      // if (elapsedSeconds == restTime) {
+      //   flutterLocalNotificationsPlugin.cancel(1000);
+      //   _showRestCompleteNotification();
+      // }
     });
   }
 
@@ -162,42 +182,42 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  void _showRestCompleteNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'rest_complete_channel',
-      'Rest Complete',
-      channelDescription: 'Notification for rest completion',
-      importance: Importance.max,
-      priority: Priority.max,
-      icon: 'transparent',
-      color: AppColors.greenPrimary,
-      enableVibration: true,
-      playSound: true,
-      sound: RawResourceAndroidNotificationSound('ping'),
-      largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
-    );
+  // void _showRestCompleteNotification() async {
+  //   const AndroidNotificationDetails androidPlatformChannelSpecifics =
+  //       AndroidNotificationDetails(
+  //     'rest_complete_channel',
+  //     'Rest Complete',
+  //     channelDescription: 'Notification for rest completion',
+  //     importance: Importance.max,
+  //     priority: Priority.max,
+  //     icon: 'transparent',
+  //     color: AppColors.greenPrimary,
+  //     enableVibration: true,
+  //     playSound: true,
+  //     sound: RawResourceAndroidNotificationSound('ping'),
+  //     largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+  //   );
 
-    const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
-      sound: 'ping.wav',
-    );
+  //   const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
+  //     sound: 'ping.wav',
+  //   );
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: darwinDetails,
-    );
+  //   const NotificationDetails platformChannelSpecifics = NotificationDetails(
+  //     android: androidPlatformChannelSpecifics,
+  //     iOS: darwinDetails,
+  //   );
 
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      '휴식 완료',
-      '필요하면 더 쉬어도 괜찮아요.', //다음 세트를 시작할 시간이에요!\n필요하면 더 쉬어도 괜찮아요.
-      platformChannelSpecifics,
-    );
+  //   await flutterLocalNotificationsPlugin.show(
+  //     1000,
+  //     '휴식 완료',
+  //     '필요하면 더 쉬어도 괜찮아요.', //다음 세트를 시작할 시간이에요!\n필요하면 더 쉬어도 괜찮아요.
+  //     platformChannelSpecifics,
+  //   );
 
-    if (await Vibration.hasVibrator() ?? false) {
-      Vibration.vibrate(duration: 500);
-    }
-  }
+  //   if (await Vibration.hasVibrator() ?? false) {
+  //     Vibration.vibrate(duration: 500);
+  //   }
+  // }
 
   void _showMotivationDialog() {
     if (_isMotivationDialogVisible) return;
@@ -868,6 +888,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.stop();
     }
     _animationController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

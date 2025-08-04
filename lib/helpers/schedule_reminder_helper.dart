@@ -3,7 +3,54 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:push100/main.dart'; // 알림 플러그인 접근을 위해 필요
+import 'package:push100/main.dart';
+import 'package:vibration/vibration.dart'; // 알림 플러그인 접근을 위해 필요
+
+Future<void> scheduleRestCompleteNotification(int secondsFromNow) async {
+  // ✅ 타임존 초기화
+  tz.initializeTimeZones();
+  final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+  tz.setLocalLocation(tz.getLocation(timeZoneName));
+
+  // ✅ 알림 울릴 시간 설정
+  final scheduledDate =
+      tz.TZDateTime.now(tz.local).add(Duration(seconds: secondsFromNow));
+
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'rest_complete_channel', // 고유 채널 ID
+    'Rest Complete', // 채널 이름
+    channelDescription: '세트 간 휴식 타이머 알림', // 채널 설명
+    importance: Importance.max,
+    priority: Priority.max,
+    icon: 'transparent',
+    color: AppColors.greenPrimary,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound('ping'),
+    largeIcon: DrawableResourceAndroidBitmap('large_notification_icon'),
+  );
+
+  const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+    sound: 'ping.wav',
+  );
+
+  const NotificationDetails platformDetails =
+      NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+  await flutterLocalNotificationsPlugin.zonedSchedule(
+    1000, // 알림 ID (다른 ID와 겹치지 않도록 고유하게)
+    '휴식 완료',
+    '필요하면 더 쉬어도 괜찮아요.',
+    scheduledDate,
+    platformDetails,
+    uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+  );
+
+  if (await Vibration.hasVibrator() ?? false) {
+    Vibration.vibrate(duration: 500);
+  }
+}
 
 void scheduleWorkoutReminder(bool isTestMode) async {
   tz.initializeTimeZones(); // 📌 타임존 초기화
