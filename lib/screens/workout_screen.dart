@@ -633,6 +633,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     } else {
       userReps[currentSet] = currentTargetReps;
       _saveWorkoutRecord();
+      flutterLocalNotificationsPlugin.cancel(1000);
       await _completeWorkout();
       // _showWorkoutCompleteNotification();
       // if (AdHelper.isRewardedAdLoaded) {

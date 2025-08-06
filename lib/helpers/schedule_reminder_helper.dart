@@ -42,8 +42,6 @@ Future<void> scheduleRestCompleteNotification(int secondsFromNow) async {
     '필요하면 더 쉬어도 괜찮아요.',
     scheduledDate,
     platformDetails,
-    uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime,
     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
   );
 
@@ -116,8 +114,6 @@ void scheduleWorkoutReminder(bool isTestMode) async {
       body,
       scheduledDate,
       platformDetails,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time, // 매일 같은 시간 반복
     );
@@ -129,8 +125,6 @@ void scheduleWorkoutReminder(bool isTestMode) async {
       body,
       scheduledDate,
       platformDetails,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
