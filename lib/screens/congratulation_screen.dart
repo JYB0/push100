@@ -224,69 +224,70 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: () async {
-                          setState(() {
-                            _showButtons = false;
-                            isCapturing = true;
-                          });
+                      if (Platform.isIOS) const SizedBox(width: 12),
+                      if (Platform.isIOS)
+                        ElevatedButton(
+                          onPressed: () async {
+                            setState(() {
+                              _showButtons = false;
+                              isCapturing = true;
+                            });
 
-                          await Future.delayed(
-                              const Duration(milliseconds: 300)); // 버튼 사라질 시간
+                            await Future.delayed(
+                                const Duration(milliseconds: 300)); // 버튼 사라질 시간
 
-                          final image = await _screenshotController.capture();
-                          if (image != null) {
-                            // ✅ 저장 권한 요청
-                            PermissionStatus status;
-                            if (Platform.isAndroid) {
-                              status = await Permission.photos.request();
-                            } else {
-                              status = await Permission.storage.request();
+                            final image = await _screenshotController.capture();
+                            if (image != null) {
+                              // ✅ 저장 권한 요청
+                              PermissionStatus status;
+                              if (Platform.isAndroid) {
+                                status = await Permission.photos.request();
+                              } else {
+                                status = await Permission.storage.request();
+                              }
+
+                              if (status.isGranted) {
+                                await ImageGallerySaverPlus.saveImage(
+                                  image,
+                                  quality: 100,
+                                  name:
+                                      'push100_${DateTime.now().millisecondsSinceEpoch}',
+                                );
+
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("📸 갤러리에 저장되었어요!")),
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("❗ 저장 권한이 필요합니다.")),
+                                  );
+                                }
+                              }
                             }
 
-                            if (status.isGranted) {
-                              await ImageGallerySaverPlus.saveImage(
-                                image,
-                                quality: 100,
-                                name:
-                                    'push100_${DateTime.now().millisecondsSinceEpoch}',
-                              );
-
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("📸 갤러리에 저장되었어요!")),
-                                );
-                              }
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("❗ 저장 권한이 필요합니다.")),
-                                );
-                              }
-                            }
-                          }
-
-                          setState(() {
-                            _showButtons = true;
-                            isCapturing = false;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.redPrimary,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.05,
-                            vertical: dynamicFontSize * 1,
+                            setState(() {
+                              _showButtons = true;
+                              isCapturing = false;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.redPrimary,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: dynamicFontSize * 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          child: Icon(Icons.camera_alt,
+                              color: Colors.white, size: dynamicFontSize * 1.3),
                         ),
-                        child: Icon(Icons.camera_alt,
-                            color: Colors.white, size: dynamicFontSize * 1.3),
-                      ),
                     ],
                   ),
               ],
