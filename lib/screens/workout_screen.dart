@@ -105,7 +105,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       final diff = now.difference(restStartTime!).inSeconds;
 
       setState(() {
-        elapsedSeconds = diff.clamp(0, restTime);
+        elapsedSeconds = diff;
       });
     }
   }
@@ -890,6 +890,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
     }
     _animationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    flutterLocalNotificationsPlugin.cancel(1000);
     super.dispose();
   }
 
