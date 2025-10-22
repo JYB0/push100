@@ -11,11 +11,13 @@ plugins {
 android {
     namespace = "com.morebetterlifeapp.push100"
     compileSdk = 35 //flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.0.12433566"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -60,4 +62,11 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // ✅ desugaring 라이브러리 (AGP 8.5.x와 잘 맞음)
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
+
+    // (다른 implementation 들은 Flutter 플러그인이 자동 주입하므로 보통 여기서 추가할 것 없음)
 }
