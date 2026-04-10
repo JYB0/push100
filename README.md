@@ -1,16 +1,84 @@
-# push100
+# Push100
 
-A new Flutter project.
+푸시업 운동 습관 형성을 돕는 Flutter 기반 모바일 앱입니다.  
+사용자가 자신의 운동 기록을 관리하고, 단계별 운동 계획에 따라 꾸준히 운동을 이어갈 수 있도록 설계했습니다.
 
-## Getting Started
+## App Store
+- Android: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100
+- iOS: https://apps.apple.com/kr/app/push100/id6742874163
 
-This project is a starting point for a Flutter application.
+## Project Overview
+- 개인 프로젝트
+- 개발 기간: 2024.12 ~ 2025.10
+- 개발 인원: 1명
+- 역할: 기획, 디자인, 개발, 배포, 운영
 
-A few resources to get you started if this is your first Flutter project:
+## Tech Stack
+- Flutter
+- Dart
+- Firebase
+- Firestore
+- SharedPreferences
+- REST API
+- Git
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Main Features
+- 운동 계획에 따른 세트 진행 기능
+- 운동 기록 저장 및 조회
+- 휴식 타이머 제공
+- 운동 완료 후 동기부여 메시지 및 흐름 설계
+- 커뮤니티 게시판 기능
+- 댓글 / 답글 기능
+- 사용자 차단 기능
+- Firebase 기반 데이터 동기화 기능
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## What I Focused On
+### 1. 사용자 경험을 고려한 운동 흐름 설계
+- 테스트 → 운동 진행 → 휴식 → 기록 저장까지 자연스럽게 이어지는 사용자 흐름을 설계했습니다.
+- 운동 중 이탈을 줄이기 위해 현재 세트, 다음 동작, 휴식 시간을 직관적으로 확인할 수 있도록 구성했습니다.
+
+### 2. 데이터 저장 및 동기화 구조 개선
+- 로컬 저장소(SharedPreferences)에 운동 기록을 저장하고, Firebase와 동기화할 수 있도록 구현했습니다.
+- 중복 기록이 저장되지 않도록 중복 필터링 로직을 적용해 데이터 정합성을 높였습니다.
+
+### 3. 유지보수성을 고려한 구조 개선
+- 기능이 늘어남에 따라 화면, 로직, 데이터 처리 책임을 분리해 코드 구조를 정리했습니다.
+- 좋아요/싫어요 기능은 배열 기반 구조에서 Firestore 서브컬렉션 구조로 리팩터링해 확장성을 개선했습니다.
+
+### 4. 커뮤니티 기능 확장
+- 운동 기록 앱에 커뮤니티 기능을 추가하여 사용자 체류 시간과 재방문 가능성을 높이려 했습니다.
+- 댓글, 답글, 차단 기능을 구현하며 사용자 생성 콘텐츠 환경에서 필요한 흐름을 고려했습니다.
+
+## Trouble Shooting
+### 운동 기록 동기화 시 중복 데이터 저장 문제
+**Problem**
+- 로컬 데이터와 Firebase 데이터를 동기화하는 과정에서 동일한 운동 기록이 여러 번 저장될 수 있는 문제가 있었습니다.
+
+**Solution**
+- 날짜, 레벨, 운동 일차 기준으로 동일한 기록인지 판별하는 로직을 추가했습니다.
+- 동기화 전 기존 데이터를 비교하여 중복 데이터를 제거하도록 개선했습니다.
+
+**Result**
+- 여러 기기에서 데이터를 연동하더라도 동일 기록이 반복 저장되지 않도록 개선했습니다.
+- 데이터 신뢰성과 사용자 경험을 함께 높일 수 있었습니다.
+
+### Firestore 반응 데이터 구조 개선
+**Problem**
+- 게시글/댓글 반응 기능을 배열 기반으로 관리할 경우 문서 크기 증가와 유지보수 부담이 커질 수 있었습니다.
+
+**Solution**
+- likedBy/dislikedBy 배열 대신 likes/dislikes 서브컬렉션 구조로 변경했습니다.
+- 사용자별 반응을 독립적으로 저장해 확장 가능하도록 설계했습니다.
+
+**Result**
+- 문서 크기 한계 문제를 줄이고, 반응 기능을 보다 안정적으로 관리할 수 있게 되었습니다.
+
+## Folder Structure
+```bash
+lib/
+├─ screens/
+├─ widgets/
+├─ models/
+├─ services/
+├─ helpers/
+└─ main.dart
