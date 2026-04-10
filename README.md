@@ -3,6 +3,11 @@
 푸시업 운동 습관 형성을 돕는 Flutter 기반 모바일 앱입니다.  
 사용자가 자신의 운동 기록을 관리하고, 단계별 운동 계획에 따라 꾸준히 운동을 이어갈 수 있도록 설계했습니다.
 
+## Achievements
+- 누적 다운로드 15,000+
+- Google Play 평점 4.91
+- App Store 평점 4.9
+
 ## App Store
 - Android: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100
 - iOS: https://apps.apple.com/kr/app/push100/id6742874163
