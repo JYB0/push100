@@ -7,6 +7,7 @@
 - 누적 다운로드 15,000+
 - Google Play 평점 4.91
 - App Store 평점 4.9
+- 출시 후 6개월 이상 운영하며 기능 개선 지속
 
 ## App Store
 - Android: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100
@@ -17,7 +18,7 @@
 - 개발 기간: 2024.12 ~ 2025.03
 - 운영 기간: 2025.03 ~ 2025.10
 - 개발 인원: 1명
-- 역할: 기획, 디자인, 개발, 배포, 운영
+- 역할: 기획, 개발, 배포, 운영
 
 ## Tech Stack
 - Flutter
