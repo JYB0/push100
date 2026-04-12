@@ -9,7 +9,7 @@
 - App Store 평점 4.9
 - 출시 후 6개월 이상 운영하며 기능 개선 지속
 
-## App Store
+## Links
 - Android: https://play.google.com/store/apps/details?id=com.morebetterlifeapp.push100
 - iOS: https://apps.apple.com/kr/app/push100/id6742874163
 
@@ -29,13 +29,18 @@
 - REST API
 
 ## Main Features
+### Workout
 - 운동 계획에 따른 세트 진행 기능
 - 운동 기록 저장 및 조회
 - 휴식 타이머 제공
 - 운동 완료 후 동기부여 메시지 및 흐름 설계
+
+### Community
 - 커뮤니티 게시판 기능
 - 댓글 / 답글 기능
 - 사용자 차단 기능
+
+### Sync
 - Firebase 기반 데이터 동기화 기능
 
 ## Why I Built This
