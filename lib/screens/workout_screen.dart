@@ -81,7 +81,7 @@ class WorkoutScreenState extends State<WorkoutScreen>
       end: const Color.fromARGB(67, 246, 211, 105), // 어두운 색 (강조 효과)
     ).animate(_animationController);
 
-    AdHelper.loadRewardedInterstitialAd();
+    AdHelper.loadInterstitialAd();
   }
 
   void _increaseReps() {
@@ -620,14 +620,14 @@ class WorkoutScreenState extends State<WorkoutScreen>
       _animationController.repeat(reverse: true);
 
       if (currentSet == (sets.length / 2).ceil()) {
-        if (AdHelper.isRewardedInterstitialAdLoaded) {
-          AdHelper.showRewardedInterstitialAd(() {
+        if (AdHelper.isInterstitialAdLoaded) {
+          AdHelper.showInterstitialAd(onAdDismissed: () {
             Future.delayed(const Duration(milliseconds: 500), () {
               if (mounted) _showMotivationDialog();
             });
           });
         } else {
-          AdHelper.loadRewardedInterstitialAd();
+          AdHelper.loadInterstitialAd();
         }
       }
     } else {

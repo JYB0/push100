@@ -4,18 +4,36 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthHelper {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  static Future<void>? _googleSignInInitialization;
+
+  static Future<void> _ensureGoogleSignInInitialized() {
+    return _googleSignInInitialization ??= _googleSignIn.initialize();
+  }
 
   static Future<UserCredential?> signInWithGoogle() async {
-    final googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return null;
+    await _ensureGoogleSignInInitialized();
 
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+    try {
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
 
-    return await _auth.signInWithCredential(credential);
+      if (idToken == null) {
+        throw StateError('Google Sign-In did not return an ID token.');
+      }
+
+      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      return await _auth.signInWithCredential(credential);
+    } on GoogleSignInException catch (e) {
+      switch (e.code) {
+        case GoogleSignInExceptionCode.canceled:
+        case GoogleSignInExceptionCode.interrupted:
+          return null;
+        default:
+          rethrow;
+      }
+    }
   }
 
   static Future<UserCredential?> signInWithApple() async {
@@ -32,5 +50,19 @@ class AuthHelper {
     );
 
     return await _auth.signInWithCredential(oauthCredential);
+  }
+
+  static Future<void> signOut() async {
+    final user = _auth.currentUser;
+    final bool isGoogleUser =
+        user?.providerData.any((info) => info.providerId == 'google.com') ??
+            false;
+
+    if (isGoogleUser) {
+      await _ensureGoogleSignInInitialized();
+      await _googleSignIn.signOut();
+    }
+
+    await _auth.signOut();
   }
 }

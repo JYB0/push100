@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:push100/firebase_options.dart';
+import 'package:push100/helpers/auth_helper.dart';
 import 'package:push100/helpers/firebase_sync_helper.dart';
 
 // import 'package:push100/helpers/ad_helper.dart';
@@ -104,7 +105,7 @@ Future<void> _checkUserStatus() async {
       await user.reload(); // 서버에서 계정 상태 확인
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        await FirebaseAuth.instance.signOut(); // 자동 로그아웃
+        await AuthHelper.signOut(); // 자동 로그아웃
         // ❗ 로그인 화면으로 이동 등 추가 처리
       }
     }

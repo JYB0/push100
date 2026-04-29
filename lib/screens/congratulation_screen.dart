@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:push100/helpers/gallery_permission_helper.dart';
 import 'package:push100/main.dart';
 import 'package:push100/screens/bottom_navigation.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
@@ -239,12 +240,8 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                             final image = await _screenshotController.capture();
                             if (image != null) {
                               // ✅ 저장 권한 요청
-                              PermissionStatus status;
-                              if (Platform.isAndroid) {
-                                status = await Permission.photos.request();
-                              } else {
-                                status = await Permission.storage.request();
-                              }
+                              final status =
+                                  await requestGallerySavePermission();
 
                               if (status.isGranted) {
                                 await ImageGallerySaverPlus.saveImage(

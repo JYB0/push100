@@ -165,7 +165,7 @@ class AdHelper {
   }
 
   // ✅ 전면 광고 보여주기
-  static void showInterstitialAd() {
+  static void showInterstitialAd({void Function()? onAdDismissed}) {
     if (_interstitialAd != null) {
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
@@ -173,6 +173,7 @@ class AdHelper {
           _interstitialAd = null;
           isInterstitialAdLoaded = false;
           loadInterstitialAd();
+          onAdDismissed?.call();
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
           ad.dispose();

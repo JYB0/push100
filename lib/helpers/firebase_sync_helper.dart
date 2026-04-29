@@ -51,14 +51,16 @@ Future<void> restoreDataFromFirebase(User user) async {
   if (!snapshot.exists) return;
 
   final data = snapshot.data()!;
+  final int initialPushupCount =
+      (data['initialPushupCount'] as num?)?.toInt() ?? 0;
+  final int currentWeek = (data['currentWeek'] as num?)?.toInt() ?? 1;
+  final int currentDay = (data['currentDay'] as num?)?.toInt() ?? 1;
+  final String level = data['level'] as String? ?? '초급';
+  final bool isTestMode = data['isTestMode'] as bool? ?? false;
 
-  await SharedPreferencesHelper.saveInitialTest(data['initialPushupCount']);
-  await SharedPreferencesHelper.saveProgress(
-    data['currentWeek'],
-    data['currentDay'],
-    data['level'],
-  );
-  await SharedPreferencesHelper.saveIsTestMode(data['isTestMode'] ?? false);
+  await SharedPreferencesHelper.saveInitialTest(initialPushupCount);
+  await SharedPreferencesHelper.saveProgress(currentWeek, currentDay, level);
+  await SharedPreferencesHelper.saveIsTestMode(isTestMode);
 
   // // 1. 서버에서 가져온 운동 기록 가져오기
   // final recordsSnapshot = await userDoc.collection('workoutRecords').get();
@@ -87,8 +89,10 @@ Future<void> restoreDataFromFirebase(User user) async {
   //   }
   // }
 
-  final serverRecords =
-      (data['records'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+  final serverRecords = (data['records'] as List<dynamic>? ?? [])
+      .whereType<Map>()
+      .map((record) => Map<String, dynamic>.from(record))
+      .toList();
   final localRecords = await SharedPreferencesHelper.getWorkoutRecords();
 
   for (final record in serverRecords) {
@@ -100,14 +104,30 @@ Future<void> restoreDataFromFirebase(User user) async {
         local['durationSeconds'] == record['durationSeconds']);
 
     if (!isDuplicate) {
+      final plannedReps = (record['plannedReps'] as List<dynamic>? ?? [])
+          .map((rep) => (rep as num).toInt())
+          .toList();
+      final userReps = (record['userReps'] as List<dynamic>? ?? [])
+          .map((rep) => (rep as num).toInt())
+          .toList();
+
+      if (record['date'] == null ||
+          plannedReps.isEmpty ||
+          userReps.isEmpty ||
+          record['week'] == null ||
+          record['day'] == null ||
+          record['level'] == null) {
+        continue;
+      }
+
       await SharedPreferencesHelper.saveWorkoutRecord(
-        record['date'],
-        List<int>.from(record['plannedReps']),
-        List<int>.from(record['userReps']),
-        record['week'],
-        record['day'],
-        record['level'],
-        record['durationSeconds'] ?? 0,
+        record['date'] as String,
+        plannedReps,
+        userReps,
+        (record['week'] as num).toInt(),
+        (record['day'] as num).toInt(),
+        record['level'] as String,
+        (record['durationSeconds'] as num?)?.toInt() ?? 0,
       );
     }
   }

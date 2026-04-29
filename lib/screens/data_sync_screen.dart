@@ -2,6 +2,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:push100/helpers/auth_helper.dart';
 import 'package:push100/helpers/firebase_sync_helper.dart';
 import 'package:push100/helpers/shared_preferences_helper.dart';
 import 'package:push100/main.dart';
@@ -174,7 +175,7 @@ class _DataSyncScreenState extends State<DataSyncScreen> {
     );
 
     if (result == OkCancelResult.ok) {
-      await FirebaseAuth.instance.signOut();
+      await AuthHelper.signOut();
 
       if (context.mounted) {
         Navigator.of(context).pushReplacement(

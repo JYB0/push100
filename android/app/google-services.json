@@ -7,12 +7,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:911540617919:android:83d280b6df2c8ab48c3c0a",
+        "mobilesdk_app_id": "1:911540617919:android:e4cb106e84b47a478c3c0a",
         "android_client_info": {
-          "package_name": "com.morebetterlifeapp.push100"
+          "package_name": "com.morebetterlifeapp.pull50"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "911540617919-o4etn694mcmprt0no74k2r2a7f771n5j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.morebetterlifeapp.pull50",
+            "certificate_hash": "06846f54de5769fe21bccf9c0884cd84e3a39253"
+          }
+        },
+        {
+          "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCtFFkEQsLq4YyszimnnLO6ljBUfVx2wcY"
@@ -20,7 +33,107 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "911540617919-10rnpvt13046fnb2ehqp4frgig7tiap9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.morebetterlifeapp.push100"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911540617919:android:83d280b6df2c8ab48c3c0a",
+        "android_client_info": {
+          "package_name": "com.morebetterlifeapp.push100"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911540617919-k5fgfn0tvkj7s9q4ddmldb131mi1mtvg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.morebetterlifeapp.push100",
+            "certificate_hash": "d1a4f6784d83b8f4f7871a741375bec4f1bb6bcf"
+          }
+        },
+        {
+          "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtFFkEQsLq4YyszimnnLO6ljBUfVx2wcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "911540617919-10rnpvt13046fnb2ehqp4frgig7tiap9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.morebetterlifeapp.push100"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911540617919:android:4cd0532366e980c98c3c0a",
+        "android_client_info": {
+          "package_name": "com.morebetterlifeapp.squat200"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911540617919-s8q09rdg9pnm2g3ppvi4t2nkbgh46dm0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.morebetterlifeapp.squat200",
+            "certificate_hash": "d1a4f6784d83b8f4f7871a741375bec4f1bb6bcf"
+          }
+        },
+        {
+          "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtFFkEQsLq4YyszimnnLO6ljBUfVx2wcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911540617919-qhv461tct8nahv5k60phln3rd0kn7del.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "911540617919-10rnpvt13046fnb2ehqp4frgig7tiap9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.morebetterlifeapp.push100"
+              }
+            }
+          ]
         }
       }
     }

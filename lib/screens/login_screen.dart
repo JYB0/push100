@@ -67,9 +67,10 @@ class LoginScreen extends StatelessWidget {
         }
       }
     } catch (e) {
+      debugPrint('Login failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 중 오류 발생!')),
+          SnackBar(content: Text('로그인 오류: $e')),
         );
       }
     }
